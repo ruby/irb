@@ -1,11 +1,8 @@
-
-lib = File.expand_path("../lib", __FILE__)
-$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require "irb/version"
+require_relative "lib/irb/version"
 
 Gem::Specification.new do |spec|
   spec.name          = "irb"
-  spec.version       = Irb::VERSION
+  spec.version       = IRB::VERSION
   spec.authors       = ["SHIBATA Hiroshi"]
   spec.email         = ["hsbt@ruby-lang.org"]
 
