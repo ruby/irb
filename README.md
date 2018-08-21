@@ -1,8 +1,8 @@
 # IRB
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/irb`. To experiment with that code, run `bin/console` for an interactive prompt.
+IRB stands for "interactive Ruby" and is a tool to interactively execute Ruby expressions read from the standard input.
 
-TODO: Delete this and the text above, and describe your gem
+The `irb` command from your shell will start the interpreter.
 
 ## Installation
 
@@ -22,7 +22,23 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+Use of irb is easy if you know Ruby.
+
+When executing irb, prompts are displayed as follows. Then, enter the Ruby expression. An input is executed when it is syntactically complete.
+
+```
+$ irb
+irb(main):001:0> 1+2
+#=> 3
+irb(main):002:0> class Foo
+irb(main):003:1>  def foo
+irb(main):004:2>    print 1
+irb(main):005:2>  end
+irb(main):006:1> end
+#=> nil
+```
+
+The Readline extension module can be used with irb. Use of Readline is default if it's installed.
 
 ## Development
 
