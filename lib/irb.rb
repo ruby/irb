@@ -743,7 +743,7 @@ class Binding
   #       def initialize
   #         @cooked = false
   #         binding.irb
-  #         puts @cooked
+  #         puts "Cooked potato: #{@cooked}"
   #       end
   #     end
   #
@@ -754,7 +754,7 @@ class Binding
   #
   #     $ ruby potato.rb
   #
-  #     From: potato.rb @ line 3 :
+  #     From: potato.rb @ line 4 :
   #
   #         1: class Potato
   #         2:   def initialize
@@ -785,7 +785,7 @@ class Binding
   # output printed to standard output in this example:
   #
   #     irb(#<Potato:0x00007feea1916670>):005:0> exit
-  #     $ Cooked potato: true
+  #     Cooked potato: true
   #
   #
   # See IRB@IRB+Usage for more information.
