@@ -116,7 +116,11 @@ EOF
     end
 
     def code_around_binding
-      file, pos = @binding.source_location
+      if @binding.respond_to?(:source_location)
+        file, pos = @binding.source_location
+      else
+        file, pos = @binding.eval('[__FILE__, __LINE__]')
+      end
 
       unless defined?(::SCRIPT_LINES__[file]) && lines = ::SCRIPT_LINES__[file]
         begin
