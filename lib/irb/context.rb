@@ -10,7 +10,6 @@
 #
 #
 require 'parser/current'
-require 'parser/tree_rewriter'
 
 require_relative "workspace"
 require_relative "inspector"
