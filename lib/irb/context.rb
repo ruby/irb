@@ -392,16 +392,27 @@ module IRB
       # whether to echo this line or not
       if @original_echo
         node = Parser::CurrentRuby.parse(line)
-        if node.type.to_s.end_with?('asgn')
-          # Node types that end with 'asgn':
-          # lvasgn: local variable assignment: "foo = bar"
-          # ivasgn: instance variable assignment: "@foo = bar"
-          # gvasgn: global variable assignment: "$foo = bar"
-          # cvasgn: class variable assignment: "@@foo = bar"
-          # casgn: constant assignment: "::Foo = 1", "a::Foo = 1", or "Foo = 1"
+        # Node types that end with 'asgn' for which we don't want to echo:
+        #
+        # lvasgn:    local variable assignment:    "foo = bar"
+        # ivasgn:    instance variable assignment: "@foo = bar"
+        # gvasgn:    global variable assignment:   "$foo = bar"
+        # cvasgn:    class variable assignment:    "@@foo = bar"
+        # casgn:     constant assignment:          "::Foo = 1", "a::Foo = 1", or "Foo = 1"
+        # mvasgn:    multiple variable assignment: "foo, bar = 1, 2"
+        # op_asgn:   binary operator assignment:   "foo += 1"
+        # or_asgn:   logical operator assignment:  "foo ||= bar"
+        # and_asgn:  logical operator assignment:  "foo &&= bar"
+        # indexasgn: index assignment:             "foo[1, 2] = bar"
+
+        # Node types that end with 'asgn' for which we do want to echo
+        #
+        # match_with_lvasgn: Local variable injecting matches: "/(?<match>bar)/ =~ baz"
+        if node.type.to_s.end_with?('asgn') && node.type != :match_with_lvasgn
           @echo = false
-        elsif node.type == :send && node.children[1].is_a?(Symbol) && node.children[1].to_s.end_with?('=')
-          # sending a symbol that ends in = to an object: attribute assignment: "self.foo = 1"
+        elsif node.type == :send && ![:==, :===].include?(node.children[1]) && node.children[1].to_s.end_with?('=')
+          # sending a symbol that ends in = (other than :== and :===) to an object:
+          #   attribute assignment: "self.foo = 1"
           @echo = false
         else
           @echo = true
