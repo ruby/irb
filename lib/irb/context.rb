@@ -9,6 +9,9 @@
 #
 #
 #
+require 'parser/current'
+require 'parser/tree_rewriter'
+
 require_relative "workspace"
 require_relative "inspector"
 require_relative "input-method"
@@ -101,6 +104,7 @@ module IRB
       if @echo.nil?
         @echo = true
       end
+      @original_echo = @echo
       self.debug_level = IRB.conf[:DEBUG_LEVEL]
     end
 
@@ -382,7 +386,29 @@ module IRB
         line = "begin ::Kernel.raise _; rescue _.class; #{line}; end"
         @workspace.local_variable_set(:_, exception)
       end
-      set_last_value(@workspace.evaluate(self, line, irb_path, line_no))
+      ret = set_last_value(@workspace.evaluate(self, line, irb_path, line_no))
+
+      # If echo was originally set to false, don't bother trying to figure out
+      # whether to echo this line or not
+      if @original_echo
+        node = Parser::CurrentRuby.parse(line)
+        if node.type.to_s.end_with?('asgn')
+          # Node types that end with 'asgn':
+          # lvasgn: local variable assignment: "foo = bar"
+          # ivasgn: instance variable assignment: "@foo = bar"
+          # gvasgn: global variable assignment: "$foo = bar"
+          # cvasgn: class variable assignment: "@@foo = bar"
+          # casgn: constant assignment: "::Foo = 1", "a::Foo = 1", or "Foo = 1"
+          @echo = false
+        elsif node.type == :send && node.children[1].is_a?(Symbol) && node.children[1].to_s.end_with?('=')
+          # sending a symbol that ends in = to an object: attribute assignment: "self.foo = 1"
+          @echo = false
+        else
+          @echo = true
+        end
+      end
+
+      ret
     end
 
     def inspect_last_value # :nodoc:
