@@ -54,6 +54,7 @@ module TestIRB
         { a: 4 } => true,
         /reg/ => true,
         Object.new => false,
+        Struct => true,
         Struct.new(:a) => false,
         Struct.new(:a).new(1) => false,
       }.each do |object, result|
