@@ -29,6 +29,7 @@ module TestIRB
         'ERB.new("a#{nil}b", trim_mode: "-")' => "#{BLUE}#{BOLD}#{UNDERLINE}ERB#{CLEAR}.new(#{RED}\"#{CLEAR}#{RED}a#{CLEAR}#{RED}\#{#{CLEAR}#{CYAN}#{BOLD}nil#{CLEAR}#{RED}}#{CLEAR}#{RED}b#{CLEAR}#{RED}\"#{CLEAR}, #{MAGENTA}trim_mode:#{CLEAR} #{RED}\"#{CLEAR}#{RED}-#{CLEAR}#{RED}\"#{CLEAR})",
         "# comment" => "#{BLUE}#{BOLD}# comment#{CLEAR}",
         "yield(hello)" => "#{GREEN}yield#{CLEAR}(hello)",
+        '"##@var]"' => "#{RED}\"#{CLEAR}#{RED}##{CLEAR}#{RED}##{CLEAR}@var#{RED}]#{CLEAR}#{RED}\"#{CLEAR}",
       }.each do |code, result|
         assert_equal(result, with_term { IRB::Color.colorize_code(code) }, "Case: colorize_code(#{code.dump})")
       end
