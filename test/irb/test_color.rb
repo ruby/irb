@@ -30,20 +30,15 @@ module TestIRB
         "# comment" => "#{BLUE}#{BOLD}# comment#{CLEAR}",
         "yield(hello)" => "#{GREEN}yield#{CLEAR}(hello)",
         '"##@var]"' => "#{RED}\"#{CLEAR}#{RED}##{CLEAR}#{RED}##{CLEAR}@var#{RED}]#{CLEAR}#{RED}\"#{CLEAR}",
-      }.each do |code, result|
+        '"foo#{a} #{b}"' => "#{RED}\"#{CLEAR}#{RED}foo#{CLEAR}#{RED}\#{#{CLEAR}a#{RED}}#{CLEAR}#{RED} #{CLEAR}#{RED}\#{#{CLEAR}b#{RED}}#{CLEAR}#{RED}\"#{CLEAR}",
+      }.merge!(
+        if Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('2.6.0')
+          { '/r#{e}g/' => "#{RED}\e[1m/#{CLEAR}#{RED}r#{CLEAR}#{RED}\#{#{CLEAR}e#{RED}}#{CLEAR}#{RED}g#{CLEAR}#{RED}\e[1m/#{CLEAR}" }
+        else
+          { '/r#{e}g/' => "#{RED}#{BOLD}/#{CLEAR}#{RED}r#{CLEAR}#{RED}\#{#{CLEAR}e#{RED}}#{CLEAR}#{RED}g#{CLEAR}#{RED}#{BOLD}/#{CLEAR}" }
+        end
+      ).each do |code, result|
         assert_equal(result, with_term { IRB::Color.colorize_code(code) }, "Case: colorize_code(#{code.dump})")
-      end
-
-      if Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('2.6.0')
-        {
-          '/r#{e}g/' => "#{RED}#{BOLD}/#{CLEAR}#{RED}r#{CLEAR}#{RED}\#{#{CLEAR}e}#{RED}g#{CLEAR}#{RED}#{BOLD}/#{CLEAR}",
-        }
-      else
-        {
-          '/r#{e}g/' => "#{RED}#{BOLD}/#{CLEAR}#{RED}r#{CLEAR}#{RED}\#{#{CLEAR}e#{RED}}#{CLEAR}#{RED}g#{CLEAR}#{RED}#{BOLD}/#{CLEAR}",
-        }
-      end.each do |code, result|
-        assert_equal(result, with_term { IRB::Color.colorize_code(code) })
       end
     end
 
