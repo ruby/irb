@@ -67,7 +67,7 @@ module IRB # :nodoc:
 
     class << self
       def colorable?
-        $stdout.tty? && supported?
+        $stdout.tty? && supported? && (/mswin|mingw/ =~ RUBY_PLATFORM || (ENV.key?('TERM') && ENV['TERM'] != 'dumb'))
       end
 
       def inspect_colorable?(obj)
@@ -132,11 +132,10 @@ module IRB # :nodoc:
 
       private
 
+      # Ripper::Lexer::Elem#state is supported on Ruby 2.5+
       def supported?
         return @supported if defined?(@supported)
-        # Ripper::Lexer::Elem#state is supported on Ruby 2.5+
-        @supported = Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('2.5.0') \
-          && (/mswin|mingw/ =~ RUBY_PLATFORM || (ENV.key?('TERM') && ENV['TERM'] != 'dumb'))
+        @supported = Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('2.5.0')
       end
 
       def scan(code, allow_last_error:)
