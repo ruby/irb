@@ -18,11 +18,6 @@ module TestIRB
     CYAN      = "\e[36m"
 
     def test_colorize_code
-      if Gem::Version.new(RUBY_VERSION) < Gem::Version.new('2.5.0')
-        assert_equal({}, IRB::Color::TOKEN_SEQ_EXPRS)
-        skip "this Ripper version is not supported"
-      end
-
       # Common behaviors. Warn parser error, but do not warn compile error.
       tests = {
         "1" => "#{BLUE}#{BOLD}1#{CLEAR}",
@@ -77,11 +72,17 @@ module TestIRB
       end
 
       tests.each do |code, result|
-        actual = with_term { IRB::Color.colorize_code(code, complete: true) }
-        assert_equal(result, actual, "Case: colorize_code(#{code.dump}, complete: true)\nResult: #{humanized_literal(actual)}")
+        if Gem::Version.new(RUBY_VERSION) < Gem::Version.new('2.5.0')
+          # colorize_code is supported only for Ruby 2.5+. Just return the original code in 2.4-.
+          actual = with_term { IRB::Color.colorize_code(code) }
+          assert_equal(code, actual)
+        else
+          actual = with_term { IRB::Color.colorize_code(code, complete: true) }
+          assert_equal(result, actual, "Case: colorize_code(#{code.dump}, complete: true)\nResult: #{humanized_literal(actual)}")
 
-        actual = with_term { IRB::Color.colorize_code(code, complete: false) }
-        assert_equal(result, actual, "Case: colorize_code(#{code.dump}, complete: false)\nResult: #{humanized_literal(actual)}")
+          actual = with_term { IRB::Color.colorize_code(code, complete: false) }
+          assert_equal(result, actual, "Case: colorize_code(#{code.dump}, complete: false)\nResult: #{humanized_literal(actual)}")
+        end
       end
     end
 
@@ -105,12 +106,18 @@ module TestIRB
         "'foo' + 'bar" => "#{RED}'#{CLEAR}#{RED}foo#{CLEAR}#{RED}'#{CLEAR} + #{RED}'#{CLEAR}#{RED}bar#{CLEAR}",
         "('foo" => "(#{RED}'#{CLEAR}#{RED}foo#{CLEAR}",
       }.each do |code, result|
-        actual = with_term { IRB::Color.colorize_code(code, complete: false) }
-        assert_equal(result, actual, "Case: colorize_code(#{code.dump}, complete: false)\nResult: #{humanized_literal(actual)}")
-
-        unless lexer_scan_supported?
-          actual = with_term { IRB::Color.colorize_code(code, complete: true) }
+        if Gem::Version.new(RUBY_VERSION) < Gem::Version.new('2.5.0')
+          # colorize_code is supported only for Ruby 2.5+. Just return the original code in 2.4-.
+          actual = with_term { IRB::Color.colorize_code(code) }
+          assert_equal(code, actual)
+        else
+          actual = with_term { IRB::Color.colorize_code(code, complete: false) }
           assert_equal(result, actual, "Case: colorize_code(#{code.dump}, complete: false)\nResult: #{humanized_literal(actual)}")
+
+          unless lexer_scan_supported?
+            actual = with_term { IRB::Color.colorize_code(code, complete: true) }
+            assert_equal(result, actual, "Case: colorize_code(#{code.dump}, complete: false)\nResult: #{humanized_literal(actual)}")
+          end
         end
       end
     end
