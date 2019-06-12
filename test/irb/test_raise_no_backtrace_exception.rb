@@ -5,7 +5,7 @@ module TestIRB
   class TestRaiseNoBacktraceException < Test::Unit::TestCase
     def test_raise_exception
       bundle_exec = ENV.key?('BUNDLE_GEMFILE') ? ['-rbundler/setup'] : []
-      assert_in_out_err(bundle_exec + %w[-rbundler/setup -rirb -W0 -e IRB.start(__FILE__) -- -f --], <<-IRB, /Exception: foo/, [])
+      assert_in_out_err(bundle_exec + %w[-rirb -W0 -e IRB.start(__FILE__) -- -f --], <<-IRB, /Exception: foo/, [])
       e = Exception.new("foo")
       def e.backtrace; nil; end
       raise e
