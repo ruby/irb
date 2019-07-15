@@ -31,9 +31,9 @@ $ irb
 irb(main):001:0> 1+2
 #=> 3
 irb(main):002:0> class Foo
-irb(main):003:1>  def foo
-irb(main):004:2>    print 1
-irb(main):005:2>  end
+irb(main):003:1>   def foo
+irb(main):004:2>     print 1
+irb(main):005:2>   end
 irb(main):006:1> end
 #=> nil
 ```
