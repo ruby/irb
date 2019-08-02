@@ -847,7 +847,7 @@ class Binding
   #
   # See IRB@IRB+Usage for more information.
   def irb
-    IRB.setup(eval("__FILE__"), argv: [])
+    IRB.setup(source_location[0], argv: [])
     workspace = IRB::WorkSpace.new(self)
     STDOUT.print(workspace.code_around_binding)
     IRB::Irb.new(workspace).run(IRB.conf)
