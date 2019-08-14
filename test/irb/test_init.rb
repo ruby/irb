@@ -87,6 +87,33 @@ module TestIRB
       IRB.conf[:USE_COLORIZE] = orig_use_colorize
     end
 
+    def test_noscript
+      argv = %w[--noscript -- -f]
+      IRB.setup(eval("__FILE__"), argv: argv)
+      assert_nil IRB.conf[:SCRIPT]
+      assert_equal(['-f'], argv)
+
+      argv = %w[--noscript -- a]
+      IRB.setup(eval("__FILE__"), argv: argv)
+      assert_nil IRB.conf[:SCRIPT]
+      assert_equal(['a'], argv)
+
+      argv = %w[--noscript a]
+      IRB.setup(eval("__FILE__"), argv: argv)
+      assert_nil IRB.conf[:SCRIPT]
+      assert_equal(['a'], argv)
+
+      argv = %w[--script --noscript a]
+      IRB.setup(eval("__FILE__"), argv: argv)
+      assert_nil IRB.conf[:SCRIPT]
+      assert_equal(['a'], argv)
+
+      argv = %w[--noscript --script a]
+      IRB.setup(eval("__FILE__"), argv: argv)
+      assert_equal('a', IRB.conf[:SCRIPT])
+      assert_equal([], argv)
+    end
+
     private
 
     def with_argv(argv)
