@@ -50,10 +50,10 @@ irbの使い方は, Rubyさえ知っていればいたって簡単です. 基本
   --noecho	    実行結果を表示しない
   --inspect	    結果出力にinspectを用いる(bcモード以外はデフォルト).
   --noinspect	    結果出力にinspectを用いない.
-  --readline	    readlineライブラリを利用する.
-  --noreadline	    readlineライブラリを利用しない. デフォルトの動作は,
-		    inf-ruby-mode以外でreadlineライブラリを利用しよう
-		    とする.
+  --singleline      シングルラインエディタを利用する.
+  --nosingleline    シングルラインエディタを利用しない. デフォルトの動
+                    作は, inf-ruby-mode以外でシングルラインエディタを利
+                    用しようとする.
   --colorize	    色付けを利用する.
   --nocolorize	    色付けを利用しない.
   --prompt prompt-mode
@@ -64,7 +64,7 @@ irbの使い方は, Rubyさえ知っていればいたって簡単です. 基本
 		    ドになっています.
 
   --inf-ruby-mode   emacsのinf-ruby-mode用のプロンプト表示を行なう. 特
-		    に指定がない限り, readlineライブラリは使わなくなる.
+		    に指定がない限り, ラインエディタは使わなくなる.
   --simple-prompt
 		    非常にシンプルなプロンプトを用いるモードです.
   --noprompt	    プロンプト表示を行なわない.
@@ -91,7 +91,7 @@ irb起動時に``~/.irbrc''を読み込みます. もし存在しない場合は
   IRB.conf[:IRB_RC] = nil
   IRB.conf[:BACK_TRACE_LIMIT]=16
   IRB.conf[:USE_LOADER] = false
-  IRB.conf[:USE_READLINE] = nil
+  IRB.conf[:USE_SINGLELINE] = nil
   IRB.conf[:USE_TRACER] = false
   IRB.conf[:IGNORE_SIGINT] = true
   IRB.conf[:IGNORE_EOF] = false
@@ -193,7 +193,8 @@ irb拡張コマンドは, 簡単な名前と頭に`irb_'をつけた名前と両
       実行中: 実行を中止する.
 
 --- conf.inf_ruby_mode = true/false
-    inf-ruby-mode用のプロンプト表示を行なう. デフォルトはfalse.
+    inf-ruby-mode用のプロンプト表示を行なう. デフォルトはfalse. 特に指定
+    がない限り, ラインエディタは使わなくなる.
 
 --- conf.inspect_mode = true/false/nil
     インスペクトモードを設定する.
@@ -221,12 +222,19 @@ irb拡張コマンドは, 簡単な名前と頭に`irb_'をつけた名前と両
 --- conf.use_prompt = true/false
     プロンプト表示するかどうか? デフォルトではプロンプトを表示する.
 
---- conf.use_readline = true/false/nil
-    readlineを使うかどうか?
-    true: readlineを使う.
-    false: readlineを使わない.
-    nil: (デフォルト)inf-ruby-mode以外でreadlineライブラリを利用しよ
-         うとする.
+--- conf.use_multiline = true/false/nil
+    マルチラインエディタを使うかどうか?
+    true: マルチラインエディタを使う.
+    false: マルチラインエディタを使わない.
+    nil: (デフォルト)inf-ruby-mode以外でマルチラインエディタを利用しよう
+    とする.
+
+--- conf.use_singleline = true/false/nil
+    シングルラインエディタを使うかどうか?
+    true: シングルラインエディタを使う.
+    false: シングルラインエディタを使わない.
+    nil: (デフォルト)inf-ruby-modeとマルチラインエディタ以外でシングルラ
+         インエディタを利用しようとする.
 #
 #--- conf.verbose=T/F
 #    irbからいろいろなメッセージを出力するか?
