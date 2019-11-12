@@ -211,11 +211,13 @@ module IRB # :nodoc:
         IRB.print_usage
         exit 0
       when "--"
-        if opt = argv.shift
+        if (opt = argv.shift) && opt != '-'
           @CONF[:SCRIPT] = opt
           $0 = opt
         end
         break
+      when '-'
+        # nothing
       when /^-/
         IRB.fail UnrecognizedSwitch, opt
       else

@@ -18,6 +18,16 @@ module TestIRB
       assert_equal orig, $0
     end
 
+    def test_setup_with_argv_dash
+      argv = %w[- -f]
+      IRB.setup(eval("__FILE__"), argv: argv)
+      assert_nil IRB.conf[:SCRIPT]
+
+      argv = %w[-- - -f]
+      IRB.setup(eval("__FILE__"), argv: argv)
+      assert_nil IRB.conf[:SCRIPT]
+    end
+
     private
 
     def with_argv(argv)
