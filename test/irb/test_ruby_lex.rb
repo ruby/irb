@@ -26,6 +26,11 @@ module TestIRB
         [["(((", ")", ")", ")", ""], 4, 0],
         [["{{{", "}", "}", "}", ""], 4, 0],
         [["[", "  # test", ""], 2, 2],
+        [["<<FOO", ""], 1, 0],
+        [["<<FOO", "bar", ""], 2, 0],
+        [["[<<FOO]", "bar", ""], 2, 0],
+        [["[<<FOO]", "bar", "FOO", ""], 3, 0],
+        [["[<<FOO", "bar", ""], 2, 0],
       ]
 
       input_to_spaces.each do |lines, line_index, space_count|

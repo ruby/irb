@@ -314,18 +314,26 @@ class RubyLex
 
   def check_newline_depth_difference
     depth_difference = 0
+    skip_til_newline = false
     @tokens.each_with_index do |t, index|
       case t[1]
       when :on_ignored_nl, :on_nl, :on_comment
+        skip_til_newline = false
         next
-      when :on_sp
+      when :on_sp || skip_til_newline
         next
       end
+
+      next if skip_til_newline
+
       case t[1]
       when :on_lbracket, :on_lbrace, :on_lparen
         depth_difference += 1
       when :on_rbracket, :on_rbrace, :on_rparen
         depth_difference -= 1
+      when :on_heredoc_beg
+        depth_difference = 0
+        skip_til_newline = true
       when :on_kw
         next if index > 0 and @tokens[index - 1][3].allbits?(Ripper::EXPR_FNAME)
         case t[2]
