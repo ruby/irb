@@ -84,11 +84,8 @@ class RubyLex
     if @io.respond_to?(:auto_indent) and context.auto_indent_mode
       @io.auto_indent do |lines, line_index, byte_pointer, is_newline|
         if is_newline
-          md = lines[line_index - 1].match(/(\A +)/)
-          prev_spaces = md.nil? ? 0 : md[1].count(' ')
           @tokens = ripper_lex_without_warning(lines[0..line_index].join("\n"))
-          depth_difference = check_newline_depth_difference
-          prev_spaces + depth_difference * 2
+          check_newline_depth_difference * 2
         else
           code = line_index.zero? ? '' : lines[0..(line_index - 1)].map{ |l| l + "\n" }.join
           last_line = lines[line_index]&.byteslice(0, byte_pointer)
@@ -320,9 +317,6 @@ class RubyLex
     @tokens.each_with_index do |t, index|
       case t[1]
       when :on_ignored_nl, :on_nl, :on_comment
-        if index != (@tokens.size - 1)
-          depth_difference = 0
-        end
         next
       when :on_sp
         next
@@ -365,6 +359,7 @@ class RubyLex
     is_first_printable_of_line = true
     spaces_of_nest = []
     spaces_at_line_head = 0
+    opening_brace_in_row = 0
     @tokens.each_with_index do |t, index|
       case t[1]
       when :on_ignored_nl, :on_nl, :on_comment
@@ -372,6 +367,7 @@ class RubyLex
         spaces_at_line_head = 0
         is_first_spaces_of_line = true
         is_first_printable_of_line = true
+        opening_brace_in_row = 0
         next
       when :on_sp
         spaces_at_line_head = t[2].count(' ') if is_first_spaces_of_line
@@ -380,7 +376,8 @@ class RubyLex
       end
       case t[1]
       when :on_lbracket, :on_lbrace, :on_lparen
-        spaces_of_nest.push(spaces_at_line_head)
+        spaces_of_nest.push(spaces_at_line_head + opening_brace_in_row * 2)
+        opening_brace_in_row += 1
       when :on_rbracket, :on_rbrace, :on_rparen
         if is_first_printable_of_line
           corresponding_token_depth = spaces_of_nest.pop
