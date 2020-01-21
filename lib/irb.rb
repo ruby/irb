@@ -736,7 +736,13 @@ module IRB
     end
 
     def output_value # :nodoc:
-      printf @context.return_format, @context.inspect_last_value
+      str = @context.inspect_last_value
+      multiline_p = /\A.*\Z/ !~ str
+      if multiline_p && @context.newline_before_multiline_output?
+        printf @context.return_format, "\n#{str}"
+      else
+        printf @context.return_format, str
+      end
     end
 
     # Outputs the local variables to this current session, including
