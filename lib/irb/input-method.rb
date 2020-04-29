@@ -43,6 +43,11 @@ module IRB
     def readable_after_eof?
       false
     end
+
+    # For debug message
+    def inspect
+      'Abstract InputMethod'
+    end
   end
 
   class StdioInputMethod < InputMethod
@@ -93,6 +98,11 @@ module IRB
     def encoding
       @stdin.external_encoding
     end
+
+    # For debug message
+    def inspect
+      'StdioInputMethod'
+    end
   end
 
   # Use a File for IO with irb, see InputMethod
@@ -124,6 +134,11 @@ module IRB
     # The external encoding for standard input.
     def encoding
       @io.external_encoding
+    end
+
+    # For debug message
+    def inspect
+      'FileInputMethod'
     end
   end
 
@@ -202,6 +217,15 @@ module IRB
       end
       Readline.completion_append_character = nil
       Readline.completion_proc = IRB::InputCompletor::CompletionProc
+
+      # For debug message
+      def inspect
+        readline_impl = (defined?(Reline) && Readline == Reline) ? 'Reline' : 'ext/readline'
+        str = "ReadlineInputMethod with #{readline_impl} #{Readline::VERSION}"
+        inputrc_path = File.expand_path(ENV['INPUTRC'] || '~/.inputrc')
+        str += " and #{inputrc_path}" if File.exist?(inputrc_path)
+        str
+      end
     end
   rescue LoadError
   end
@@ -296,6 +320,19 @@ module IRB
     # The external encoding for standard input.
     def encoding
       @stdin.external_encoding
+    end
+
+    # For debug message
+    def inspect
+      config = Reline::Config.new
+      str = "ReidlineInputMethod with Reline #{Reline::VERSION}"
+      if config.respond_to?(:inputrc_path)
+        inputrc_path = config.inputrc_path
+      else
+        inputrc_path = File.expand_path(ENV['INPUTRC'] || '~/.inputrc')
+      end
+      str += " and #{inputrc_path}" if File.exist?(inputrc_path)
+      str
     end
   end
 end
