@@ -7,4 +7,6 @@ rvm:
 before_install:
   - yes | gem update --system
 
-script: bundle exec rake test
+script:
+  - bundle install
+  - bundle exec rake test
