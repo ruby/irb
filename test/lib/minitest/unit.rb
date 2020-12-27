@@ -79,18 +79,14 @@ module MiniTest
     # figure out what diff to use.
 
     def self.diff
-      @diff = if (RbConfig::CONFIG['host_os'] =~ /mswin|mingw/ &&
-                  system("diff.exe", __FILE__, __FILE__)) then
-                "diff.exe -u"
-              elsif Minitest::Unit::Guard.maglev? then # HACK
-                "diff -u"
-              elsif system("gdiff", __FILE__, __FILE__)
-                "gdiff -u" # solaris and kin suck
-              elsif system("diff", __FILE__, __FILE__)
-                "diff -u"
-              else
-                nil
-              end unless defined? @diff
+      unless defined? @diff
+        exe = RbConfig::CONFIG['EXEEXT']
+        @diff = %W"gdiff#{exe} diff#{exe}".find do |diff|
+          if system(diff, "-u", __FILE__, __FILE__)
+            break "#{diff} -u"
+          end
+        end
+      end
 
       @diff
     end
@@ -179,16 +175,18 @@ module MiniTest
     # uses mu_pp to do the first pass and then cleans it up.
 
     def mu_pp_for_diff obj
-      mu_pp(obj).gsub(/\\n/, "\n").gsub(/:0x[a-fA-F0-9]{4,}/m, ':0xXXXXXX')
+      mu_pp(obj).gsub(/(?<!\\)(?:\\\\)*\K\\n/, "\n").gsub(/:0x[a-fA-F0-9]{4,}/m, ':0xXXXXXX')
     end
 
     def _assertions= n # :nodoc:
       @_assertions = n
     end
+    alias assertions= _assertions=
 
     def _assertions # :nodoc:
       @_assertions ||= 0
     end
+    alias assertions _assertions
 
     ##
     # Fails unless +test+ is a true value.
@@ -448,6 +446,16 @@ module MiniTest
       end
 
       assert caught, message(msg) { default }
+    end
+
+    def assert_path_exists(path, msg = nil)
+      msg = message(msg) { "Expected path '#{path}' to exist" }
+      assert File.exist?(path), msg
+    end
+
+    def refute_path_exists(path, msg = nil)
+      msg = message(msg) { "Expected path '#{path}' to not exist" }
+      refute File.exist?(path), msg
     end
 
     ##
@@ -722,6 +730,8 @@ module MiniTest
       raise MiniTest::Skip, msg, bt
     end
 
+    alias omit skip
+
     ##
     # Was this testcase skipped? Meant for #teardown.
 
@@ -765,12 +775,13 @@ module MiniTest
     # Lazy accessor for options.
 
     def options
-      @options ||= {}
+      @options ||= {seed: 42}
     end
 
     @@installed_at_exit ||= false
     @@out = $stdout
     @@after_tests = []
+    @@current_repeat_count = 0
 
     ##
     # A simple hook allowing you to run a block of code after _all_ of
@@ -869,6 +880,10 @@ module MiniTest
     ##
     # Runner for a given +type+ (eg, test vs bench).
 
+    def self.current_repeat_count
+      @@current_repeat_count
+    end
+
     def _run_anything type
       suites = TestCase.send "#{type}_suites"
       return if suites.empty?
@@ -882,7 +897,7 @@ module MiniTest
       sync = output.respond_to? :"sync=" # stupid emacs
       old_sync, output.sync = output.sync, true if sync
 
-      count = 0
+      @@current_repeat_count = 0
       begin
         start = Time.now
 
@@ -893,15 +908,15 @@ module MiniTest
         test_count      += @test_count
         assertion_count += @assertion_count
         t = Time.now - start
-        count += 1
+        @@current_repeat_count += 1
         unless @repeat_count
           puts
           puts
         end
         puts "Finished%s %ss in %.6fs, %.4f tests/s, %.4f assertions/s.\n" %
-             [(@repeat_count ? "(#{count}/#{@repeat_count}) " : ""), type,
+             [(@repeat_count ? "(#{@@current_repeat_count}/#{@repeat_count}) " : ""), type,
                t, @test_count.fdiv(t), @assertion_count.fdiv(t)]
-      end while @repeat_count && count < @repeat_count &&
+      end while @repeat_count && @@current_repeat_count < @repeat_count &&
                 report.empty? && failures.zero? && errors.zero?
 
       output.sync = old_sync if sync
@@ -943,28 +958,36 @@ module MiniTest
 
       leakchecker = LeakChecker.new
 
-      assertions = filtered_test_methods.map { |method|
-        inst = suite.new method
-        inst._assertions = 0
+      continuation = proc do
+        assertions = filtered_test_methods.map { |method|
+          inst = suite.new method
+          inst._assertions = 0
 
-        print "#{suite}##{method} = " if @verbose
+          print "#{suite}##{method} = " if @verbose
 
-        start_time = Time.now if @verbose
-        result = inst.run self
+          start_time = Time.now if @verbose
+          result = inst.run self
 
-        print "%.2f s = " % (Time.now - start_time) if @verbose
-        print result
-        puts if @verbose
-        $stdout.flush
+          print "%.2f s = " % (Time.now - start_time) if @verbose
+          print result
+          puts if @verbose
+          $stdout.flush
 
-        unless defined?(RubyVM::MJIT) && RubyVM::MJIT.enabled? # compiler process is wrongly considered as leaked
-          leakchecker.check("#{inst.class}\##{inst.__name__}")
-        end
+          unless defined?(RubyVM::MJIT) && RubyVM::MJIT.enabled? # compiler process is wrongly considered as leak
+            leakchecker.check("#{inst.class}\##{inst.__name__}")
+          end
 
-        inst._assertions
-      }
+          inst._assertions
+        }
+        return assertions.size, assertions.inject(0) { |sum, n| sum + n }
+      end
 
-      return assertions.size, assertions.inject(0) { |sum, n| sum + n }
+      if ENV["LEAK_CHECKER_TRACE_OBJECT_ALLOCATION"]
+        require "objspace"
+        ObjectSpace.trace_object_allocations(&continuation)
+      else
+        continuation.call
+      end
     end
 
     ##
@@ -989,6 +1012,9 @@ module MiniTest
 
     def location e # :nodoc:
       last_before_assertion = ""
+
+      return '<empty>' unless e.backtrace # SystemStackError can return nil.
+
       e.backtrace.reverse_each do |s|
         break if s =~ /in .(assert|refute|flunk|pass|fail|raise|must|wont)/
         last_before_assertion = s
@@ -1172,6 +1198,14 @@ module MiniTest
       def windows? platform = RUBY_PLATFORM
         /mswin|mingw/ =~ platform
       end
+
+      ##
+      # Is this running on mingw?
+
+      def mingw? platform = RUBY_PLATFORM
+        /mingw/ =~ platform
+      end
+
     end
 
     ##
@@ -1276,6 +1310,8 @@ module MiniTest
         start_time = Time.now
 
         result = ""
+        srand(runner.options[:seed])
+
         begin
           @passed = nil
           self.before_setup
@@ -1364,11 +1400,31 @@ module MiniTest
       end
 
       def self.test_order # :nodoc:
-        :random
+        :sorted
       end
 
       def self.test_suites # :nodoc:
-        @@test_suites.keys.sort_by { |ts| ts.name.to_s }
+        suites = @@test_suites.keys
+
+        case self.test_order
+        when :random
+          # shuffle test suites based on CRC32 of their names
+          salt = "\n" + rand(1 << 32).to_s
+          crc_tbl = (0..255).map do |i|
+            (0..7).inject(i) {|c,| (c & 1 == 1) ? (0xEDB88320 ^ (c >> 1)) : (c >> 1) }
+          end
+          suites = suites.sort_by do |suite|
+            crc32 = 0xffffffff
+            (suite.name + salt).each_byte do |data|
+              crc32 = crc_tbl[(crc32 ^ data) & 0xff] ^ (crc32 >> 8)
+            end
+            crc32 ^ 0xffffffff
+          end
+        when :nosort
+          suites
+        else
+          suites.sort_by { |ts| ts.name.to_s }
+        end
       end
 
       def self.test_methods # :nodoc:
@@ -1383,6 +1439,8 @@ module MiniTest
           methods.sort.sort_by { rand max }
         when :alpha, :sorted then
           methods.sort
+        when :nosort
+          methods
         else
           raise "Unknown test_order: #{self.test_order.inspect}"
         end

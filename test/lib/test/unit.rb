@@ -6,6 +6,7 @@ end
 require 'minitest/unit'
 require 'test/unit/assertions'
 require_relative '../envutil'
+require_relative '../colorize'
 require 'test/unit/testcase'
 require 'optparse'
 
@@ -63,7 +64,18 @@ module Test
         args = @init_hook.call(args, options) if @init_hook
         non_options(args, options)
         @run_options = orig_args
-        @help = orig_args.map { |s| s =~ /[\s|&<>$()]/ ? s.inspect : s }.join " "
+
+        if seed = options[:seed]
+          srand(seed)
+        else
+          seed = options[:seed] = srand % 100_000
+          srand(seed)
+          orig_args.unshift "--seed=#{seed}"
+        end
+
+        @help = "\n" + orig_args.map { |s|
+          "  " + (s =~ /[\s|&<>$()]/ ? s.inspect : s)
+        }.join("\n")
         @options = options
       end
 
@@ -78,7 +90,7 @@ module Test
         end
 
         opts.on '-s', '--seed SEED', Integer, "Sets random seed" do |m|
-          options[:seed] = m
+          options[:seed] = m.to_i
         end
 
         opts.on '-v', '--verbose', "Verbose. Show progress processing files." do
@@ -90,7 +102,7 @@ module Test
           (options[:filter] ||= []) << a
         end
 
-        opts.on '--test-order=random|alpha|sorted', [:random, :alpha, :sorted] do |a|
+        opts.on '--test-order=random|alpha|sorted|nosort', [:random, :alpha, :sorted, :nosort] do |a|
           MiniTest::Unit::TestCase.test_order = a
         end
       end
@@ -113,6 +125,7 @@ module Test
             filter = /\A(?=.*#{filter})(?!.*#{negative})/
           end
           if Regexp === filter
+            filter = filter.dup
             # bypass conversion in minitest
             def filter.=~(other)    # :nodoc:
               super unless Regexp === other
@@ -136,8 +149,9 @@ module Test
 
       def non_options(files, options)
         @jobserver = nil
+        makeflags = ENV.delete("MAKEFLAGS")
         if !options[:parallel] and
-          /(?:\A|\s)--jobserver-(?:auth|fds)=(\d+),(\d+)/ =~ ENV["MAKEFLAGS"]
+          /(?:\A|\s)--jobserver-(?:auth|fds)=(\d+),(\d+)/ =~ makeflags
           begin
             r = IO.for_fd($1.to_i(10), "rb", autoclose: false)
             w = IO.for_fd($2.to_i(10), "wb", autoclose: false)
@@ -145,6 +159,8 @@ module Test
             r.close if r
             nil
           else
+            r.close_on_exec = true
+            w.close_on_exec = true
             @jobserver = [r, w]
             options[:parallel] ||= 1
           end
@@ -187,19 +203,29 @@ module Test
         opts.on '--ruby VAL', "Path to ruby which is used at -j option" do |a|
           options[:ruby] = a.split(/ /).reject(&:empty?)
         end
+
+        opts.on '--timetable-data=FILE', "Path to timetable data" do |a|
+          options[:timetable_data] = a
+        end
       end
 
       class Worker
         def self.launch(ruby,args=[])
+          scale = EnvUtil.timeout_scale
           io = IO.popen([*ruby, "-W1",
                         "#{File.dirname(__FILE__)}/unit/parallel.rb",
+                        *("--timeout-scale=#{scale}" if scale),
                         *args], "rb+")
           new(io, io.pid, :waiting)
         end
 
         attr_reader :quit_called
+        attr_accessor :start_time
+
+        @@worker_number = 0
 
         def initialize(io, pid, status)
+          @num = (@@worker_number += 1)
           @io = io
           @pid = pid
           @status = status
@@ -208,6 +234,10 @@ module Test
           @loadpath = []
           @hooks = {}
           @quit_called = false
+        end
+
+        def name
+          "Worker #{@num}"
         end
 
         def puts(*args)
@@ -222,6 +252,7 @@ module Test
             @loadpath = $:.dup
             puts "run #{task} #{type}"
             @status = :prepare
+            @start_time = Time.now
           rescue Errno::EPIPE
             died
           rescue IOError
@@ -251,6 +282,8 @@ module Test
           return if @io.closed?
           @quit_called = true
           @io.puts "quit"
+        rescue Errno::EPIPE => e
+          warn "#{@pid}:#{@status.to_s.ljust(7)}:#{@file}: #{e.message}"
         end
 
         def kill
@@ -312,6 +345,22 @@ module Test
         warn "or, a bug of test/unit/parallel.rb. try again without -j"
         warn "option."
         warn ""
+        if File.exist?('core')
+          require 'fileutils'
+          require 'time'
+          Dir.glob('/tmp/test-unit-core.*').each do |f|
+            if Time.now - File.mtime(f) > 7 * 24 * 60 * 60 # 7 days
+              warn "Deleting an old core file: #{f}"
+              FileUtils.rm(f)
+            end
+          end
+          core_path = "/tmp/test-unit-core.#{Time.now.utc.iso8601}"
+          warn "A core file is found. Saving it at: #{core_path.dump}"
+          FileUtils.mv('core', core_path)
+          cmd = ['gdb', RbConfig.ruby, '-c', core_path, '-ex', 'bt', '-batch']
+          p cmd # debugging why it's not working
+          system(*cmd)
+        end
         STDERR.flush
         exit c
       end
@@ -385,6 +434,7 @@ module Test
         worker = @workers_hash[io]
         cmd = worker.read
         cmd.sub!(/\A\.+/, '') if cmd # read may return nil
+
         case cmd
         when ''
           # just only dots, ignore
@@ -400,7 +450,7 @@ module Test
           end
           if @options[:separate] and not bang
             worker.quit
-            worker = add_worker
+            worker = launch_worker
           end
           worker.run(task, type)
           @test_count += 1
@@ -417,10 +467,19 @@ module Test
           rep    << {file: worker.real_file, report: r[2], result: r[3], testcase: r[5]}
           $:.push(*r[4]).uniq!
           jobs_status(worker) if @options[:job_status] == :replace
+
           return true
         when /^record (.+?)$/
           begin
             r = Marshal.load($1.unpack("m")[0])
+
+            suite = r.first
+            key = [worker.name, suite]
+            if @records[key]
+              @records[key][1] = worker.start_time = Time.now
+            else
+              @records[key] = [worker.start_time, Time.now]
+            end
           rescue => e
             print "unknown record: #{e.message} #{$1.unpack("m")[0].dump}"
             return true
@@ -447,6 +506,8 @@ module Test
       end
 
       def _run_parallel suites, type, result
+        @records = {}
+
         if @options[:parallel] < 1
           warn "Error: parameter of -j option should be greater than 0."
           return
@@ -455,6 +516,16 @@ module Test
         # Require needed thing for parallel running
         require 'timeout'
         @tasks = @files.dup # Array of filenames.
+
+        case MiniTest::Unit::TestCase.test_order
+        when :random
+          @tasks.shuffle!
+        else
+          # JIT first
+          ts = @tasks.group_by{|e| /test_jit/ =~ e ? 0 : 1}
+          @tasks = ts[0] + ts[1] if ts.size == 2
+        end
+
         @need_quit = false
         @dead_workers = []  # Array of dead workers.
         @warnings = []
@@ -486,6 +557,14 @@ module Test
           @interrupt = ex
           return result
         ensure
+          if file = @options[:timetable_data]
+            open(file, 'w'){|f|
+              @records.each{|(worker, suite), (st, ed)|
+                f.puts '[' + [worker.dump, suite.dump, st.to_f * 1_000, ed.to_f * 1_000].join(", ") + '],'
+              }
+            }
+          end
+
           if @interrupt
             @ios.select!{|x| @workers_hash[x].status == :running }
             while !@ios.empty? && (__io = IO.select(@ios,[],[],10))
@@ -500,7 +579,7 @@ module Test
             parallel = @options[:parallel]
             @options[:parallel] = false
             suites, rep = rep.partition {|r| r[:testcase] && r[:file] && r[:report].any? {|e| !e[2].is_a?(MiniTest::Skip)}}
-            suites.map {|r| r[:file]}.uniq.each {|file| require file}
+            suites.map {|r| File.realpath(r[:file])}.uniq.each {|file| require file}
             suites.map! {|r| eval("::"+r[:testcase])}
             del_status_line or puts
             unless suites.empty?
@@ -700,26 +779,11 @@ module Test
         when :always
           color = true
         when :auto, nil
-          color = (@tty || @options[:job_status] == :replace) && /dumb/ !~ ENV["TERM"]
+          color = true if @tty || @options[:job_status] == :replace
         else
           color = false
         end
-        if color
-          # dircolors-like style
-          colors = (colors = ENV['TEST_COLORS']) ? Hash[colors.scan(/(\w+)=([^:\n]*)/)] : {}
-          begin
-            File.read(File.join(__dir__, "../../colors")).scan(/(\w+)=([^:\n]*)/) do |n, c|
-              colors[n] ||= c
-            end
-          rescue
-          end
-          @passed_color = "\e[;#{colors["pass"] || "32"}m"
-          @failed_color = "\e[;#{colors["fail"] || "31"}m"
-          @skipped_color = "\e[;#{colors["skip"] || "33"}m"
-          @reset_color = "\e[m"
-        else
-          @passed_color = @failed_color = @skipped_color = @reset_color = ""
-        end
+        @colorize = Colorize.new(color, colors_file: File.join(__dir__, "../../colors"))
         if color or @options[:job_status] == :replace
           @verbose = !options[:parallel]
         end
@@ -743,9 +807,7 @@ module Test
       def update_status(s)
         count = @test_count.to_s(10).rjust(@total_tests.size)
         del_status_line(false)
-        print(@passed_color)
-        add_status("[#{count}/#{@total_tests}]")
-        print(@reset_color)
+        add_status(@colorize.pass("[#{count}/#{@total_tests}]"))
         add_status(" #{s}")
         $stdout.print "\r" if @options[:job_status] == :replace and !@verbose
         $stdout.flush
@@ -764,14 +826,13 @@ module Test
               del_status_line
               next
             end
-            color = @skipped_color
+            color = :skip
           else
-            color = @failed_color
+            color = :fail
           end
-          msg = msg.split(/$/, 2)
-          $stdout.printf("%s%s%3d) %s%s%s\n",
-                         sep, color, @report_count += 1,
-                         msg[0], @reset_color, msg[1])
+          first, msg = msg.split(/$/, 2)
+          first = sprintf("%3d) %s", @report_count += 1, first)
+          $stdout.print(sep, @colorize.decorate(first, color), msg, "\n")
           sep = nil
         end
         report.clear
@@ -866,12 +927,25 @@ module Test
       def setup_options(parser, options)
         super
         parser.separator "globbing options:"
-        parser.on '-b', '--basedir=DIR', 'Base directory of test suites.' do |dir|
+        parser.on '-B', '--base-directory DIR', 'Base directory to glob.' do |dir|
+          raise OptionParser::InvalidArgument, "not a directory: #{dir}" unless File.directory?(dir)
           options[:base_directory] = dir
         end
         parser.on '-x', '--exclude REGEXP', 'Exclude test files on pattern.' do |pattern|
           (options[:reject] ||= []) << pattern
         end
+      end
+
+      def complement_test_name f, orig_f
+        basename = File.basename(f)
+
+        if /\.rb\z/ !~ basename
+          return File.join(File.dirname(f), basename+'.rb')
+        elsif /\Atest_/ !~ basename
+          return File.join(File.dirname(f), 'test_'+basename)
+        end if f.end_with?(basename) # otherwise basename is dirname/
+
+        raise ArgumentError, "file not found: #{orig_f}"
       end
 
       def non_options(files, options)
@@ -881,38 +955,53 @@ module Test
         end
         files.map! {|f|
           f = f.tr(File::ALT_SEPARATOR, File::SEPARATOR) if File::ALT_SEPARATOR
-          ((paths if /\A\.\.?(?:\z|\/)/ !~ f) || [nil]).any? do |prefix|
-            if prefix
-              path = f.empty? ? prefix : "#{prefix}/#{f}"
-            else
-              next if f.empty?
-              path = f
-            end
-            if !(match = (Dir["#{path}/**/#{@@testfile_prefix}_*.rb"] + Dir["#{path}/**/*_#{@@testfile_suffix}.rb"]).uniq).empty?
-              if reject
-                match.reject! {|n|
-                  n[(prefix.length+1)..-1] if prefix
-                  reject_pat =~ n
-                }
+          orig_f = f
+          while true
+            ret = ((paths if /\A\.\.?(?:\z|\/)/ !~ f) || [nil]).any? do |prefix|
+              if prefix
+                path = f.empty? ? prefix : "#{prefix}/#{f}"
+              else
+                next if f.empty?
+                path = f
               end
-              break match
-            elsif !reject or reject_pat !~ f and File.exist? path
-              break path
+              if f.end_with?(File::SEPARATOR) or !f.include?(File::SEPARATOR) or File.directory?(path)
+                match = (Dir["#{path}/**/#{@@testfile_prefix}_*.rb"] + Dir["#{path}/**/*_#{@@testfile_suffix}.rb"]).uniq
+              else
+                match = Dir[path]
+              end
+              if !match.empty?
+                if reject
+                  match.reject! {|n|
+                    n = n[(prefix.length+1)..-1] if prefix
+                    reject_pat =~ n
+                  }
+                end
+                break match
+              elsif !reject or reject_pat !~ f and File.exist? path
+                break path
+              end
             end
-          end or
-            raise ArgumentError, "file not found: #{f}"
+            if !ret
+              f = complement_test_name(f, orig_f)
+            else
+              break ret
+            end
+          end
         }
         files.flatten!
         super(files, options)
       end
     end
 
-    module GCStressOption # :nodoc: all
+    module GCOption # :nodoc: all
       def setup_options(parser, options)
         super
         parser.separator "GC options:"
         parser.on '--[no-]gc-stress', 'Set GC.stress as true' do |flag|
           options[:gc_stress] = flag
+        end
+        parser.on '--[no-]gc-compact', 'GC.compact every time' do |flag|
+          options[:gc_compact] = flag
         end
       end
 
@@ -923,9 +1012,21 @@ module Test
             define_method(:run) do |runner|
               begin
                 gc_stress, GC.stress = GC.stress, true
-                oldrun.bind(self).call(runner)
+                oldrun.bind_call(self, runner)
               ensure
                 GC.stress = gc_stress
+              end
+            end
+          end
+        end
+        if options.delete(:gc_compact)
+          MiniTest::Unit::TestCase.class_eval do
+            oldrun = instance_method(:run)
+            define_method(:run) do |runner|
+              begin
+                oldrun.bind_call(self, runner)
+              ensure
+                GC.compact
               end
             end
           end
@@ -1036,18 +1137,23 @@ module Test
       end
     end
 
-    module SubprocessOption
+    module TimeoutOption
       def setup_options(parser, options)
         super
-        parser.separator "subprocess options:"
-        parser.on '--subprocess-timeout-scale NUM', "Scale subprocess timeout", Float do |scale|
+        parser.separator "timeout options:"
+        parser.on '--timeout-scale NUM', '--subprocess-timeout-scale NUM', "Scale timeout", Float do |scale|
           raise OptionParser::InvalidArgument, "timeout scale must be positive" unless scale > 0
           options[:timeout_scale] = scale
         end
+      end
+
+      def non_options(files, options)
         if scale = options[:timeout_scale] or
-          (scale = ENV["RUBY_TEST_SUBPROCESS_TIMEOUT_SCALE"] and (scale = scale.to_f) > 0)
-          EnvUtil.subprocess_timeout_scale = scale
+          (scale = ENV["RUBY_TEST_TIMEOUT_SCALE"] || ENV["RUBY_TEST_SUBPROCESS_TIMEOUT_SCALE"] and
+           (scale = scale.to_f) > 0)
+          EnvUtil.timeout_scale = scale
         end
+        super
       end
     end
 
@@ -1060,10 +1166,18 @@ module Test
       include Test::Unit::GlobOption
       include Test::Unit::RepeatOption
       include Test::Unit::LoadPathOption
-      include Test::Unit::GCStressOption
+      include Test::Unit::GCOption
       include Test::Unit::ExcludesOption
-      include Test::Unit::SubprocessOption
+      include Test::Unit::TimeoutOption
       include Test::Unit::RunCount
+
+      def run(argv)
+        super
+      rescue NoMemoryError
+        system("cat /proc/meminfo") if File.exist?("/proc/meminfo")
+        system("ps x -opid,args,%cpu,%mem,nlwp,rss,vsz,wchan,stat,start,time,etime,blocked,caught,ignored,pending,f") if File.exist?("/bin/ps")
+        raise
+      end
 
       class << self; undef autorun; end
 
@@ -1104,10 +1218,11 @@ module Test
       def initialize(force_standalone = false, default_dir = nil, argv = ARGV)
         @force_standalone = force_standalone
         @runner = Runner.new do |files, options|
-          options[:base_directory] ||= default_dir
+          base = options[:base_directory] ||= default_dir
           files << default_dir if files.empty? and default_dir
           @to_run = files
           yield self if block_given?
+          $LOAD_PATH.unshift base if base
           files
         end
         Runner.runner = @runner
