@@ -106,11 +106,38 @@ class RubyLex
     end
   end
 
+  ERROR_TOKENS = [
+    :on_parse_error,
+    :compile_error,
+    :on_assign_error,
+    :on_alias_error,
+    :on_class_name_error,
+    :on_param_error
+  ]
+
   def ripper_lex_without_warning(code)
     verbose, $VERBOSE = $VERBOSE, nil
     tokens = nil
     self.class.compile_with_errors_suppressed(code) do |inner_code, line_no|
-      tokens = Ripper.lex(inner_code, '-', line_no)
+      lexer = Ripper::Lexer.new(inner_code, '-', line_no)
+      if lexer.respond_to?(:scan) # Ruby 2.7+
+        tokens = []
+        pos_to_index = {}
+        lexer.scan.each do |t|
+          if pos_to_index.has_key?(t[0])
+            index = pos_to_index[t[0]]
+            found_tk = tokens[index]
+            if ERROR_TOKENS.include?(found_tk[1]) && !ERROR_TOKENS.include?(t[1])
+              tokens[index] = t
+            end
+          else
+            pos_to_index[t[0]] = tokens.size
+            tokens << t
+          end
+        end
+      else
+        tokens = lexer.parse
+      end
     end
     $VERBOSE = verbose
     tokens
