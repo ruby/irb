@@ -15,6 +15,7 @@ jobs:
           - head
           - truffleruby-head
         os: [ ubuntu-latest, macos-latest ]
+      fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@master
