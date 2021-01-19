@@ -1,0 +1,31 @@
+name: build
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: build (${{ matrix.ruby }} / ${{ matrix.os }})
+    strategy:
+      matrix:
+        ruby:
+          - '3.0'
+          - '2.7'
+          - '2.6'
+          - '2.5'
+          - head
+          - truffleruby-head
+        os: [ubuntu-latest]
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@master
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ matrix.ruby }}
+    - name: Install dependencies
+      run: |
+        gem install bundler --no-document
+        bundle install
+    - name: Run test
+      run: bundle exec rake test
