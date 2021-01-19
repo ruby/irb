@@ -1,16 +1,22 @@
 # frozen_string_literal: true
 require 'pp'
+require 'irb/color'
 
 module IRB
   class ColorPrinter < ::PP
-    def self.pp(obj, out = $>, width = 79)
+    def self.pp(obj, out = $>, width = Reline.get_screen_size.last)
       q = ColorPrinter.new(out, width)
       q.guard_inspect_key {q.pp obj}
       q.flush
-      out
+      out << "\n"
     end
 
-    def text(str, width = str.length)
+    def text(str, width = nil)
+      unless str.is_a?(String)
+        str = str.inspect
+      end
+      width ||= str.length
+
       case str
       when /\A#</, '=', '>'
         super(Color.colorize(str, [:GREEN]), width)
