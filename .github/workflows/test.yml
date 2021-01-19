@@ -28,4 +28,4 @@ jobs:
         gem install bundler --no-document
         bundle install
     - name: Run test
-      run: rake test
+      run: bundle exec rake test
