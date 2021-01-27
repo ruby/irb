@@ -32,7 +32,10 @@ module IRB # :nodoc:
     end
 
     def search_file_from_ruby_path(fn) # :nodoc:
-      if /^#{Regexp.quote(File::Separator)}/ =~ fn
+      # fix when Ruby 2.6 support dropped
+      if (File.respond_to?(:absolute_path?) && File.absolute_path?(fn)) ||
+          fn.start_with?(File::Separator) ||
+          (RUBY_PLATFORM =~ /mingw|mswin/ && /\A[a-zA-Z]:\// =~ fn)
         return fn if File.exist?(fn)
         return nil
       end
