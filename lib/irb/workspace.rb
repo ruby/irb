@@ -113,7 +113,7 @@ EOF
 
     # Evaluate the given +statements+ within the  context of this workspace.
     def evaluate(context, statements, file = __FILE__, line = __LINE__)
-      eval(statements, @binding, file, line)
+      eval("using IRB::ExtendCommandBundle::REFINEMENTS; #{statements}", @binding, file, line)
     end
 
     def local_variable_set(name, value)

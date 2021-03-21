@@ -13,6 +13,7 @@ module IRB # :nodoc:
   # Installs the default irb extensions command bundle.
   module ExtendCommandBundle
     EXCB = ExtendCommandBundle # :nodoc:
+    REFINEMENTS = Module.new
 
     # See #install_alias_method.
     NO_OVERRIDE = 0
@@ -181,6 +182,8 @@ module IRB # :nodoc:
       if load_file
         kwargs = ", **kwargs" if RUBY_ENGINE == "ruby" && RUBY_VERSION >= "2.7.0"
         line = __LINE__; eval %[
+      IRB::ExtendCommandBundle::REFINEMENTS.class_eval do
+        refine eval("self", TOPLEVEL_BINDING).singleton_class do
           def #{cmd_name}(*opts#{kwargs}, &b)
             require "#{load_file}"
             arity = ExtendCommand::#{cmd_class}.instance_method(:execute).arity
@@ -191,19 +194,29 @@ module IRB # :nodoc:
             line = __LINE__; eval %[
               unless singleton_class.class_variable_defined?(:@@#{cmd_name}_)
                 singleton_class.class_variable_set(:@@#{cmd_name}_, true)
-                def self.#{cmd_name}_(\#{args})
-                  ExtendCommand::#{cmd_class}.execute(irb_context, \#{args})
+                IRB::ExtendCommandBundle::REFINEMENTS.class_eval do
+                  refine eval("self", TOPLEVEL_BINDING).singleton_class do
+                    def #{cmd_name}_(\#{args})
+                      ExtendCommand::#{cmd_class}.execute(irb_context, \#{args})
+                    end
+                  end
                 end
               end
             ], nil, __FILE__, line
             __send__ :#{cmd_name}_, *opts#{kwargs}, &b
           end
+        end
+      end
         ], nil, __FILE__, line
       else
         line = __LINE__; eval %[
+      IRB::ExtendCommandBundle::REFINEMENTS.class_eval do
+        refine eval("self", TOPLEVEL_BINDING).singleton_class do
           def #{cmd_name}(*opts, &b)
             ExtendCommand::#{cmd_class}.execute(irb_context, *opts, &b)
           end
+        end
+      end
         ], nil, __FILE__, line
       end
 
@@ -222,13 +235,15 @@ module IRB # :nodoc:
           (override == OVERRIDE_PRIVATE_ONLY) && !respond_to?(to) or
           (override == NO_OVERRIDE) &&  !respond_to?(to, true)
         target = self
-        (class << self; self; end).instance_eval{
-          if target.respond_to?(to, true) &&
-            !target.respond_to?(EXCB.irb_original_method_name(to), true)
-            alias_method(EXCB.irb_original_method_name(to), to)
+        IRB::ExtendCommandBundle::REFINEMENTS.class_eval do
+          refine eval("self", TOPLEVEL_BINDING).singleton_class do
+            if target.respond_to?(to, true) &&
+              !target.respond_to?(EXCB.irb_original_method_name(to), true)
+              alias_method(EXCB.irb_original_method_name(to), to)
+            end
+            alias_method to, from
           end
-          alias_method to, from
-        }
+        end
       else
         print "irb: warn: can't alias #{to} from #{from}.\n"
       end
