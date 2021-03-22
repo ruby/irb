@@ -376,6 +376,7 @@ module TestIRB
     def test_ls
       IRB.init_config(nil)
       workspace = IRB::WorkSpace.new(self)
+      IRB.conf[:VERBOSE] = false
       irb = IRB::Irb.new(workspace)
       IRB.conf[:MAIN_CONTEXT] = irb.context
       input = TestInputMethod.new([
@@ -393,6 +394,7 @@ module TestIRB
     def test_whereami
       IRB.init_config(nil)
       workspace = IRB::WorkSpace.new(self)
+      IRB.conf[:VERBOSE] = false
       irb = IRB::Irb.new(workspace)
       IRB.conf[:MAIN_CONTEXT] = irb.context
       input = TestInputMethod.new([
