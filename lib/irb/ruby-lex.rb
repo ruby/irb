@@ -34,6 +34,12 @@ class RubyLex
     begin
       result = yield code, line_no
     rescue ArgumentError
+      # Ruby can issue an error for the code if there is an
+      # incomplete magic comment for encoding in it. Force an
+      # expression with a new line before the code in this
+      # case to prevent magic comment handling.  To make sure
+      # line numbers in the lexed code remain the same,
+      # decrease the line number by one.
       code = ";\n#{code}"
       line_no -= 1
       result = yield code, line_no
