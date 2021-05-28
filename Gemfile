@@ -7,4 +7,5 @@ group :development do
   gem 'yamatanooroti', '>= 0.0.6'
   gem "rake"
   gem "stackprof" if is_unix && !is_truffleruby
+  gem "test-unit"
 end
