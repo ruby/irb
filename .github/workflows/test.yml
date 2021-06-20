@@ -2,6 +2,9 @@ name: build
 
 on: [push, pull_request]
 
+env:
+  TRUFFLERUBYOPT: --experimental-options --warn-locale=false
+
 jobs:
   irb:
     name: irb (${{ matrix.ruby }} / ${{ matrix.os }})
