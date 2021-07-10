@@ -79,7 +79,7 @@ module TestIRB
     end
 
     def test_evaluate_with_encoding_error_without_lineno
-      skip if RUBY_ENGINE == 'truffleruby'
+      pend if RUBY_ENGINE == 'truffleruby'
       assert_raise_with_message(EncodingError, /invalid symbol/) {
         @context.evaluate(%q[{"\xAE": 1}], 1)
         # The backtrace of this invalid encoding hash doesn't contain lineno.
@@ -87,14 +87,14 @@ module TestIRB
     end
 
     def test_evaluate_with_onigmo_warning
-      skip if RUBY_ENGINE == 'truffleruby'
+      pend if RUBY_ENGINE == 'truffleruby'
       assert_warning("(irb):1: warning: character class has duplicated range: /[aa]/\n") do
         @context.evaluate('/[aa]/', 1)
       end
     end
 
     def test_eval_input
-      skip if RUBY_ENGINE == 'truffleruby'
+      pend if RUBY_ENGINE == 'truffleruby'
       verbose, $VERBOSE = $VERBOSE, nil
       input = TestInputMethod.new([
         "raise 'Foo'\n",
@@ -117,7 +117,7 @@ module TestIRB
     end
 
     def test_eval_input_raise2x
-      skip if RUBY_ENGINE == 'truffleruby'
+      pend if RUBY_ENGINE == 'truffleruby'
       input = TestInputMethod.new([
         "raise 'Foo'\n",
         "raise 'Bar'\n",
@@ -220,7 +220,7 @@ module TestIRB
       # The default
       irb.context.echo = true
       irb.context.echo_on_assignment = false
-      out, err = capture_io do
+      out, err = capture_output do
         irb.eval_input
       end
       assert_empty err
@@ -230,7 +230,7 @@ module TestIRB
       input.reset
       irb.context.echo = true
       irb.context.echo_on_assignment = true
-      out, err = capture_io do
+      out, err = capture_output do
         irb.eval_input
       end
       assert_empty err
@@ -240,7 +240,7 @@ module TestIRB
       input.reset
       irb.context.echo = false
       irb.context.echo_on_assignment = false
-      out, err = capture_io do
+      out, err = capture_output do
         irb.eval_input
       end
       assert_empty err
@@ -250,7 +250,7 @@ module TestIRB
       input.reset
       irb.context.echo = false
       irb.context.echo_on_assignment = true
-      out, err = capture_io do
+      out, err = capture_output do
         irb.eval_input
       end
       assert_empty err
@@ -268,7 +268,7 @@ module TestIRB
 
       irb.context.echo = true
       irb.context.echo_on_assignment = false
-      out, err = capture_io do
+      out, err = capture_output do
         irb.eval_input
       end
       assert_empty err
@@ -277,7 +277,7 @@ module TestIRB
       input.reset
       irb.context.echo = true
       irb.context.echo_on_assignment = :truncate
-      out, err = capture_io do
+      out, err = capture_output do
         irb.eval_input
       end
       assert_empty err
@@ -286,7 +286,7 @@ module TestIRB
       input.reset
       irb.context.echo = true
       irb.context.echo_on_assignment = true
-      out, err = capture_io do
+      out, err = capture_output do
         irb.eval_input
       end
       assert_empty err
@@ -295,7 +295,7 @@ module TestIRB
       input.reset
       irb.context.echo = false
       irb.context.echo_on_assignment = false
-      out, err = capture_io do
+      out, err = capture_output do
         irb.eval_input
       end
       assert_empty err
@@ -304,7 +304,7 @@ module TestIRB
       input.reset
       irb.context.echo = false
       irb.context.echo_on_assignment = :truncate
-      out, err = capture_io do
+      out, err = capture_output do
         irb.eval_input
       end
       assert_empty err
@@ -313,7 +313,7 @@ module TestIRB
       input.reset
       irb.context.echo = false
       irb.context.echo_on_assignment = true
-      out, err = capture_io do
+      out, err = capture_output do
         irb.eval_input
       end
       assert_empty err
@@ -332,7 +332,7 @@ module TestIRB
 
       irb.context.echo = true
       irb.context.echo_on_assignment = false
-      out, err = capture_io do
+      out, err = capture_output do
         irb.eval_input
       end
       assert_empty err
@@ -342,7 +342,7 @@ module TestIRB
       input.reset
       irb.context.echo = true
       irb.context.echo_on_assignment = :truncate
-      out, err = capture_io do
+      out, err = capture_output do
         irb.eval_input
       end
       assert_empty err
@@ -352,7 +352,7 @@ module TestIRB
       input.reset
       irb.context.echo = true
       irb.context.echo_on_assignment = true
-      out, err = capture_io do
+      out, err = capture_output do
         irb.eval_input
       end
       assert_empty err
@@ -362,7 +362,7 @@ module TestIRB
       input.reset
       irb.context.echo = false
       irb.context.echo_on_assignment = false
-      out, err = capture_io do
+      out, err = capture_output do
         irb.eval_input
       end
       assert_empty err
@@ -372,7 +372,7 @@ module TestIRB
       input.reset
       irb.context.echo = false
       irb.context.echo_on_assignment = :truncate
-      out, err = capture_io do
+      out, err = capture_output do
         irb.eval_input
       end
       assert_empty err
@@ -382,7 +382,7 @@ module TestIRB
       input.reset
       irb.context.echo = false
       irb.context.echo_on_assignment = true
-      out, err = capture_io do
+      out, err = capture_output do
         irb.eval_input
       end
       assert_empty err
@@ -429,7 +429,7 @@ module TestIRB
 
       # The default
       irb.context.newline_before_multiline_output = true
-      out, err = capture_io do
+      out, err = capture_output do
         irb.eval_input
       end
       assert_empty err
@@ -439,7 +439,7 @@ module TestIRB
       # No newline before multiline output
       input.reset
       irb.context.newline_before_multiline_output = false
-      out, err = capture_io do
+      out, err = capture_output do
         irb.eval_input
       end
       assert_empty err
@@ -448,7 +448,7 @@ module TestIRB
     end
 
     def test_eval_input_with_exception
-      skip if RUBY_ENGINE == 'truffleruby'
+      pend if RUBY_ENGINE == 'truffleruby'
       verbose, $VERBOSE = $VERBOSE, nil
       input = TestInputMethod.new([
         "def hoge() fuga; end; def fuga() raise; end; hoge\n",
@@ -461,6 +461,7 @@ module TestIRB
       if '2.5.0' <= RUBY_VERSION && RUBY_VERSION < '3.0.0' && STDOUT.tty?
         expected = [
           :*, /Traceback \(most recent call last\):\n/,
+          :*, /\t... 8 levels...\n/,
           :*, /\t 2: from \(irb\):1:in `<main>'\n/,
           :*, /\t 1: from \(irb\):1:in `hoge'\n/,
           :*, /\(irb\):1:in `fuga': unhandled exception\n/,
@@ -470,6 +471,7 @@ module TestIRB
           :*, /\(irb\):1:in `fuga': unhandled exception\n/,
           :*, /\tfrom \(irb\):1:in `hoge'\n/,
           :*, /\tfrom \(irb\):1:in `<main>'\n/,
+          :*, /\t... 8 levels...\n/,
         ]
       end
       assert_pattern_list(expected, out)
@@ -478,7 +480,7 @@ module TestIRB
     end
 
     def test_eval_input_with_invalid_byte_sequence_exception
-      skip if RUBY_ENGINE == 'truffleruby'
+      pend if RUBY_ENGINE == 'truffleruby'
       verbose, $VERBOSE = $VERBOSE, nil
       input = TestInputMethod.new([
         %Q{def hoge() fuga; end; def fuga() raise "A\\xF3B"; end; hoge\n},
@@ -491,6 +493,7 @@ module TestIRB
       if '2.5.0' <= RUBY_VERSION && RUBY_VERSION < '3.0.0' && STDOUT.tty?
         expected = [
           :*, /Traceback \(most recent call last\):\n/,
+          :*, /\t... 8 levels...\n/,
           :*, /\t 2: from \(irb\):1:in `<main>'\n/,
           :*, /\t 1: from \(irb\):1:in `hoge'\n/,
           :*, /\(irb\):1:in `fuga': A\\xF3B \(RuntimeError\)\n/,
@@ -500,6 +503,7 @@ module TestIRB
           :*, /\(irb\):1:in `fuga': A\\xF3B \(RuntimeError\)\n/,
           :*, /\tfrom \(irb\):1:in `hoge'\n/,
           :*, /\tfrom \(irb\):1:in `<main>'\n/,
+          :*, /\t... 8 levels...\n/,
         ]
       end
       assert_pattern_list(expected, out)
@@ -508,7 +512,7 @@ module TestIRB
     end
 
     def test_eval_input_with_long_exception
-      skip if RUBY_ENGINE == 'truffleruby'
+      pend if RUBY_ENGINE == 'truffleruby'
       verbose, $VERBOSE = $VERBOSE, nil
       nesting = 20
       generated_code = ''
@@ -527,7 +531,7 @@ module TestIRB
       if '2.5.0' <= RUBY_VERSION && RUBY_VERSION < '3.0.0' && STDOUT.tty?
         expected = [
           :*, /Traceback \(most recent call last\):\n/,
-          :*, /\t... 5 levels...\n/,
+          :*, /\t... 27 levels...\n/,
           :*, /\t16: from \(irb\):1:in `a4'\n/,
           :*, /\t15: from \(irb\):1:in `a5'\n/,
           :*, /\t14: from \(irb\):1:in `a6'\n/,
@@ -565,7 +569,7 @@ module TestIRB
           :*, /\tfrom \(irb\):1:in `a6'\n/,
           :*, /\tfrom \(irb\):1:in `a5'\n/,
           :*, /\tfrom \(irb\):1:in `a4'\n/,
-          :*, /\t... 5 levels...\n/,
+          :*, /\t... 27 levels...\n/,
         ]
       end
       assert_pattern_list(expected, out)
