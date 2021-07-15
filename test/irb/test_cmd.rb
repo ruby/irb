@@ -47,6 +47,7 @@ module TestIRB
       @default_encoding = [Encoding.default_external, Encoding.default_internal]
       @stdio_encodings = [STDIN, STDOUT, STDERR].map {|io| [io.external_encoding, io.internal_encoding] }
       IRB.instance_variable_get(:@CONF).clear
+      @is_win = (RbConfig::CONFIG['host_os'] =~ /mswin|msys|mingw|cygwin|bccwin|wince|emc/)
     end
 
     def teardown
@@ -75,11 +76,12 @@ module TestIRB
       irb = IRB::Irb.new(workspace, TestInputMethod.new([]))
       IRB.conf[:MAIN_CONTEXT] = irb.context
       expected = %r{
-        Ruby\sversion: .+\n
-        IRB\sversion:\sirb .+\n
+        Ruby\sversion:\s.+\n
+        IRB\sversion:\sirb\s.+\n
         InputMethod:\sAbstract\sInputMethod\n
-        \.irbrc\spath: .+\n
-        RUBY_PLATFORM: .+
+        \.irbrc\spath:\s.+\n
+        RUBY_PLATFORM:\s.+\n
+        #{@is_win ? 'Code\spage:\s\d+\n' : ''}
       }x
       assert_match expected, irb.context.main.irb_info.to_s
     ensure
@@ -100,11 +102,12 @@ module TestIRB
       irb = IRB::Irb.new(workspace, TestInputMethod.new([]))
       IRB.conf[:MAIN_CONTEXT] = irb.context
       expected = %r{
-        Ruby\sversion: .+\n
-        IRB\sversion:\sirb .+\n
+        Ruby\sversion:\s.+\n
+        IRB\sversion:\sirb\s.+\n
         InputMethod:\sAbstract\sInputMethod\n
-        \.irbrc\spath: .+\n
-        RUBY_PLATFORM: .+
+        \.irbrc\spath:\s.+\n
+        RUBY_PLATFORM:\s.+\n
+        #{@is_win ? 'Code\spage:\s\d+\n' : ''}
       }x
       assert_match expected, irb.context.main.irb_info.to_s
     ensure
@@ -128,10 +131,11 @@ module TestIRB
       irb = IRB::Irb.new(workspace, TestInputMethod.new([]))
       IRB.conf[:MAIN_CONTEXT] = irb.context
       expected = %r{
-        Ruby\sversion: .+\n
-        IRB\sversion:\sirb .+\n
+        Ruby\sversion:\s.+\n
+        IRB\sversion:\sirb\s.+\n
         InputMethod:\sAbstract\sInputMethod\n
-        RUBY_PLATFORM: .+\n
+        RUBY_PLATFORM:\s.+\n
+        #{@is_win ? 'Code\spage:\s\d+\n' : ''}
         \z
       }x
       assert_match expected, irb.context.main.irb_info.to_s
@@ -159,10 +163,11 @@ module TestIRB
       irb = IRB::Irb.new(workspace, TestInputMethod.new([]))
       IRB.conf[:MAIN_CONTEXT] = irb.context
       expected = %r{
-        Ruby\sversion: .+\n
-        IRB\sversion:\sirb .+\n
+        Ruby\sversion:\s.+\n
+        IRB\sversion:\sirb\s.+\n
         InputMethod:\sAbstract\sInputMethod\n
-        RUBY_PLATFORM: .+\n
+        RUBY_PLATFORM:\s.+\n
+        #{@is_win ? 'Code\spage:\s\d+\n' : ''}
         \z
       }x
       assert_match expected, irb.context.main.irb_info.to_s
