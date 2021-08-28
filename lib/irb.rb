@@ -100,7 +100,7 @@ require_relative "irb/easter-egg"
 # * +.irbrc+
 # * +irb.rc+
 # * +_irbrc+
-# * <code>$irbrc</code>
+# * <code>$IRBRC</code>
 #
 # The following are alternatives to the command line options. To use them type
 # as follows in an +irb+ session:
