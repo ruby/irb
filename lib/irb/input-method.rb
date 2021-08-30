@@ -325,12 +325,15 @@ module IRB
       cursor_pos_to_render, result, pointer = context.pop(3)
       return nil if result.nil? or pointer.nil?
       name = result[pointer]
+      name = IRB::InputCompletor.retrieve_completion_data(name, doc_namespace: true)
 
       driver = RDoc::RI::Driver.new
       begin
         name = driver.expand_name(name)
       rescue RDoc::RI::Driver::NotFoundError
         return nil
+      rescue
+        return nil # unknown error
       end
       doc = nil
       used_for_class = false
@@ -347,6 +350,8 @@ module IRB
           driver.add_method(doc, name)
         rescue RDoc::RI::Driver::NotFoundError
           doc = nil
+        rescue
+          return nil # unknown error
         end
       end
       return nil if doc.nil?
