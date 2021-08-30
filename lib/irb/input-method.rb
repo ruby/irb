@@ -322,8 +322,8 @@ module IRB
       if just_cursor_moving and completion_journey_data.nil?
         return nil
       end
-      cursor_pos_to_render, result, pointer = context.pop(3)
-      return nil if result.nil? or pointer.nil?
+      cursor_pos_to_render, result, pointer, dialog = context.pop(4)
+      return nil if result.nil? or pointer.nil? or pointer < 0
       name = result[pointer]
       name = IRB::InputCompletor.retrieve_completion_data(name, doc_namespace: true)
 
@@ -359,7 +359,9 @@ module IRB
       formatter.width = 40
       str = doc.accept(formatter)
 
-      [Reline::CursorPos.new(cursor_pos_to_render.x + 40, cursor_pos_to_render.y + pointer), str.split("\n"), nil, '49']
+      x = cursor_pos_to_render.x + 40
+      y = cursor_pos_to_render.y + pointer - dialog.scroll_top
+      DialogRenderInfo.new(pos: Reline::CursorPos.new(x, y), contents: str.split("\n"), bg_color: '49')
     }
 
     # Reads the next line from this input method.
