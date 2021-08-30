@@ -1,5 +1,7 @@
 source "https://rubygems.org"
 
+gemspec
+
 group :development do
   is_unix = RUBY_PLATFORM =~ /(aix|darwin|linux|(net|free|open)bsd|cygwin|solaris|irix|hpux)/i
   is_truffleruby = RUBY_DESCRIPTION =~ /truffleruby/
