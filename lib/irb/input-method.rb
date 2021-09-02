@@ -362,7 +362,7 @@ module IRB
 
       x = cursor_pos_to_render.x + autocomplete_dialog.width
       x = autocomplete_dialog.column - width if x + width >= screen_width
-      y = cursor_pos_to_render.y + pointer - autocomplete_dialog.scroll_top
+      y = cursor_pos_to_render.y
       DialogRenderInfo.new(pos: Reline::CursorPos.new(x, y), contents: contents, width: width, bg_color: '49')
     }
 
