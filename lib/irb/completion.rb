@@ -38,16 +38,44 @@ module IRB
 
     BASIC_WORD_BREAK_CHARACTERS = " \t\n`><=;|&{("
 
+    def self.absolute_path?(p) # TODO Remove this method after 2.6 EOL.
+      if File.respond_to?(:absolute_path?)
+        File.absolute_path?(p)
+      else
+        if File.absolute_path(p) == p
+          true
+        else
+          false
+        end
+      end
+    end
+
+    def self.retrieve_gem_and_system_load_path
+      gem_paths = Gem::Specification.latest_specs(true).map { |s|
+        s.require_paths.map { |p|
+          if absolute_path?(p)
+            p
+          else
+            File.join(s.full_gem_path, p)
+          end
+        }
+      }.flatten
+      (gem_paths + $LOAD_PATH).uniq.sort
+    end
+
     def self.retrieve_files_to_require_from_load_path
-      @@files_from_load_path ||= $LOAD_PATH.flat_map { |path|
+      @@files_from_load_path ||= retrieve_gem_and_system_load_path.map { |path|
         begin
           Dir.glob("**/*.{rb,#{RbConfig::CONFIG['DLEXT']}}", base: path)
         rescue Errno::ENOENT
           []
         end
-      }.uniq.map { |path|
-        path.sub(/\.(rb|#{RbConfig::CONFIG['DLEXT']})\z/, '')
-      }
+      }.inject([]) { |result, names|
+        shortest, *rest = names.map{ |n| n.sub(/\.(rb|#{RbConfig::CONFIG['DLEXT']})\z/, '') }.sort
+        result.unshift(shortest) if shortest
+        result.concat(rest)
+        result
+      }.uniq
     end
 
     def self.retrieve_files_to_require_relative_from_current_dir
