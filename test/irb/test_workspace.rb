@@ -82,9 +82,10 @@ module TestIRB
 
 
     def test_toplevel_binding_local_variables
+      pend if RUBY_ENGINE == 'truffleruby'
       bug17623 = '[ruby-core:102468]'
       bundle_exec = ENV.key?('BUNDLE_GEMFILE') ? ['-rbundler/setup'] : []
-      status = assert_in_out_err(bundle_exec + ['-W0', '-e', <<~RUBY , '--', '-f', '--'], 'binding.local_variables', /\[:_\]/, [], bug17623)
+      assert_in_out_err(bundle_exec + ['-W0', '-e', <<~RUBY , '--', '-f', '--'], 'binding.local_variables', /\[:_\]/, [], bug17623)
         version = 'xyz' # typical rubygems loading file
         load('./exe/irb')
       RUBY

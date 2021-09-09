@@ -3,5 +3,4 @@
 require "bundler/setup"
 require_relative "../lib/irb"
 
-IRB::TOPLEVEL_BINDING = binding
 IRB.start(__FILE__)
