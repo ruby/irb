@@ -24,23 +24,8 @@ module Test
     end
 
     module CoreAssertions
-      if defined?(MiniTest)
-        require_relative 'envutil'
-        # for ruby core testing
-        include MiniTest::Assertions
-
-        # Compatibility hack for assert_raise
-        Test::Unit::AssertionFailedError = MiniTest::Assertion
-      else
-        module MiniTest
-          class Assertion < Exception; end
-          class Skip < Assertion; end
-        end
-
-        require 'pp'
-        require_relative 'envutil'
-        include Test::Unit::Assertions
-      end
+      require_relative 'envutil'
+      require 'pp'
 
       def mu_pp(obj) #:nodoc:
         obj.pretty_inspect.chomp
@@ -118,7 +103,7 @@ module Test
         pend 'assert_no_memory_leak may consider MJIT memory usage as leak' if defined?(RubyVM::JIT) && RubyVM::JIT.enabled?
 
         require_relative 'memory_status'
-        raise MiniTest::Skip, "unsupported platform" unless defined?(Memory::Status)
+        raise Test::Unit::PendedError, "unsupported platform" unless defined?(Memory::Status)
 
         token = "\e[7;1m#{$$.to_s}:#{Time.now.strftime('%s.%L')}:#{rand(0x10000).to_s(16)}:\e[m"
         token_dump = token.dump
@@ -183,11 +168,11 @@ module Test
         end
         begin
           line = __LINE__; yield
-        rescue MiniTest::Skip
+        rescue Test::Unit::PendedError
           raise
         rescue Exception => e
           bt = e.backtrace
-          as = e.instance_of?(MiniTest::Assertion)
+          as = e.instance_of?(Test::Unit::AssertionFailedError)
           if as
             ans = /\A#{Regexp.quote(__FILE__)}:#{line}:in /o
             bt.reject! {|ln| ans =~ ln}
@@ -199,7 +184,7 @@ module Test
               "Backtrace:\n" +
               e.backtrace.map{|frame| "  #{frame}"}.join("\n")
             }
-            raise MiniTest::Assertion, msg.call, bt
+            raise Test::Unit::AssertionFailedError, msg.call, bt
           else
             raise
           end
@@ -277,7 +262,7 @@ module Test
         capture_stdout = true
         unless /mswin|mingw/ =~ RUBY_PLATFORM
           capture_stdout = false
-          opt[:out] = MiniTest::Unit.output if defined?(MiniTest::Unit)
+          opt[:out] = Test::Unit::Runner.output if defined?(Test::Unit::Runner)
           res_p, res_c = IO.pipe
           opt[:ios] = [res_c]
         end
@@ -402,8 +387,8 @@ eom
 
         begin
           yield
-        rescue MiniTest::Skip => e
-          return e if exp.include? MiniTest::Skip
+        rescue Test::Unit::PendedError => e
+          return e if exp.include? Test::Unit::PendedError
           raise e
         rescue Exception => e
           expected = exp.any? { |ex|
@@ -624,6 +609,7 @@ eom
       end
 
       class << (AssertFile = Struct.new(:failure_message).new)
+        include Assertions
         include CoreAssertions
         def assert_file_predicate(predicate, *args)
           if /\Anot_/ =~ predicate
@@ -714,7 +700,7 @@ eom
           if message
             msg = "#{message}\n#{msg}"
           end
-          raise MiniTest::Assertion, msg
+          raise Test::Unit::AssertionFailedError, msg
         end
       end
 
@@ -735,6 +721,14 @@ eom
         assert(all.pass?, message(msg) {all.message.chomp(".")})
       end
       alias all_assertions assert_all_assertions
+
+      def assert_all_assertions_foreach(msg = nil, *keys, &block)
+        all = AllFailures.new
+        all.foreach(*keys, &block)
+      ensure
+        assert(all.pass?, message(msg) {all.message.chomp(".")})
+      end
+      alias all_assertions_foreach assert_all_assertions_foreach
 
       def message(msg = nil, *args, &default) # :nodoc:
         if Proc === msg
