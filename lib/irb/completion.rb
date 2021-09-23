@@ -192,7 +192,7 @@ module IRB
         sym = $1
         candidates = Symbol.all_symbols.collect do |s|
           ":" + s.id2name.encode(Encoding.default_external)
-        rescue Encoding::UndefinedConversionError
+        rescue EncodingError
           # ignore
         end
         candidates.grep(/^#{Regexp.quote(sym)}/)
