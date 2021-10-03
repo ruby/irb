@@ -4,7 +4,7 @@ What are your expected behavior and actual behavior of your environment?
 
 ## Result of irb_info
 
-Please past the result of `irb_info` command in IRB.
+Please paste the result of `irb_info` command in IRB.
 
 ex.)
 
