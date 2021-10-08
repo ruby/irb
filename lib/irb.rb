@@ -556,7 +556,7 @@ module IRB
       @scanner.each_top_level_statement do |line, line_no|
         signal_status(:IN_EVAL) do
           begin
-            line.untaint if RUBY_VERSION < '2.7'
+            line.untaint if RUBY_VERSION.instance_of?(String) && RUBY_VERSION < '2.7'
             if IRB.conf[:MEASURE] && IRB.conf[:MEASURE_CALLBACKS].empty?
               IRB.set_measure_callback
             end
@@ -643,7 +643,7 @@ module IRB
           # Exception#full_message doesn't have keyword arguments.
           message = exc.full_message # the same of (highlight: true, order: bottom)
           order = :bottom
-        elsif '2.5.1' <= RUBY_VERSION && RUBY_VERSION < '3.0.0'
+        elsif RUBY_VERSION.instance_of?(String) && '2.5.1' <= RUBY_VERSION && RUBY_VERSION < '3.0.0'
           if STDOUT.tty?
             message = exc.full_message(order: :bottom)
             order = :bottom
