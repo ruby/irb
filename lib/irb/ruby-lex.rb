@@ -100,6 +100,7 @@ class RubyLex
             code << t.tok
           end
         end
+
         unless unprocessed_tokens.empty?
           ltype, indent, continue, code_block_open = check_state(code, unprocessed_tokens, context: context)
           result << @prompt.call(ltype, indent, continue || code_block_open, @line_no + line_num_offset)
@@ -107,6 +108,7 @@ class RubyLex
         result
       end
     end
+
     if p.respond_to?(:call)
       @input = p
     elsif block_given?
@@ -570,6 +572,7 @@ class RubyLex
       when :on_sp
         next
       end
+
       case t.event
       when :on_lbracket, :on_lbrace, :on_lparen, :on_tlambeg
         depth_difference += 1
@@ -658,6 +661,7 @@ class RubyLex
         is_first_spaces_of_line = false
         next
       end
+
       case t.event
       when :on_lbracket, :on_lbrace, :on_lparen, :on_tlambeg
         spaces_of_nest.push(spaces_at_line_head + open_brace_on_line * 2)
@@ -753,6 +757,8 @@ class RubyLex
 
   def process_literal_type(tokens = @tokens)
     start_token = check_string_literal(tokens)
+    return nil if start_token == ""
+
     case start_token&.event
     when :on_tstring_beg
       case start_token&.tok
@@ -798,6 +804,7 @@ class RubyLex
         false
       end
     end
+
     if index
       first_token = nil
       last_line_tokens = tokens[(index + 1)..(tokens.size - 1)]
@@ -807,6 +814,7 @@ class RubyLex
           break
         end
       end
+
       if first_token.nil?
         return false
       elsif first_token && first_token.state == Ripper::EXPR_DOT
