@@ -118,5 +118,10 @@ module TestIRB
       assert_include(IRB::InputCompletor.retrieve_completion_data("String.new", bind: binding), "String.new")
       assert_equal(IRB::InputCompletor.retrieve_completion_data("String.new", bind: binding, doc_namespace: true), "String.new")
     end
+
+    def test_string_include_parentheses
+      candidates = IRB::InputCompletor::CompletionProc.("a)'.", "'(", "")
+      assert_include candidates, "'(a)'.unicode_normalize!"
+    end
   end
 end

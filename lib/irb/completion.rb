@@ -127,7 +127,7 @@ module IRB
       if preposing && postposing
         result = CompletionRequireProc.(target, preposing, postposing)
         unless result
-          result = retrieve_completion_data(target).compact.map{ |i| i.encode(Encoding.default_external) }
+          result = retrieve_completion_data(preposing + target).compact.map{ |i| i.encode(Encoding.default_external) }
         end
         result
       else
