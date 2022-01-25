@@ -319,13 +319,17 @@ module IRB
         else
           # func1.func2
           candidates = []
-          to_ignore = ignored_modules
-          ObjectSpace.each_object(Module){|m|
-            next if (to_ignore.include?(m) rescue true)
-            candidates.concat m.instance_methods(false).collect{|x| x.to_s}
-          }
-          candidates.sort!
-          candidates.uniq!
+
+          begin
+            # 0.to_s. => 0.to_s
+            # Array.new.to_h.to => Array.new.to_h
+            input =~ /.+(?=\.)/
+            evaluated = eval($&, bind)
+            candidates = evaluated.public_methods
+          rescue StandardError
+          end
+
+          candidates = candidates.collect { |m| m.to_s }
         end
         if doc_namespace
           rec_class = rec.is_a?(Module) ? rec : rec.class
@@ -413,31 +417,6 @@ module IRB
           #receiver + " " + e
         end
       end
-    end
-
-    def self.ignored_modules
-      # We could cache the result, but this is very fast already.
-      # By using this approach, we avoid Module#name calls, which are
-      # relatively slow when there are a lot of anonymous modules defined.
-      s = {}
-
-      scanner = lambda do |m|
-        next if s.include?(m) # IRB::ExtendCommandBundle::EXCB recurses.
-        s[m] = true
-        m.constants(false).each do |c|
-          value = m.const_get(c)
-          scanner.call(value) if value.is_a?(Module)
-        end
-      end
-
-      %i(IRB RubyLex).each do |sym|
-        next unless Object.const_defined?(sym)
-        scanner.call(Object.const_get(sym))
-      end
-
-      s.delete(IRB::Context) if defined?(IRB::Context)
-
-      s
     end
   end
 end

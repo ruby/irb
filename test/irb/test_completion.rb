@@ -26,6 +26,13 @@ module TestIRB
       assert_empty(IRB::InputCompletor.retrieve_completion_data("1i.positi", bind: binding))
     end
 
+    def test_complete_chained_methods
+      assert_include(IRB::InputCompletor.retrieve_completion_data("Array.new.", bind: binding), "Array.new.to_h")
+      assert_not_include(IRB::InputCompletor.retrieve_completion_data("Array.new.", bind: binding), "Array.new.Array")
+      assert_include(IRB::InputCompletor.retrieve_completion_data("0.to_s.", bind: binding), "0.to_s.unicode_normalized?")
+      assert_not_include(IRB::InputCompletor.retrieve_completion_data("0.to_s.", bind: binding), "0.to_s.Array")
+    end
+
     def test_complete_symbol
       %w"UTF-16LE UTF-7".each do |enc|
         "K".force_encoding(enc).to_sym
