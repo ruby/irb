@@ -301,6 +301,9 @@ module IRB
       end
       Reline.dialog_default_bg_color = IRB.conf[:DIALOG_DEFAULT_BG_COLOR]
       Reline.dialog_pointer_bg_color = IRB.conf[:DIALOG_POINTER_BG_COLOR]
+
+      Reline.dialog_default_fg_color = IRB.conf[:DIALOG_DEFAULT_FG_COLOR]
+      Reline.dialog_pointer_fg_color = IRB.conf[:DIALOG_POINTER_FG_COLOR]
     end
 
     def check_termination(&block)
