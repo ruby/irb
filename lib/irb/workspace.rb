@@ -117,7 +117,7 @@ EOF
     # Evaluate the given +statements+ within the  context of this workspace.
     def evaluate(context, statements, file = __FILE__, line = __LINE__)
       if statements.start_with?(".")
-        system statements[1..]
+        system statements[1..-1]
       else
         eval(statements, @binding, file, line)
       end
