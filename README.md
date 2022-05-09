@@ -42,7 +42,7 @@ The Readline extension module can be used with irb. Use of Readline is default i
 
 ### Configuration
 
-You can customize `irb` by putting configurations inside `~/.irbrc` (system user level) or `/project_root/.irbrc` (project level). 
+You can customize `irb` using the global configuration file in `~/.irbrc` or using a file in your project called `.irbrc`.
 
 **Example**:
 
