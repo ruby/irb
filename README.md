@@ -40,18 +40,9 @@ irb(main):006:1> end
 
 The Readline extension module can be used with irb. Use of Readline is default if it's installed.
 
-### Configuration
+## Documentation
 
-You can customize `irb` using the global configuration file in `~/.irbrc` or using a file in your project called `.irbrc`.
-
-**Example**:
-
-```rb
-IRB.conf[:USE_AUTOCOMPLETE] = false # disable autocompletion
-IRB.conf[:USE_COLORIZE] = false # disable colorizing
-```
-
-To see all avaiable configure options, type `IRB.conf` inside an `irb` session.
+https://docs.ruby-lang.org/en/master/IRB.html
 
 ## Development
 
