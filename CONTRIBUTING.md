@@ -4,7 +4,7 @@ Please follow the ["Making Changes To Standard Libraries"](https://docs.ruby-lan
 
 ## Test manually
 
-Make sure the `exe/irb` executable uses the `/lib` directory as source with `bundle exec`:
+Use the following command to run irb using the source files in the `/lib` directory (rather than the irb that came with Ruby):
 
 ```
 bundle exec exe/irb
