@@ -299,11 +299,18 @@ module IRB
       if IRB.conf[:USE_AUTOCOMPLETE]
         Reline.add_dialog_proc(:show_doc, SHOW_DOC_DIALOG, Reline::DEFAULT_DIALOG_CONTEXT)
       end
-      Reline.dialog_default_bg_color = IRB.conf[:DIALOG_DEFAULT_BG_COLOR]
-      Reline.dialog_pointer_bg_color = IRB.conf[:DIALOG_POINTER_BG_COLOR]
-
-      Reline.dialog_default_fg_color = IRB.conf[:DIALOG_DEFAULT_FG_COLOR]
-      Reline.dialog_pointer_fg_color = IRB.conf[:DIALOG_POINTER_FG_COLOR]
+      if IRB.conf[:DIALOG_DEFAULT_BG_COLOR] && Reline.respond_to?('dialog_default_bg_color=')
+        Reline.dialog_default_bg_color = IRB.conf[:DIALOG_DEFAULT_BG_COLOR]
+      end
+      if IRB.conf[:DIALOG_POINTER_BG_COLOR] && Reline.respond_to?('dialog_pointer_bg_color=')
+        Reline.dialog_pointer_bg_color = IRB.conf[:DIALOG_POINTER_BG_COLOR]
+      end
+      if IRB.conf[:DIALOG_DEFAULT_FG_COLOR] && Reline.respond_to?('dialog_default_fg_color=')
+        Reline.dialog_default_fg_color = IRB.conf[:DIALOG_DEFAULT_FG_COLOR]
+      end
+      if IRB.conf[:DIALOG_POINTER_FG_COLOR] && Reline.respond_to?('dialog_pointer_fg_color=')
+        Reline.dialog_pointer_fg_color = IRB.conf[:DIALOG_POINTER_FG_COLOR]
+      end
     end
 
     def check_termination(&block)
