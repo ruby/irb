@@ -296,9 +296,9 @@ module IRB
         sep = $2
         message = $3
 
-        gv = eval("global_variables", bind).collect{|m| m.to_s}.push("true", "false", "nil")
-        lv = eval("local_variables", bind).collect{|m| m.to_s}
-        iv = eval("instance_variables", bind).collect{|m| m.to_s}
+        gv = eval("send(:global_variables)", bind).collect{|m| m.to_s}.push("true", "false", "nil")
+        lv = eval("send(:local_variables)", bind).collect{|m| m.to_s}
+        iv = eval("self.instance_variables", bind).collect{|m| m.to_s}
         cv = eval("self.class.constants", bind).collect{|m| m.to_s}
 
         if (gv | lv | iv | cv).include?(receiver) or /^[A-Z]/ =~ receiver && /\./ !~ receiver
@@ -349,17 +349,17 @@ module IRB
 
       else
         if doc_namespace
-          vars = eval("local_variables | instance_variables", bind).collect{|m| m.to_s}
+          vars = eval("send(:local_variables) | self.instance_variables", bind).collect{|m| m.to_s}
           perfect_match_var = vars.find{|m| m.to_s == input}
           if perfect_match_var
             eval("#{perfect_match_var}.class.name", bind)
           else
-            candidates = eval("methods | private_methods | local_variables | instance_variables | self.class.constants", bind).collect{|m| m.to_s}
+            candidates = eval("self.methods | self.private_methods | send(:local_variables) | self.instance_variables | self.class.constants", bind).collect{|m| m.to_s}
             candidates |= ReservedWords
             candidates.find{ |i| i == input }
           end
         else
-          candidates = eval("methods | private_methods | local_variables | instance_variables | self.class.constants", bind).collect{|m| m.to_s}
+          candidates = eval("self.methods | self.private_methods | send(:local_variables) | self.instance_variables | self.class.constants", bind).collect{|m| m.to_s}
           candidates |= ReservedWords
           candidates.grep(/^#{Regexp.quote(input)}/)
         end

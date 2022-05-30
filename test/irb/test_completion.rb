@@ -107,6 +107,13 @@ module TestIRB
     end
 
     def test_complete_variable
+      # Bug fix issues https://github.com/ruby/irb/issues/368
+      private_methods = "dummy"
+      methods = "dummy"
+      global_variables = "dummy"
+      local_variables = "dummy"
+      instance_variables = "dummy"
+
       str_example = ''
       str_example.clear # suppress "assigned but unused variable" warning
       assert_include(IRB::InputCompletor.retrieve_completion_data("str_examp", bind: binding), "str_example")
