@@ -10,4 +10,5 @@ group :development do
   gem "rake"
   gem "stackprof" if is_unix && !is_truffleruby
   gem "test-unit"
+  # gem "fiddle", github: "ruby/fiddle"
 end
