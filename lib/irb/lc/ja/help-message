@@ -43,4 +43,3 @@ Usage:  irb.rb [options] [programfile] [arguments]
   -v, --version	    irbのバージョンを表示する.
   -h, --help	    irb のヘルプを表示する.
   --		    以降のコマンドライン引数をオプションとして扱わない.
-
