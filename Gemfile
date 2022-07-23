@@ -10,5 +10,5 @@ group :development do
   gem "rake"
   gem "stackprof" if is_unix && !is_truffleruby
   gem "test-unit"
-  gem "reline", github: "ruby/reline" if ENV["WITH_LATEST_RELINE"] == "true"
+  gem "reline", github: "ruby/reline"
 end
