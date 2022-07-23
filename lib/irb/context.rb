@@ -144,6 +144,36 @@ module IRB
       if @newline_before_multiline_output.nil?
         @newline_before_multiline_output = true
       end
+
+      if @io.is_a?(ReidlineInputMethod) && Reline.respond_to?(:dialog_default_bg_color)
+        configure_dialog_colors
+      end
+    end
+
+    def configure_dialog_colors
+      @use_bright_theme = IRB.conf[:USE_BRIGHT_THEME]
+
+      if @use_bright_theme
+        @dialog_default_bg_color   = :white
+        @dialog_default_fg_color   = :black
+        @dialog_highlight_bg_color = :black
+        @dialog_highlight_fg_color = :white
+      else
+        @dialog_default_bg_color   = :black
+        @dialog_default_fg_color   = :white
+        @dialog_highlight_bg_color = :white
+        @dialog_highlight_fg_color = :black
+      end
+
+      @dialog_default_bg_color   = IRB.conf[:DIALOG_DEFAULT_BG_COLOR] if IRB.conf[:DIALOG_DEFAULT_BG_COLOR]
+      @dialog_default_fg_color   = IRB.conf[:DIALOG_DEFAULT_FG_COLOR] if IRB.conf[:DIALOG_DEFAULT_FG_COLOR]
+      @dialog_highlight_bg_color = IRB.conf[:DIALOG_HIGHLIGHT_BG_COLOR] if IRB.conf[:DIALOG_HIGHLIGHT_BG_COLOR]
+      @dialog_highlight_bg_color = IRB.conf[:DIALOG_HIGHLIGHT_FG_COLOR] if IRB.conf[:DIALOG_HIGHLIGHT_FG_COLOR]
+
+      Reline.dialog_default_bg_color   = @dialog_default_bg_color if @dialog_default_bg_color
+      Reline.dialog_default_fg_color   = @dialog_default_fg_color if @dialog_default_fg_color
+      Reline.dialog_highlight_bg_color = @dialog_highlight_bg_color if @dialog_highlight_bg_color
+      Reline.dialog_highlight_fg_color = @dialog_highlight_fg_color if @dialog_highlight_fg_color
     end
 
     # The top-level workspace, see WorkSpace#main
@@ -178,6 +208,22 @@ module IRB
     # Can be either the #irb_name surrounded by parenthesis, or the
     # +input_method+ passed to Context.new
     attr_accessor :irb_path
+
+    # Use bright theme for autocompletion dialog. Default is `false`
+    attr_reader :use_bright_theme
+
+    # Colors for the autocompletion dialog. They will override the colors set by the theme
+    # Available colors (symbol) are:
+    # - :black
+    # - :red
+    # - :green
+    # - :yellow
+    # - :blue
+    # - :magenta
+    # - :cyan
+    # - :white
+    attr_reader :dialog_default_bg_color, :dialog_default_fg_color,
+      :dialog_highlight_bg_color, :dialog_highlight_fg_color
 
     # Whether multiline editor mode is enabled or not.
     #

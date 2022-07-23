@@ -158,6 +158,7 @@ module IRB # :nodoc:
     @CONF[:LC_MESSAGES] = Locale.new
 
     @CONF[:AT_EXIT] = []
+    @CONF[:USE_BRIGHT_THEME] = false
   end
 
   def IRB.set_measure_callback(type = nil, arg = nil, &block)
