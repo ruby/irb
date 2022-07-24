@@ -8,7 +8,7 @@ on:
 
 jobs:
   irb:
-    name: irb (${{ matrix.ruby }} / ${{ matrix.os }})
+    name: rake test ${{ matrix.ruby }} ${{ matrix.with_latest_reline && '(latest reline)' || '' }}
     strategy:
       matrix:
         ruby:
@@ -20,8 +20,11 @@ jobs:
           - head
           - truffleruby-head
         os: [ubuntu-latest]
+        with_latest_reline: [true, false]
       fail-fast: false
     runs-on: ${{ matrix.os }}
+    env:
+      WITH_LATEST_RELINE: ${{matrix.with_latest_reline}}
     steps:
     - uses: actions/checkout@master
     - name: Set up Ruby
@@ -37,7 +40,7 @@ jobs:
       run: bundle exec rake test
   vterm-yamatanooroti:
     name: >-
-      vterm-yamatanooroti ${{ matrix.os }} ${{ matrix.ruby }}
+      vterm-yamatanooroti ${{ matrix.ruby }} ${{ matrix.with_latest_reline && '(latest reline)' || '' }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -46,8 +49,11 @@ jobs:
           - '3.0'
           - '2.7'
           - head
-        os: [ ubuntu-latest ]
+        os: [ubuntu-latest]
+        with_latest_reline: [true, false]
       fail-fast: false
+    env:
+      WITH_LATEST_RELINE: ${{matrix.with_latest_reline}}
     steps:
       - uses: actions/checkout@v3
       - name: Set up Ruby
@@ -68,4 +74,4 @@ jobs:
           gem install bundler --no-document
           WITH_VTERM=1 bundle install
       - name: rake test_yamatanooroti
-        run:  rake test_yamatanooroti
+        run:  bundle exec rake test_yamatanooroti
