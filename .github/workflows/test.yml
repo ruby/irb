@@ -16,15 +16,10 @@ jobs:
           - '3.0'
           - '2.7'
           - '2.6'
-          - '2.5'
           - head
           - truffleruby-head
         os: [ubuntu-latest]
         with_latest_reline: [true, false]
-        exclude:
-          - ruby: '2.5'
-            os: ubuntu-latest
-            with_latest_reline: true
       fail-fast: false
     runs-on: ${{ matrix.os }}
     env:
