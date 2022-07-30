@@ -286,7 +286,8 @@ module IRB
         if IRB.conf[:USE_COLORIZE]
           proc do |output, complete: |
             next unless IRB::Color.colorable?
-            IRB::Color.colorize_code(output, complete: complete)
+            lvars = IRB.CurrentContext&.workspace&.binding&.local_variables || []
+            IRB::Color.colorize_code(output, complete: complete, local_variables: lvars)
           end
         else
           proc do |output|

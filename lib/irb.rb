@@ -529,7 +529,7 @@ module IRB
               @context.evaluate(line, line_no, exception: exc)
             end
             if @context.echo?
-              if assignment_expression?(line)
+              if assignment_expression?(line, context: @context)
                 if @context.echo_on_assignment?
                   output_value(@context.echo_on_assignment? == :truncate)
                 end
@@ -827,7 +827,9 @@ module IRB
       # array of parsed expressions. The first element of each expression is the
       # expression's type.
       verbose, $VERBOSE = $VERBOSE, nil
-      result = ASSIGNMENT_NODE_TYPES.include?(Ripper.sexp(line)&.dig(1,-1,0))
+      code = "#{RubyLex.local_variables_assign_code(context: @context) || 'nil;'}\n#{line}"
+      node_type = Ripper.sexp(code)&.dig(1)&.drop(1)&.dig(-1, 0)
+      result = ASSIGNMENT_NODE_TYPES.include?(node_type)
       $VERBOSE = verbose
       result
     end
