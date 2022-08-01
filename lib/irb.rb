@@ -513,6 +513,7 @@ module IRB
             if IRB.conf[:MEASURE] && IRB.conf[:MEASURE_CALLBACKS].empty?
               IRB.set_measure_callback
             end
+            is_assignment = assignment_expression?(line)
             if IRB.conf[:MEASURE] && !IRB.conf[:MEASURE_CALLBACKS].empty?
               result = nil
               last_proc = proc{ result = @context.evaluate(line, line_no, exception: exc) }
@@ -529,7 +530,7 @@ module IRB
               @context.evaluate(line, line_no, exception: exc)
             end
             if @context.echo?
-              if assignment_expression?(line, context: @context)
+              if is_assignment
                 if @context.echo_on_assignment?
                   output_value(@context.echo_on_assignment? == :truncate)
                 end
