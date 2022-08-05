@@ -158,6 +158,27 @@ module TestIRB
       end
     end
 
+    def test_history_concurrent_use_not_present
+      omit "Skip Editline" if /EditLine/n.match(Readline::VERSION)
+      IRB.conf[:SAVE_HISTORY] = 1
+      assert_history(<<~EXPECTED_HISTORY, nil, <<~INPUT) do |history_file|
+        exit
+        5
+        exit
+      EXPECTED_HISTORY
+        5
+        exit
+      INPUT
+        assert_history(<<~EXPECTED_HISTORY2, nil, <<~INPUT2)
+        exit
+      EXPECTED_HISTORY2
+        5
+        exit
+      INPUT2
+        File.utime(File.atime(history_file), File.mtime(history_file) + 2, history_file)
+      end
+    end
+
     private
 
     def assert_history(expected_history, initial_irb_history, input)
@@ -168,8 +189,10 @@ module TestIRB
       actual_history = nil
       Dir.mktmpdir("test_irb_history_#{$$}") do |tmpdir|
         ENV["HOME"] = tmpdir
-        open(IRB.rc_file("_history"), "w") do |f|
-          f.write(initial_irb_history)
+        if initial_irb_history
+          open(IRB.rc_file("_history"), "w") do |f|
+            f.write(initial_irb_history)
+          end
         end
 
         io = TestInputMethod.new
