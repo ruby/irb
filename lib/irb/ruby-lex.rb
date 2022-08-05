@@ -706,6 +706,7 @@ class RubyLex
     i = 0
     start_token = []
     end_type = []
+    pending_heredocs = []
     while i < tokens.size
       t = tokens[i]
       case t.event
@@ -737,12 +738,19 @@ class RubyLex
         start_token << t
         end_type << :on_tstring_end
       when :on_heredoc_beg
-        start_token << t
-        end_type << :on_heredoc_end
+        pending_heredocs << t
+      end
+
+      if !pending_heredocs.empty? && t.tok.include?("\n")
+        pending_heredocs.reverse_each do |t|
+          start_token << t
+          end_type << :on_heredoc_end
+        end
+        pending_heredocs = []
       end
       i += 1
     end
-    start_token.last.nil? ? nil : start_token.last
+    pending_heredocs.first || start_token.last
   end
 
   def process_literal_type(tokens = @tokens)

@@ -170,6 +170,27 @@ module TestIRB
       assert_dynamic_prompt(lines, expected_prompt_list)
     end
 
+    def test_heredoc_with_embexpr
+      input_with_prompt = [
+        PromptRow.new('001:0:":* ', %q(<<A+%W[#{<<B)),
+        PromptRow.new('002:0:":* ', %q(#{<<C+%W[)),
+        PromptRow.new('003:0:":* ', %q()),
+        PromptRow.new('004:0:":* ', %q(C)),
+        PromptRow.new('005:0:]:* ', %q()),
+        PromptRow.new('006:0:":* ', %q(]})),
+        PromptRow.new('007:0:":* ', %q(})),
+        PromptRow.new('008:0:":* ', %q(A)),
+        PromptRow.new('009:0:]:* ', %q(B)),
+        PromptRow.new('010:0:]:* ', %q(})),
+        PromptRow.new('011:0: :> ', %q(])),
+        PromptRow.new('012:0: :* ', %q()),
+      ]
+
+      lines = input_with_prompt.map(&:content)
+      expected_prompt_list = input_with_prompt.map(&:prompt)
+      assert_dynamic_prompt(lines, expected_prompt_list)
+    end
+
     def test_backtick_method
       input_with_prompt = [
         PromptRow.new('001:0: :> ', %q(self.`(arg))),
