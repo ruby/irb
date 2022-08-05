@@ -729,8 +729,10 @@ class RubyLex
           end
         end
       when :on_backtick
-        start_token << t
-        end_type << :on_tstring_end
+        if t.state.allbits?(Ripper::EXPR_BEG)
+          start_token << t
+          end_type << :on_tstring_end
+        end
       when :on_qwords_beg, :on_words_beg, :on_qsymbols_beg, :on_symbols_beg
         start_token << t
         end_type << :on_tstring_end
