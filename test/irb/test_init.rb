@@ -79,6 +79,10 @@ module TestIRB
       IRB.setup(__FILE__)
       refute IRB.conf[:USE_COLORIZE]
 
+      ENV['NO_COLOR'] = ''
+      IRB.setup(__FILE__)
+      assert IRB.conf[:USE_COLORIZE]
+
       ENV['NO_COLOR'] = nil
       IRB.setup(__FILE__)
       assert IRB.conf[:USE_COLORIZE]
