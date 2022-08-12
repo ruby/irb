@@ -162,7 +162,7 @@ class RubyLex
           end
         end
       else
-        lexer.parse.reject { |it| it.pos.first == 0 }
+        lexer.parse.sort_by(&:pos).reject { |it| it.pos.first == 0 }
       end
     end
   ensure
