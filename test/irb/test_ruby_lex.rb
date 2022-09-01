@@ -497,6 +497,7 @@ module TestIRB
     end
 
     def test_local_variables_dependent_code
+      pend if RUBY_ENGINE == 'truffleruby'
       lines = ["a /1#/ do", "2"]
       assert_nesting_level(lines, 1)
       assert_code_block_open(lines, true)
