@@ -318,9 +318,7 @@ module IRB # :nodoc:
           $0 = opt
         end
         break
-      when '-'
-        # nothing
-      when /^-/
+      when /^-./
         fail UnrecognizedSwitch, opt
       else
         if noscript
