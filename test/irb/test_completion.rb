@@ -152,16 +152,18 @@ module TestIRB
     end
 
     def test_complete_variable
-      # Bug fix issues https://github.com/ruby/irb/issues/368
+      # Setup to reproduce https://github.com/ruby/irb/issues/368
       private_methods = ''
       methods = ''
       global_variables = ''
       local_variables = ''
       instance_variables = ''
+
+      # Test subjects
       str_example = ''
       @str_example = ''
 
-       # suppress "assigned but unused variable" warning
+      # suppress "assigned but unused variable" warning
       str_example.clear
       private_methods.clear
       methods.clear
