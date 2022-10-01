@@ -116,7 +116,7 @@ module TestIRB
       str_example = ''
       @str_example = ''
 
-       # suppress "assigned but unused variable" warning
+      # suppress "assigned but unused variable" warning
       str_example.clear
       private_methods.clear
       methods.clear
