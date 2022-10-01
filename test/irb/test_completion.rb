@@ -108,23 +108,23 @@ module TestIRB
 
     def test_complete_variable
       # Bug fix issues https://github.com/ruby/irb/issues/368
+      # Variables other than `str_example` and `@str_example` are defined to ensure that irb completion does not cause unintended behavior
+      str_example = ''
+      @str_example = ''
       private_methods = ''
       methods = ''
       global_variables = ''
       local_variables = ''
       instance_variables = ''
-      str_example = ''
-      @str_example = ''
 
       # suppress "assigned but unused variable" warning
       str_example.clear
+      @str_example.clear
       private_methods.clear
       methods.clear
       global_variables.clear
       local_variables.clear
       instance_variables.clear
-      str_example.clear
-      @str_example.clear
 
       assert_include(IRB::InputCompletor.retrieve_completion_data("str_examp", bind: binding), "str_example")
       assert_equal(IRB::InputCompletor.retrieve_completion_data("str_example", bind: binding, doc_namespace: true), "String")
