@@ -239,13 +239,13 @@ class RubyLex
     @code_block_open = false
   end
 
-  def each_top_level_statement
+  def each_top_level_statement(context)
     initialize_input
     catch(:TERM_INPUT) do
       loop do
         begin
           prompt
-          unless l = lex
+          unless l = lex(context)
             throw :TERM_INPUT if @line == ''
           else
             @line_no += l.count("\n")
@@ -275,7 +275,7 @@ class RubyLex
     end
   end
 
-  def lex(context: nil)
+  def lex(context)
     line = @input.call
     if @io.respond_to?(:check_termination)
       return line # multiline

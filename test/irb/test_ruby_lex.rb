@@ -55,7 +55,7 @@ module TestIRB
         workspace = OpenStruct.new(binding: binding)
         context = OpenStruct.new(workspace: workspace)
       end
-      ruby_lex.lex(context: context)
+      ruby_lex.lex(context)
       ruby_lex
     end
 
