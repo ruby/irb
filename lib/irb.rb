@@ -828,7 +828,7 @@ module IRB
       # array of parsed expressions. The first element of each expression is the
       # expression's type.
       verbose, $VERBOSE = $VERBOSE, nil
-      code = "#{RubyLex.local_variables_assign_code(context: @context) || 'nil;'}\n#{line}"
+      code = "#{RubyLex.generate_local_variables_assign_code(context: @context) || 'nil;'}\n#{line}"
       node_type = Ripper.sexp(code)&.dig(1)&.drop(1)&.dig(-1, 0)
       result = ASSIGNMENT_NODE_TYPES.include?(node_type)
       $VERBOSE = verbose
