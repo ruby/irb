@@ -666,5 +666,13 @@ module TestIRB
         assert_empty(error_tokens, 'Error tokens must be ignored if there is corresponding non-error token')
       end
     end
+
+    def test_unterminated_heredoc_string_literal
+      ['<<A;<<B', "<<A;<<B\n", "%W[\#{<<A;<<B", "%W[\#{<<A;<<B\n"].each do |code|
+        tokens = RubyLex.ripper_lex_without_warning(code)
+        string_literal = RubyLex.new.check_string_literal(tokens)
+        assert_equal('<<A', string_literal&.tok)
+      end
+    end
   end
 end
