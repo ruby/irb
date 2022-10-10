@@ -741,7 +741,7 @@ class RubyLex
         pending_heredocs << t
       end
 
-      if !pending_heredocs.empty? && t.tok.include?("\n")
+      if pending_heredocs.any? && t.tok.include?("\n")
         pending_heredocs.reverse_each do |t|
           start_token << t
           end_type << :on_heredoc_end
