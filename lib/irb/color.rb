@@ -128,7 +128,7 @@ module IRB # :nodoc:
 
         symbol_state = SymbolState.new
         colored = +''
-        lvars_code = RubyLex.generate_local_variables_assign_code(local_variables: local_variables)
+        lvars_code = RubyLex.generate_local_variables_assign_code(local_variables)
         code_with_lvars = lvars_code ? "#{lvars_code}\n#{code}" : code
 
         scan(code_with_lvars, allow_last_error: !complete) do |token, str, expr|

@@ -51,9 +51,7 @@ module TestIRB
       io = proc{ lines.join("\n") }
       ruby_lex.set_input(io, io)
       unless local_variables.empty?
-        binding = OpenStruct.new(local_variables: local_variables)
-        workspace = OpenStruct.new(binding: binding)
-        context = OpenStruct.new(workspace: workspace)
+        context = OpenStruct.new(local_variables: local_variables)
       end
       ruby_lex.lex(context)
       ruby_lex

@@ -136,15 +136,13 @@ class RubyLex
     :on_param_error
   ]
 
-  def self.generate_local_variables_assign_code(context: nil, local_variables: [])
-    context_local_variables = context&.workspace&.binding&.local_variables
-    local_variables |= context_local_variables if context_local_variables
+  def self.generate_local_variables_assign_code(local_variables)
     "#{local_variables.join('=')}=nil;" unless local_variables.empty?
   end
 
   def self.ripper_lex_without_warning(code, context: nil)
     verbose, $VERBOSE = $VERBOSE, nil
-    lvars_code = generate_local_variables_assign_code(context: context)
+    lvars_code = generate_local_variables_assign_code(context&.local_variables || [])
     if lvars_code
       code = "#{lvars_code}\n#{code}"
       line_no = 0
@@ -218,7 +216,7 @@ class RubyLex
     ltype = process_literal_type(tokens)
     indent = process_nesting_level(tokens)
     continue = process_continue(tokens)
-    lvars_code = self.class.generate_local_variables_assign_code(context: context)
+    lvars_code = self.class.generate_local_variables_assign_code(context&.local_variables || [])
     code = "#{lvars_code}\n#{code}" if lvars_code
     code_block_open = check_code_block(code, tokens)
     [ltype, indent, continue, code_block_open]

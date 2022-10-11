@@ -828,11 +828,12 @@ module IRB
       # array of parsed expressions. The first element of each expression is the
       # expression's type.
       verbose, $VERBOSE = $VERBOSE, nil
-      code = "#{RubyLex.generate_local_variables_assign_code(context: @context) || 'nil;'}\n#{line}"
+      code = "#{RubyLex.generate_local_variables_assign_code(@context.local_variables) || 'nil;'}\n#{line}"
+      # Get the last node_type of the line. drop(1) is to ignore the local_variables_assign_code part.
       node_type = Ripper.sexp(code)&.dig(1)&.drop(1)&.dig(-1, 0)
-      result = ASSIGNMENT_NODE_TYPES.include?(node_type)
+      ASSIGNMENT_NODE_TYPES.include?(node_type)
+    ensure
       $VERBOSE = verbose
-      result
     end
 
     ATTR_TTY = "\e[%sm"
