@@ -513,6 +513,7 @@ module IRB
             if IRB.conf[:MEASURE] && IRB.conf[:MEASURE_CALLBACKS].empty?
               IRB.set_measure_callback
             end
+            # Assignment expression check should be done before @context.evaluate to handle code like `a /2#/ if false; a = 1`
             is_assignment = assignment_expression?(line)
             if IRB.conf[:MEASURE] && !IRB.conf[:MEASURE_CALLBACKS].empty?
               result = nil
