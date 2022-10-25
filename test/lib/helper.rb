@@ -20,7 +20,7 @@ module Test
 
         yield
       ensure
-        ::Kernel.send(:alias_method, :require, :old_require)
+        EnvUtil.suppress_warning { ::Kernel.send(:alias_method, :require, :old_require) }
       end
     end
   end
