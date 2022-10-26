@@ -3,6 +3,8 @@ require "test/unit"
 require "irb"
 require "irb/extend-command"
 
+require_relative "test_helper"
+
 module TestIRB
   class ExtendCommand < Test::Unit::TestCase
     class TestInputMethod < ::IRB::InputMethod
@@ -404,6 +406,53 @@ module TestIRB
           /   => nil\n/,
           /=> "hi"\n/,
         ], out)
+    end
+
+    def test_help
+      IRB.init_config(nil)
+      input = TestInputMethod.new([
+          "help 'String#gsub'\n",
+          "\n",
+        ])
+      IRB.conf[:PROMPT_MODE] = :SIMPLE
+      irb = IRB::Irb.new(IRB::WorkSpace.new(self), input)
+      out, err = capture_output do
+        irb.eval_input
+      end
+
+      # the help command lazily loads rdoc by redefining the execute method
+      assert_match(/discarding old execute/, err) unless RUBY_ENGINE == 'truffleruby'
+
+      # the former is what we'd get without document content installed, like on CI
+      # the latter is what we may get locally
+      possible_rdoc_output = [/Nothing known about String#gsub/, /Returns a copy of self with all occurrences of the given pattern/]
+      assert(possible_rdoc_output.any? { |output| output.match?(out) }, "Expect the help command to match one of the possible outputs")
+    ensure
+      # this is the only way to reset the redefined method without coupling the test with its implementation
+      EnvUtil.suppress_warning { load "irb/cmd/help.rb" }
+    end
+
+    def test_help_without_rdoc
+      IRB.init_config(nil)
+      input = TestInputMethod.new([
+          "help 'String#gsub'\n",
+          "\n",
+        ])
+      IRB.conf[:PROMPT_MODE] = :SIMPLE
+      irb = IRB::Irb.new(IRB::WorkSpace.new(self), input)
+      out, err = capture_output do
+        IRB::TestHelper.without_rdoc do
+          irb.eval_input
+        end
+      end
+
+      # since LoadError will be raised, the execute won't be redefined
+      assert_no_match(/discarding old execute/, err)
+      # if it fails to require rdoc, it only returns the command object
+      assert_match(/=> IRB::ExtendCommand::Help\n/, out)
+    ensure
+      # this is the only way to reset the redefined method without coupling the test with its implementation
+      EnvUtil.suppress_warning { load "irb/cmd/help.rb" }
     end
 
     def test_irb_load

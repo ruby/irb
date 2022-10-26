@@ -3,6 +3,8 @@
 require "test/unit"
 require "irb"
 
+require_relative "test_helper"
+
 module TestIRB
   class TestRelineInputMethod < Test::Unit::TestCase
     def setup
@@ -76,7 +78,7 @@ module TestIRB
 
       IRB.conf[:USE_AUTOCOMPLETE] = true
 
-      without_rdoc do
+      IRB::TestHelper.without_rdoc do
         IRB::RelineInputMethod.new
       end
 
@@ -85,19 +87,6 @@ module TestIRB
       assert_equal empty_proc, Reline.dialog_proc(:show_doc).dialog_proc
     ensure
       Reline.add_dialog_proc(:show_doc, original_show_doc_proc, Reline::DEFAULT_DIALOG_CONTEXT)
-    end
-
-    def without_rdoc(&block)
-      ::Kernel.send(:alias_method, :old_require, :require)
-
-      ::Kernel.define_method(:require) do |name|
-        raise LoadError, "cannot load such file -- rdoc (test)" if name == "rdoc"
-        original_require(name)
-      end
-
-      yield
-    ensure
-      ::Kernel.send(:alias_method, :require, :old_require)
     end
   end
 end
