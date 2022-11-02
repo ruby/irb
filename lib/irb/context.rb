@@ -477,6 +477,13 @@ module IRB
         line = "begin ::Kernel.raise _; rescue _.class\n#{line}\n""end"
         @workspace.local_variable_set(:_, exception)
       end
+
+      # Transform a non-identifier alias (ex: @, $)
+      command = line.split(/\s/, 2).first
+      if !command.match?(/\A\w+\z/) && main.respond_to?(command)
+        line = line.gsub(/\A#{Regexp.escape(command)}/, main.method(command).original_name.to_s)
+      end
+
       set_last_value(@workspace.evaluate(self, line, irb_path, line_no))
     end
 
