@@ -21,6 +21,14 @@ module TestIRB
       end
     end
 
+    def setup
+      save_encodings
+    end
+
+    def teardown
+      restore_encodings
+    end
+
     def assert_indenting(lines, correct_space_count, add_new_line)
       lines = lines + [""] if add_new_line
       last_line_index = lines.length - 1

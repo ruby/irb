@@ -2,6 +2,19 @@ require "test/unit"
 
 module TestIRB
   class TestCase < Test::Unit::TestCase
+    def save_encodings
+      @default_encoding = [Encoding.default_external, Encoding.default_internal]
+      @stdio_encodings = [STDIN, STDOUT, STDERR].map {|io| [io.external_encoding, io.internal_encoding] }
+    end
+
+    def restore_encodings
+      EnvUtil.suppress_warning do
+        Encoding.default_external, Encoding.default_internal = *@default_encoding
+        [STDIN, STDOUT, STDERR].zip(@stdio_encodings) do |io, encs|
+          io.set_encoding(*encs)
+        end
+      end
+    end
   end
 
   module TestHelper
