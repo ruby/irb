@@ -576,7 +576,7 @@ module TestIRB
       ])
       IRB.init_config(nil)
       IRB.conf[:COMMAND_ALIASES] = { :'$' => :show_source }
-      workspace = IRB::WorkSpace.new(build_main)
+      workspace = IRB::WorkSpace.new(Object.new)
       IRB.conf[:VERBOSE] = false
       irb = IRB::Irb.new(workspace, input)
       IRB.conf[:MAIN_CONTEXT] = irb.context
@@ -635,7 +635,7 @@ module TestIRB
       ])
       IRB.init_config(nil)
       IRB.conf[:COMMAND_ALIASES] = { :'@' => :whereami }
-      workspace = IRB::WorkSpace.new(build_main)
+      workspace = IRB::WorkSpace.new(Object.new)
       irb = IRB::Irb.new(workspace, input)
       IRB.conf[:MAIN_CONTEXT] = irb.context
       out, err = capture_output do
@@ -655,7 +655,7 @@ module TestIRB
         :'@' => :whereami,
         :'$' => :show_source,
       }
-      main = build_main
+      main = Object.new
       main.instance_variable_set(:@foo, "foo")
       $bar = "bar"
       workspace = IRB::WorkSpace.new(main)
@@ -667,18 +667,6 @@ module TestIRB
       assert_empty err
       assert_match(/"foo"/, out)
       assert_match(/"bar"/, out)
-    end
-
-    private
-
-    def build_main
-      main = Object.new
-      main.extend(IRB::ExtendCommandBundle)
-      # Simulate part of the IRB::Irb#run behavior
-      IRB.conf[:COMMAND_ALIASES].each do |alias_name, cmd_name|
-        main.install_alias_method(alias_name, cmd_name)
-      end
-      main
     end
   end
 end

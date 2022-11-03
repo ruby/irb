@@ -150,9 +150,7 @@ module IRB
         @newline_before_multiline_output = true
       end
 
-      @symbol_aliases = IRB.conf[:COMMAND_ALIASES].select do |alias_name, _|
-        !alias_name.match?(/\A\w+\z/)
-      end
+      @command_aliases = IRB.conf[:COMMAND_ALIASES]
     end
 
     # The top-level workspace, see WorkSpace#main
@@ -329,6 +327,9 @@ module IRB
     #
     # See IRB@Command+line+options for more command line options.
     attr_accessor :back_trace_limit
+
+    # User-defined IRB command aliases
+    attr_accessor :command_aliases
 
     # Alias for #use_multiline
     alias use_multiline? use_multiline
@@ -535,8 +536,9 @@ module IRB
     end
 
     # Return a command name if it's aliased from the argument and it's not an identifier.
-    def symbol_alias(alias_name)
-      @symbol_aliases[alias_name.to_sym]
+    def symbol_alias(command)
+      return nil if command.match?(/\A\w+\z/)
+      command_aliases[command.to_sym]
     end
   end
 end
