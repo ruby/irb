@@ -433,6 +433,9 @@ module IRB
     def run(conf = IRB.conf)
       conf[:IRB_RC].call(context) if conf[:IRB_RC]
       conf[:MAIN_CONTEXT] = context
+      conf[:COMMAND_ALIASES].each do |alias_name, cmd_name|
+        context.main.install_alias_method(alias_name, cmd_name)
+      end
 
       prev_trap = trap("SIGINT") do
         signal_handle

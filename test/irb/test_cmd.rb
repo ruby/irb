@@ -614,15 +614,12 @@ module TestIRB
     def test_alias_at
       pend if RUBY_ENGINE == 'truffleruby' # missing Method#original_name
 
-      IRB::ExtendCommandBundle.def_alias_command(:'@', :whereami)
-      main = Object.new
-      main.extend(IRB::ExtendCommandBundle)
-
       input = TestInputMethod.new([
         "@\n",
       ])
       IRB.init_config(nil)
-      workspace = IRB::WorkSpace.new(main)
+      IRB.conf[:COMMAND_ALIASES] = { :'@' => :whereami }
+      workspace = IRB::WorkSpace.new(build_main)
       irb = IRB::Irb.new(workspace, input)
       IRB.conf[:MAIN_CONTEXT] = irb.context
       out, err = capture_output do
@@ -630,6 +627,18 @@ module TestIRB
       end
       assert_empty err
       assert_match(/^From: .+ @ line \d+ :\n/, out)
+    end
+
+    private
+
+    def build_main
+      main = Object.new
+      main.extend(IRB::ExtendCommandBundle)
+      # Simulate part of the IRB::Irb#run behavior
+      IRB.conf[:COMMAND_ALIASES].each do |alias_name, cmd_name|
+        main.install_alias_method(alias_name, cmd_name)
+      end
+      main
     end
   end
 end

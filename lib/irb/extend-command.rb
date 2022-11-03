@@ -222,10 +222,6 @@ module IRB # :nodoc:
       end
     end
 
-    def self.def_alias_command(alias_name, cmd_name, flag = NO_OVERRIDE)
-      @ALIASES.push [alias_name, cmd_name, flag]
-    end
-
     # Installs alias methods for the default irb commands, see
     # ::install_extend_commands.
     def install_alias_method(to, from, override = NO_OVERRIDE)
