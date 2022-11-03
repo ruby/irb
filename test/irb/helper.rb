@@ -1,4 +1,9 @@
-module IRB
+require "test/unit"
+
+module TestIRB
+  class TestCase < Test::Unit::TestCase
+  end
+
   module TestHelper
     def self.without_rdoc(&block)
       ::Kernel.send(:alias_method, :old_require, :require)

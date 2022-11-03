@@ -1,12 +1,11 @@
 # frozen_string_literal: false
 
-require "test/unit"
 require "irb"
 
 require_relative "helper"
 
 module TestIRB
-  class TestRelineInputMethod < Test::Unit::TestCase
+  class TestRelineInputMethod < TestCase
     def setup
       @conf_backup = IRB.conf.dup
       IRB.conf[:LC_MESSAGES] = IRB::Locale.new
@@ -78,7 +77,7 @@ module TestIRB
 
       IRB.conf[:USE_AUTOCOMPLETE] = true
 
-      IRB::TestHelper.without_rdoc do
+      TestIRB::TestHelper.without_rdoc do
         IRB::RelineInputMethod.new
       end
 

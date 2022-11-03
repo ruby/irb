@@ -1,12 +1,11 @@
 # frozen_string_literal: false
-require "test/unit"
 require "irb"
 require "irb/extend-command"
 
 require_relative "helper"
 
 module TestIRB
-  class ExtendCommand < Test::Unit::TestCase
+  class ExtendCommand < TestCase
     class TestInputMethod < ::IRB::InputMethod
       attr_reader :list, :line_no
 
@@ -450,7 +449,7 @@ module TestIRB
       IRB.conf[:VERBOSE] = false
       irb = IRB::Irb.new(IRB::WorkSpace.new(self), input)
       out, _ = capture_output do
-        IRB::TestHelper.without_rdoc do
+        TestIRB::TestHelper.without_rdoc do
           irb.eval_input
         end
       end

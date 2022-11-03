@@ -1,11 +1,12 @@
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'irb'
 require 'rubygems'
-require 'test/unit'
 require 'ostruct'
 
+require_relative "helper"
+
 module TestIRB
-  class TestRubyLex < Test::Unit::TestCase
+  class TestRubyLex < TestCase
     Row = Struct.new(:content, :current_line_spaces, :new_line_spaces, :nesting_level)
 
     class MockIO_AutoIndent
