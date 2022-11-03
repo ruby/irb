@@ -15,10 +15,8 @@ module TestIRB
         end
       end
     end
-  end
 
-  module TestHelper
-    def self.without_rdoc(&block)
+    def without_rdoc(&block)
       ::Kernel.send(:alias_method, :old_require, :require)
 
       ::Kernel.define_method(:require) do |name|

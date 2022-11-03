@@ -275,7 +275,7 @@ module TestIRB
         result = nil
 
         out, err = capture_output do
-          TestIRB::TestHelper.without_rdoc do
+          without_rdoc do
             result = IRB::InputCompletor::PerfectMatchedProc.("String", bind: binding)
           end
         end

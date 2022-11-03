@@ -443,7 +443,7 @@ module TestIRB
       IRB.conf[:VERBOSE] = false
       irb = IRB::Irb.new(IRB::WorkSpace.new(self), input)
       out, _ = capture_output do
-        TestIRB::TestHelper.without_rdoc do
+        without_rdoc do
           irb.eval_input
         end
       end

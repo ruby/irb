@@ -64,7 +64,7 @@ module TestIRB
 
       IRB.conf[:USE_AUTOCOMPLETE] = true
 
-      TestIRB::TestHelper.without_rdoc do
+      without_rdoc do
         IRB::RelineInputMethod.new
       end
 
