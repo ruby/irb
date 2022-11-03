@@ -149,6 +149,10 @@ module IRB
       if @newline_before_multiline_output.nil?
         @newline_before_multiline_output = true
       end
+
+      @symbol_aliases = IRB.conf[:COMMAND_ALIASES].select do |alias_name, _|
+        !alias_name.match?(/\A\w+\z/)
+      end
     end
 
     # The top-level workspace, see WorkSpace#main
@@ -480,8 +484,8 @@ module IRB
 
       # Transform a non-identifier alias (ex: @, $)
       command = line.split(/\s/, 2).first
-      if !command.match?(/\A\w+\z/) && main.respond_to?(command)
-        line = line.gsub(/\A#{Regexp.escape(command)}/, main.method(command).original_name.to_s)
+      if original = symbol_alias(command)
+        line = line.gsub(/\A#{Regexp.escape(command)}/, original)
       end
 
       set_last_value(@workspace.evaluate(self, line, irb_path, line_no))
@@ -528,6 +532,11 @@ module IRB
 
     def local_variables # :nodoc:
       workspace.binding.local_variables
+    end
+
+    # Return a command name if it's aliased from the argument and it's not an identifier.
+    def symbol_alias(alias_name)
+      @symbol_aliases[alias_name.to_sym]&.to_s
     end
   end
 end

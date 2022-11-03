@@ -612,8 +612,6 @@ module TestIRB
     end
 
     def test_alias_at
-      pend if RUBY_ENGINE == 'truffleruby' # missing Method#original_name
-
       input = TestInputMethod.new([
         "@\n",
       ])
