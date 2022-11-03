@@ -485,7 +485,7 @@ module IRB
       # Transform a non-identifier alias (ex: @, $)
       command = line.split(/\s/, 2).first
       if original = symbol_alias(command)
-        line = line.gsub(/\A#{Regexp.escape(command)}/, original)
+        line = line.gsub(/\A#{Regexp.escape(command)}/, original.to_s)
       end
 
       set_last_value(@workspace.evaluate(self, line, irb_path, line_no))
@@ -536,7 +536,7 @@ module IRB
 
     # Return a command name if it's aliased from the argument and it's not an identifier.
     def symbol_alias(alias_name)
-      @symbol_aliases[alias_name.to_sym]&.to_s
+      @symbol_aliases[alias_name.to_sym]
     end
   end
 end
