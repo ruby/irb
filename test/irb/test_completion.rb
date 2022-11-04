@@ -107,8 +107,7 @@ module TestIRB
       def test_complete_require_with_string_convertable_in_load_path
         temp_dir = Dir.mktmpdir
         File.write(File.join(temp_dir, "foo.rb"), "test")
-        object = Object.new
-        object.define_singleton_method(:to_s) { temp_dir }
+        object = Pathname.new temp_dir
         $LOAD_PATH << object
 
         candidates = IRB::InputCompletor::CompletionProc.("'foo", "require ", "")
