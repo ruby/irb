@@ -35,11 +35,7 @@ jobs:
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: ${{ matrix.ruby }}
-    - name: Install dependencies
-      run: |
-        gem update --system
-        gem install bundler --no-document
-        bundle install
+        bundler-cache: true
     - name: Run test
       run: bundle exec rake test
   vterm-yamatanooroti:
