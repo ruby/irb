@@ -489,7 +489,7 @@ module TestIRB
 
       [
         "ls 42, grep: /times/\n",
-        "ls 42 --grep times\n",
+        "ls 42 -g times\n",
         "ls 42 -G times\n",
       ].each do |line|
         out, err = execute_lines(line)
@@ -508,7 +508,7 @@ module TestIRB
 
       [
         "ls grep: /whereami/\n",
-        "ls --grep whereami\n",
+        "ls -g whereami\n",
         "ls -G whereami\n",
       ].each do |line|
         out, err = execute_lines(line)
