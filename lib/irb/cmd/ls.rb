@@ -10,8 +10,8 @@ module IRB
   module ExtendCommand
     class Ls < Nop
       def self.transform_args(args)
-        if match = args&.match(/\A(?<prefix>.+\s|)(--grep|-G)\s+(?<grep>[^\s]+)(?<suffix>\s.+|)\n\z/)
-          args = match[:prefix] + match[:suffix]
+        if match = args&.match(/\A(?<args>.+\s|)(--grep|-G)\s+(?<grep>[^\s]+)\s*\n\z/)
+          args = match[:args]
           "#{args}#{',' unless args.chomp.empty?} grep: /#{match[:grep]}/"
         else
           args

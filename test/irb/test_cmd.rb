@@ -491,8 +491,6 @@ module TestIRB
         "ls 42, grep: /times/\n",
         "ls 42 --grep times\n",
         "ls 42 -G times\n",
-        "ls --grep times 42\n",
-        "ls -G times 42\n",
       ].each do |line|
         out, err = execute_lines(line)
         assert_empty err
