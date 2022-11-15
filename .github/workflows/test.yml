@@ -36,8 +36,10 @@ jobs:
       with:
         ruby-version: ${{ matrix.ruby }}
         bundler-cache: true
-    - name: Run test
+    - name: Run tests
       run: bundle exec rake test
+    - name: Run tests in isolation
+      run: bundle exec rake test_in_isolation
   vterm-yamatanooroti:
     name: >-
       vterm-yamatanooroti ${{ matrix.ruby }} ${{ matrix.with_latest_reline && '(latest reline)' || '' }}
