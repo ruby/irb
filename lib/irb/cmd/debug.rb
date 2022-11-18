@@ -48,8 +48,8 @@ module IRB
         unless defined?(DEBUGGER__::SESSION)
           begin
             require "debug/session"
-          rescue LoadError
-            return false
+          rescue LoadError # debug.gem is not written in Gemfile
+            return false unless load_bundled_debug_gem
           end
           DEBUGGER__.start(nonstop: true)
         end
@@ -67,6 +67,28 @@ module IRB
         end
 
         true
+      end
+
+      # This is used when debug.gem is not written in Gemfile. Even if it's not
+      # installed by `bundle install`, debug.gem is installed by default because
+      # it's a bundled gem. This method tries to activate and load that.
+      def load_bundled_debug_gem
+        # Discover debug.gem in GEM_HOME
+        debug_gem = Dir.glob("#{Gem.paths.home}/gems/debug-*").sort.reverse.find do |path|
+          File.basename(path).match?(/\Adebug-\d+\.\d+\.\d+\z/)
+        end
+        return false unless debug_gem
+
+        # Attempt to forcibly load the bundled gem
+        $LOAD_PATH << "#{debug_gem}/lib"
+        begin
+          require "debug/session"
+        rescue LoadError
+          false
+        else
+          puts "Loaded #{File.basename(debug_gem)}"
+          true
+        end
       end
     end
   end
