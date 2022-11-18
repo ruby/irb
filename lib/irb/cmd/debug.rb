@@ -13,7 +13,7 @@ module IRB
 
       def execute(*args)
         unless binding_irb?
-          puts "`debug` command is supported only on binding.irb"
+          puts "`debug` command is only available when IRB is started with binding.irb"
           return
         end
 
