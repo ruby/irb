@@ -83,11 +83,10 @@ module IRB
         $LOAD_PATH << "#{debug_gem}/lib"
         begin
           require "debug/session"
-        rescue LoadError
-          false
-        else
           puts "Loaded #{File.basename(debug_gem)}"
           true
+        rescue LoadError
+          false
         end
       end
     end
