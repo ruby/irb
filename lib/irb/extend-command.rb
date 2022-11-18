@@ -121,6 +121,21 @@ module IRB # :nodoc:
         [:debug, NO_OVERRIDE],
       ],
       [
+        :irb_break, :Break, "cmd/break",
+      ],
+      [
+        :irb_next, :Next, "cmd/next",
+      ],
+      [
+        :irb_continue, :Continue, "cmd/continue",
+        [:continue, NO_OVERRIDE],
+      ],
+      [
+        :irb_finish, :Finish, "cmd/finish",
+        [:finish, NO_OVERRIDE],
+      ],
+
+      [
         :irb_help, :Help, "cmd/help",
         [:help, NO_OVERRIDE],
       ],

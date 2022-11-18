@@ -486,9 +486,9 @@ module IRB
         @workspace.local_variable_set(:_, exception)
       end
 
-      # Transform a non-identifier alias (ex: @, $)
+      # Transform a non-identifier alias (@, $) or keywords (next, break)
       command, args = line.split(/\s/, 2)
-      if original = symbol_alias(command)
+      if original = command_aliases[command.to_sym]
         line = line.gsub(/\A#{Regexp.escape(command)}/, original.to_s)
         command = original
       end
@@ -546,9 +546,9 @@ module IRB
     end
 
     # Return a command name if it's aliased from the argument and it's not an identifier.
-    def symbol_alias(command)
+    def symbol_alias?(command)
       return nil if command.match?(/\A\w+\z/)
-      command_aliases[command.to_sym]
+      command_aliases.key?(command.to_sym)
     end
   end
 end

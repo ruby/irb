@@ -160,8 +160,12 @@ module IRB # :nodoc:
     @CONF[:AT_EXIT] = []
 
     @CONF[:COMMAND_ALIASES] = {
+      # Symbol aliases
       :'$' => :show_source,
       :'@' => :whereami,
+      # Keyword aliases
+      :break => :irb_break,
+      :next => :irb_next,
     }
   end
 
