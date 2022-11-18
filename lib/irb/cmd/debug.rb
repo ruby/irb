@@ -73,10 +73,12 @@ module IRB
       # installed by `bundle install`, debug.gem is installed by default because
       # it's a bundled gem. This method tries to activate and load that.
       def load_bundled_debug_gem
-        # Discover debug.gem in GEM_HOME
-        debug_gem = Dir.glob("#{Gem.paths.home}/gems/debug-*").sort.reverse.find do |path|
+        # Discover latest debug.gem under GEM_PATH
+        debug_gem = Gem.paths.path.map { |path| Dir.glob("#{path}/gems/debug-*") }.flatten.select do |path|
           File.basename(path).match?(/\Adebug-\d+\.\d+\.\d+\z/)
-        end
+        end.sort_by do |path|
+          Gem::Version.new(File.basename(path).delete_prefix('debug-'))
+        end.last
         return false unless debug_gem
 
         # Attempt to forcibly load the bundled gem
