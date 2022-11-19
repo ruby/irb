@@ -399,6 +399,55 @@ begin
       EOC
     end
 
+    def test_backtrace
+      write_ruby <<~'RUBY'
+        puts "start IRB"
+        def foo
+          binding.irb
+        end
+        foo
+      RUBY
+      start_terminal(25, 80, %W{ruby -I#{@pwd}/lib #{@ruby_file}}, startup_message: 'start IRB')
+      write("backtrace\n")
+      close
+      assert_include_screen(<<~EOC)
+        (rdbg:irb) backtrace
+        =>#0    Object#foo at #{@ruby_file}:3
+          #1    <main> at #{@ruby_file}:5
+      EOC
+    end
+
+    def test_info
+      write_ruby <<~'RUBY'
+        puts "start IRB"
+        a = 1
+        binding.irb
+      RUBY
+      start_terminal(25, 80, %W{ruby -I#{@pwd}/lib #{@ruby_file}}, startup_message: 'start IRB')
+      write("info\n")
+      close
+      assert_include_screen(<<~EOC)
+        (rdbg:irb) info
+        %self = main
+        a = 1
+      EOC
+    end
+
+    def test_catch
+      write_ruby <<~'RUBY'
+        puts "start IRB"
+        binding.irb
+        raise NotImplementedError
+      RUBY
+      start_terminal(25, 80, %W{ruby -I#{@pwd}/lib #{@ruby_file}}, startup_message: 'start IRB')
+      write("catch NotImplementedError\n")
+      write("continue\n")
+      close
+      assert_include_screen(<<~EOC)
+        Stop by #0  BP - Catch  "NotImplementedError"
+      EOC
+    end
+
     private
 
     def assert_include_screen(expected)

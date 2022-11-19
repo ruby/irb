@@ -165,6 +165,7 @@ module IRB # :nodoc:
       :'@' => :whereami,
       # Keyword aliases
       :break => :irb_break,
+      :catch => :irb_catch,
       :next => :irb_next,
     }
   end
