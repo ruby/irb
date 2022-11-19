@@ -127,6 +127,14 @@ module IRB # :nodoc:
         :irb_next, :Next, "cmd/next",
       ],
       [
+        :irb_delete, :Delete, "cmd/delete",
+        [:delete, NO_OVERRIDE],
+      ],
+      [
+        :irb_step, :Step, "cmd/step",
+        [:step, NO_OVERRIDE],
+      ],
+      [
         :irb_continue, :Continue, "cmd/continue",
         [:continue, NO_OVERRIDE],
       ],
