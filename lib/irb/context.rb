@@ -545,10 +545,16 @@ module IRB
       workspace.binding.local_variables
     end
 
-    # Return a command name if it's aliased from the argument and it's not an identifier.
+    # Return true if it's aliased from the argument and it's not an identifier.
     def symbol_alias?(command)
       return nil if command.match?(/\A\w+\z/)
       command_aliases.key?(command.to_sym)
+    end
+
+    # Return true if the command supports transforming args
+    def transform_args?(command)
+      command = command_aliases.fetch(command.to_sym, command)
+      ExtendCommandBundle.load_command(command)&.respond_to?(:transform_args)
     end
   end
 end

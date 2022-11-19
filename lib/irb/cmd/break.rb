@@ -7,8 +7,12 @@ module IRB
 
   module ExtendCommand
     class Break < Debug
-      def execute(*args)
-        super(['break', *args].join(' '))
+      def self.transform_args(args)
+        args&.dump
+      end
+
+      def execute(args = nil)
+        super(pre_cmds: "break #{args}")
       end
     end
   end

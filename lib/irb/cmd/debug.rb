@@ -11,7 +11,7 @@ module IRB
       ].map { |file| /\A#{Regexp.escape(file)}:\d+:in `irb'\z/ }
       IRB_DIR = File.expand_path('..', __dir__)
 
-      def execute(debug_command = nil)
+      def execute(pre_cmds: nil, do_cmds: nil)
         unless binding_irb?
           puts "`debug` command is only available when IRB is started with binding.irb"
           return
@@ -26,8 +26,8 @@ module IRB
         end
 
         command = nil
-        if debug_command
-          command = ['irb', nil, debug_command]
+        if pre_cmds || do_cmds
+          command = ['irb', pre_cmds, do_cmds]
         end
 
         # To make debugger commands like `next` or `continue` work without asking

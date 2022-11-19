@@ -8,7 +8,7 @@ module IRB
   module ExtendCommand
     class Finish < Debug
       def execute(*args)
-        super(['finish', *args].join(' '))
+        super(do_cmds: ["finish", *args].join(" "))
       end
     end
   end

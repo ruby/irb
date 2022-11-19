@@ -8,7 +8,7 @@ module IRB
   module ExtendCommand
     class Next < Debug
       def execute(*args)
-        super(['next', *args].join(' '))
+        super(do_cmds: ["next", *args].join(" "))
       end
     end
   end
