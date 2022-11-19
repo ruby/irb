@@ -83,6 +83,8 @@ The following commands are available on IRB.
   * Show the source code around binding.irb again.
 * `debug`
   * Start the debugger of debug.gem.
+* `break`, `delete`, `next`, `step`, `continue`, `finish`
+  * Start the debugger of debug.gem and run the command on it.
 
 ## Documentation
 
