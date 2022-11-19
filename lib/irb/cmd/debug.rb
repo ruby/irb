@@ -25,16 +25,19 @@ module IRB
           return
         end
 
-        command = nil
+        options = { oneshot: true, hook_call: false }
         if pre_cmds || do_cmds
-          command = ['irb', pre_cmds, do_cmds]
+          options[:command] = ['irb', pre_cmds, do_cmds]
+        end
+        if DEBUGGER__::LineBreakpoint.instance_method(:initialize).parameters.include?([:key, :skip_src])
+          options[:skip_src] = true
         end
 
         # To make debugger commands like `next` or `continue` work without asking
         # the user to quit IRB after that, we need to exit IRB first and then hit
         # a TracePoint on #debug_break.
         file, lineno = IRB::Irb.instance_method(:debug_break).source_location
-        DEBUGGER__::SESSION.add_line_breakpoint(file, lineno + 1, oneshot: true, hook_call: false, command: command)
+        DEBUGGER__::SESSION.add_line_breakpoint(file, lineno + 1, **options)
         # exit current Irb#run call
         throw :IRB_EXIT
       end
