@@ -94,6 +94,8 @@ require_relative "irb/easter-egg"
 #   * Show the source code of a given method or constant.
 # * @, whereami
 #   * Show the source code around binding.irb again.
+# * debug
+#   * Start the debugger of debug.gem.
 #
 # == Configuration
 #

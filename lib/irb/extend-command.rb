@@ -185,6 +185,7 @@ module IRB # :nodoc:
     # +irb_measure+::                     IRB::unset_measure_callback
     # +irb_show_source+::                 #find_source, #show_source
     # +irb_whereami+::                    Workspace#code_around_binding
+    # +irb_debug+::                       #debugger
     def self.install_extend_commands
       for args in @EXTEND_COMMANDS
         def_extend_command(*args)

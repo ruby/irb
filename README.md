@@ -81,6 +81,8 @@ The following commands are available on IRB.
   * Show the source code of a given method or constant.
 * `@`, `whereami`
   * Show the source code around binding.irb again.
+* `debug`
+  * Start the debugger of debug.gem.
 
 ## Documentation
 
