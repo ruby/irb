@@ -41,6 +41,8 @@ module IRB
           end
         end
 
+        private
+
         def find_end(file, first_line)
           return first_line unless File.exist?(file)
           lex = RubyLex.new
