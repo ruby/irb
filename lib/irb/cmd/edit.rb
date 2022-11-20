@@ -33,11 +33,10 @@ module IRB
 
         if !File.exist?(path)
           require_relative "show_source"
-          show_source_cmd = ShowSource.new(@irb_context)
 
           source =
             begin
-              show_source_cmd.send(:find_source, path)
+              ShowSource.find_source(path, @irb_context)
             rescue NameError
               # if user enters a path that doesn't exist, it'll cause NameError when passed here because find_source would try to evaluate it as well
               # in this case, we should just ignore the error
