@@ -54,15 +54,10 @@ module IRB
           DEBUGGER__.start(nonstop: true)
         end
 
-        unless DEBUGGER__.respond_to?(:capture_frames_without_irb)
-          DEBUGGER__.singleton_class.send(:alias_method, :capture_frames_without_irb, :capture_frames)
-
-          def DEBUGGER__.capture_frames(*args)
-            frames = capture_frames_without_irb(*args)
-            frames.reject! do |frame|
-              frame.realpath&.start_with?(IRB_DIR) || frame.path == "<internal:prelude>"
-            end
-            frames
+        DEBUGGER__::CONFIG[:skip_path] ||= []
+        Irb::DEBUG_SKIP_PATHS.each do |skip_path|
+          unless DEBUGGER__::CONFIG[:skip_path].include?(skip_path)
+            DEBUGGER__::CONFIG[:skip_path] << skip_path
           end
         end
 

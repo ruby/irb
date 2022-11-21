@@ -466,6 +466,11 @@ module IRB
     # be parsed as :assign and echo will be suppressed, but the latter is
     # parsed as a :method_add_arg and the output won't be suppressed
 
+    DEBUG_SKIP_PATHS = [
+      /\A#{Regexp.escape(File.expand_path('./irb', __dir__))}/,
+      "<internal:prelude>",
+    ]
+
     # Creates a new irb session
     def initialize(workspace = nil, input_method = nil)
       @context = Context.new(self, workspace, input_method)
@@ -481,11 +486,9 @@ module IRB
     # A hook point for `debug` command's TracePoint after :IRB_EXIT as well as its clean-up
     def debug_break
       # it means the debug command is executed
-      if defined?(DEBUGGER__) && DEBUGGER__.respond_to?(:capture_frames_without_irb)
-        # after leaving this initial breakpoint, revert the capture_frames patch
-        DEBUGGER__.singleton_class.send(:alias_method, :capture_frames, :capture_frames_without_irb)
-        # and remove the redundant method
-        DEBUGGER__.singleton_class.send(:undef_method, :capture_frames_without_irb)
+      if defined?(DEBUGGER__::SESSION) && DEBUGGER__::CONFIG[:skip_path]
+        # after leaving this initial breakpoint, revert the skip_path updates
+        DEBUGGER__::CONFIG[:skip_path].delete_if { |path| DEBUG_SKIP_PATHS.include?(path) }
       end
     end
 
