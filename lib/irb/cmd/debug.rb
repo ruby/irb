@@ -83,7 +83,7 @@ module IRB
       def load_bundled_debug_gem
         # Discover latest debug.gem under GEM_PATH
         debug_gem = Gem.paths.path.flat_map { |path| Dir.glob("#{path}/gems/debug-*") }.select do |path|
-          File.basename(path).match?(/\Adebug-\d+\.\d+\.\d+\z/)
+          File.basename(path).match?(/\Adebug-\d+\.\d+\.\d+(\w+)?\z/)
         end.sort_by do |path|
           Gem::Version.new(File.basename(path).delete_prefix('debug-'))
         end.last
