@@ -21,6 +21,8 @@ module IRB
         extend_irb_context
       end
 
+      private
+
       def extend_irb_context
         # this extension patches IRB context like IRB.CurrentContext
         require_relative "../ext/multi-irb"
