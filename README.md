@@ -93,6 +93,15 @@ The following commands are available on IRB.
 * `break`, `delete`, `next`, `step`, `continue`, `finish`, `backtrace`, `info`, `catch`
   * Start the debugger of debug.gem and run the command on it.
 
+## Configuration
+
+### Environment Variables
+
+- `NO_COLOR`: Assigning a value to it disables IRB's colorization.
+- `IRB_USE_AUTOCOMPLETE`: Setting it to `false` disables IRB's autocompletion.
+- `EDITOR`: Its value would be used to open files by the `edit` command.
+- `IRBRC`: The file specified would be evaluated as IRB's rc-file.
+
 ## Documentation
 
 https://docs.ruby-lang.org/en/master/IRB.html
