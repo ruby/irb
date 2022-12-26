@@ -10,14 +10,12 @@ module TestIRB
     Row = Struct.new(:content, :current_line_spaces, :new_line_spaces, :nesting_level)
 
     class MockIO_AutoIndent
-      def initialize(params, &assertion)
+      def initialize(*params)
         @params = params
-        @assertion = assertion
       end
 
       def auto_indent(&block)
-        result = block.call(*@params)
-        @assertion.call(result)
+        block.call(*@params)
       end
     end
 
@@ -29,20 +27,24 @@ module TestIRB
       restore_encodings
     end
 
-    def assert_indenting(lines, correct_space_count, add_new_line)
+    def assert_indenting(lines, expected_space_count, add_new_line)
       lines = lines + [""] if add_new_line
       last_line_index = lines.length - 1
       byte_pointer = lines.last.length
 
       context = build_context
       context.auto_indent_mode = true
+
       ruby_lex = RubyLex.new(context)
       io = MockIO_AutoIndent.new([lines, last_line_index, byte_pointer, add_new_line]) do |auto_indent|
         error_message = "Calculated the wrong number of spaces for:\n #{lines.join("\n")}"
         assert_equal(correct_space_count, auto_indent, error_message)
       end
+
       ruby_lex.set_input(io)
-      ruby_lex.set_auto_indent
+      auto_indent_space_count = ruby_lex.set_auto_indent
+      error_message = "Calculated the wrong number of spaces for:\n #{lines.join("\n")}"
+      assert_equal(expected_space_count, auto_indent_space_count, error_message)
     end
 
     def assert_nesting_level(lines, expected, local_variables: [])
