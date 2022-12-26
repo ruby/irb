@@ -85,12 +85,6 @@ module TestIRB
       assert_equal(row.new_line_spaces, actual_next_line_spaces, error_message)
     end
 
-    def assert_indenting(lines, expected_space_count, add_new_line)
-      auto_indent_space_count = calculate_indenting(lines, add_new_line)
-      error_message = "Calculated the wrong number of spaces for:\n #{lines.join("\n")}"
-      assert_equal(expected_space_count, auto_indent_space_count, error_message)
-    end
-
     def assert_nesting_level(lines, expected, local_variables: [])
       ruby_lex = ruby_lex_for_lines(lines, local_variables: local_variables)
       error_message = "Calculated the wrong number of nesting level for:\n #{lines.join("\n")}"
@@ -169,8 +163,7 @@ module TestIRB
       lines = []
       input_with_correct_indents.each do |row|
         lines << row.content
-        assert_indenting(lines, row.current_line_spaces, false)
-        assert_indenting(lines, row.new_line_spaces, true)
+        assert_row_indenting(lines, row)
       end
     end
 
@@ -188,8 +181,7 @@ module TestIRB
       lines = []
       input_with_correct_indents.each do |row|
         lines << row.content
-        assert_indenting(lines, row.current_line_spaces, false)
-        assert_indenting(lines, row.new_line_spaces, true)
+        assert_row_indenting(lines, row)
       end
     end
 
@@ -202,8 +194,7 @@ module TestIRB
       lines = []
       input_with_correct_indents.each do |row|
         lines << row.content
-        assert_indenting(lines, row.current_line_spaces, false)
-        assert_indenting(lines, row.new_line_spaces, true)
+        assert_row_indenting(lines, row)
       end
     end
 
@@ -222,8 +213,7 @@ module TestIRB
       lines = []
       input_with_correct_indents.each do |row|
         lines << row.content
-        assert_indenting(lines, row.current_line_spaces, false)
-        assert_indenting(lines, row.new_line_spaces, true)
+        assert_row_indenting(lines, row)
       end
     end
 
@@ -298,8 +288,7 @@ module TestIRB
       lines = []
       input_with_correct_indents.each do |row|
         lines << row.content
-        assert_indenting(lines, row.current_line_spaces, false)
-        assert_indenting(lines, row.new_line_spaces, true)
+        assert_row_indenting(lines, row)
       end
     end
 
@@ -311,8 +300,7 @@ module TestIRB
       lines = []
       input_with_correct_indents.each do |row|
         lines << row.content
-        assert_indenting(lines, row.current_line_spaces, false)
-        assert_indenting(lines, row.new_line_spaces, true)
+        assert_row_indenting(lines, row)
       end
     end
 
@@ -324,8 +312,7 @@ module TestIRB
       lines = []
       input_with_correct_indents.each do |row|
         lines << row.content
-        assert_indenting(lines, row.current_line_spaces, false)
-        assert_indenting(lines, row.new_line_spaces, true)
+        assert_row_indenting(lines, row)
       end
     end
 
@@ -337,8 +324,7 @@ module TestIRB
       lines = []
       input_with_correct_indents.each do |row|
         lines << row.content
-        assert_indenting(lines, row.current_line_spaces, false)
-        assert_indenting(lines, row.new_line_spaces, true)
+        assert_row_indenting(lines, row)
       end
     end
 
@@ -364,8 +350,7 @@ module TestIRB
       lines = []
       input_with_correct_indents.each do |row|
         lines << row.content
-        assert_indenting(lines, row.current_line_spaces, false)
-        assert_indenting(lines, row.new_line_spaces, true)
+        assert_row_indenting(lines, row)
       end
     end
 
@@ -395,8 +380,7 @@ module TestIRB
       lines = []
       input_with_correct_indents.each do |row|
         lines << row.content
-        assert_indenting(lines, row.current_line_spaces, false)
-        assert_indenting(lines, row.new_line_spaces, true)
+        assert_row_indenting(lines, row)
       end
     end
 
@@ -411,8 +395,7 @@ module TestIRB
       lines = []
       input_with_correct_indents.each do |row|
         lines << row.content
-        assert_indenting(lines, row.current_line_spaces, false)
-        assert_indenting(lines, row.new_line_spaces, true)
+        assert_row_indenting(lines, row)
         assert_nesting_level(lines, row.nesting_level)
       end
     end
@@ -432,8 +415,7 @@ module TestIRB
       lines = []
       input_with_correct_indents.each do |row|
         lines << row.content
-        assert_indenting(lines, row.current_line_spaces, false)
-        assert_indenting(lines, row.new_line_spaces, true)
+        assert_row_indenting(lines, row)
         assert_nesting_level(lines, row.nesting_level)
       end
     end
@@ -481,8 +463,7 @@ module TestIRB
       lines = []
       input_with_correct_indents.each do |row|
         lines << row.content
-        assert_indenting(lines, row.current_line_spaces, false)
-        assert_indenting(lines, row.new_line_spaces, true)
+        assert_row_indenting(lines, row)
         assert_nesting_level(lines, row.nesting_level)
       end
     end
@@ -497,8 +478,7 @@ module TestIRB
       lines = []
       input_with_correct_indents.each do |row|
         lines << row.content
-        assert_indenting(lines, row.current_line_spaces, false)
-        assert_indenting(lines, row.new_line_spaces, true)
+        assert_row_indenting(lines, row)
         assert_nesting_level(lines, row.nesting_level)
       end
     end
@@ -513,8 +493,7 @@ module TestIRB
       lines = []
       input_with_correct_indents.each do |row|
         lines << row.content
-        assert_indenting(lines, row.current_line_spaces, false)
-        assert_indenting(lines, row.new_line_spaces, true)
+        assert_row_indenting(lines, row)
         assert_nesting_level(lines, row.nesting_level)
       end
     end
@@ -530,8 +509,7 @@ module TestIRB
       lines = []
       input_with_correct_indents.each do |row|
         lines << row.content
-        assert_indenting(lines, row.current_line_spaces, false)
-        assert_indenting(lines, row.new_line_spaces, true)
+        assert_row_indenting(lines, row)
         assert_nesting_level(lines, row.nesting_level)
       end
     end
@@ -546,8 +524,7 @@ module TestIRB
       lines = []
       input_with_correct_indents.each do |row|
         lines << row.content
-        assert_indenting(lines, row.current_line_spaces, false)
-        assert_indenting(lines, row.new_line_spaces, true)
+        assert_row_indenting(lines, row)
         assert_nesting_level(lines, row.nesting_level)
       end
     end
@@ -562,8 +539,7 @@ module TestIRB
       lines = []
       input_with_correct_indents.each do |row|
         lines << row.content
-        assert_indenting(lines, row.current_line_spaces, false)
-        assert_indenting(lines, row.new_line_spaces, true)
+        assert_row_indenting(lines, row)
         assert_nesting_level(lines, row.nesting_level)
       end
     end
@@ -578,8 +554,7 @@ module TestIRB
       lines = []
       input_with_correct_indents.each do |row|
         lines << row.content
-        assert_indenting(lines, row.current_line_spaces, false)
-        assert_indenting(lines, row.new_line_spaces, true)
+        assert_row_indenting(lines, row)
         assert_nesting_level(lines, row.nesting_level)
       end
     end
@@ -594,8 +569,7 @@ module TestIRB
       lines = []
       input_with_correct_indents.each do |row|
         lines << row.content
-        assert_indenting(lines, row.current_line_spaces, false)
-        assert_indenting(lines, row.new_line_spaces, true)
+        assert_row_indenting(lines, row)
         assert_nesting_level(lines, row.nesting_level)
       end
     end
@@ -620,8 +594,7 @@ module TestIRB
       lines = []
       input_with_correct_indents.each do |row|
         lines << row.content
-        assert_indenting(lines, row.current_line_spaces, false)
-        assert_indenting(lines, row.new_line_spaces, true)
+        assert_row_indenting(lines, row)
         assert_nesting_level(lines, row.nesting_level)
       end
     end
@@ -637,8 +610,7 @@ module TestIRB
       lines = []
       input_with_correct_indents.each do |row|
         lines << row.content
-        assert_indenting(lines, row.current_line_spaces, false)
-        assert_indenting(lines, row.new_line_spaces, true)
+        assert_row_indenting(lines, row)
         assert_nesting_level(lines, row.nesting_level)
       end
     end
@@ -656,8 +628,7 @@ module TestIRB
       lines = []
       input_with_correct_indents.each do |row|
         lines << row.content
-        assert_indenting(lines, row.current_line_spaces, false)
-        assert_indenting(lines, row.new_line_spaces, true)
+        assert_row_indenting(lines, row)
         assert_nesting_level(lines, row.nesting_level)
       end
     end
