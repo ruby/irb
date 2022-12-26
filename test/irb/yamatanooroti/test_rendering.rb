@@ -235,7 +235,9 @@ begin
       EOC
     end
 
-    private def write_irbrc(content)
+    private
+
+    def write_irbrc(content)
       File.open(@irbrc_file, 'w') do |f|
         f.write content
       end

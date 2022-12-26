@@ -70,10 +70,10 @@ module IRB
       end
       history_file = IRB.rc_file("_history") unless history_file
       if File.exist?(history_file)
-        open(history_file, "r:#{IRB.conf[:LC_MESSAGES].encoding}") do |f|
+        File.open(history_file, "r:#{IRB.conf[:LC_MESSAGES].encoding}") do |f|
           f.each { |l|
             l = l.chomp
-            if self.class == ReidlineInputMethod and history.last&.end_with?("\\")
+            if self.class == RelineInputMethod and history.last&.end_with?("\\")
               history.last.delete_suffix!("\\")
               history.last << "\n" << l
             else

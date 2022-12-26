@@ -49,10 +49,13 @@ module IRB
       if IRB.conf.has_key?(:USE_MULTILINE)
         @use_multiline = IRB.conf[:USE_MULTILINE]
       elsif IRB.conf.has_key?(:USE_RELINE) # backward compatibility
+        warn <<~MSG.strip
+          USE_RELINE is deprecated, please use USE_MULTILINE instead.
+        MSG
         @use_multiline = IRB.conf[:USE_RELINE]
       elsif IRB.conf.has_key?(:USE_REIDLINE)
         warn <<~MSG.strip
-          USE_REIDLINE is deprecated, please use USE_RELINE instead.
+          USE_REIDLINE is deprecated, please use USE_MULTILINE instead.
         MSG
         @use_multiline = IRB.conf[:USE_REIDLINE]
       else
@@ -149,6 +152,8 @@ module IRB
       if @newline_before_multiline_output.nil?
         @newline_before_multiline_output = true
       end
+
+      @command_aliases = IRB.conf[:COMMAND_ALIASES]
     end
 
     # The top-level workspace, see WorkSpace#main
@@ -326,6 +331,9 @@ module IRB
     # See IRB@Command+line+options for more command line options.
     attr_accessor :back_trace_limit
 
+    # User-defined IRB command aliases
+    attr_accessor :command_aliases
+
     # Alias for #use_multiline
     alias use_multiline? use_multiline
     # Alias for #use_singleline
@@ -477,6 +485,20 @@ module IRB
         line = "begin ::Kernel.raise _; rescue _.class\n#{line}\n""end"
         @workspace.local_variable_set(:_, exception)
       end
+
+      # Transform a non-identifier alias (@, $) or keywords (next, break)
+      command, args = line.split(/\s/, 2)
+      if original = command_aliases[command.to_sym]
+        line = line.gsub(/\A#{Regexp.escape(command)}/, original.to_s)
+        command = original
+      end
+
+      # Hook command-specific transformation
+      command_class = ExtendCommandBundle.load_command(command)
+      if command_class&.respond_to?(:transform_args)
+        line = "#{command} #{command_class.transform_args(args)}"
+      end
+
       set_last_value(@workspace.evaluate(self, line, irb_path, line_no))
     end
 
@@ -521,6 +543,18 @@ module IRB
 
     def local_variables # :nodoc:
       workspace.binding.local_variables
+    end
+
+    # Return true if it's aliased from the argument and it's not an identifier.
+    def symbol_alias?(command)
+      return nil if command.match?(/\A\w+\z/)
+      command_aliases.key?(command.to_sym)
+    end
+
+    # Return true if the command supports transforming args
+    def transform_args?(command)
+      command = command_aliases.fetch(command.to_sym, command)
+      ExtendCommandBundle.load_command(command)&.respond_to?(:transform_args)
     end
   end
 end
