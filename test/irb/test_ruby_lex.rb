@@ -10,12 +10,15 @@ module TestIRB
     Row = Struct.new(:content, :current_line_spaces, :new_line_spaces, :nesting_level)
 
     class MockIO_AutoIndent
+      attr_reader :calculated_indent
+
       def initialize(*params)
         @params = params
+        @calculated_indent
       end
 
       def auto_indent(&block)
-        block.call(*@params)
+        @calculated_indent = block.call(*@params)
       end
     end
 
@@ -27,7 +30,7 @@ module TestIRB
       restore_encodings
     end
 
-    def assert_indenting(lines, expected_space_count, add_new_line)
+    def calculate_indenting(lines, add_new_line)
       lines = lines + [""] if add_new_line
       last_line_index = lines.length - 1
       byte_pointer = lines.last.length
@@ -36,13 +39,51 @@ module TestIRB
       context.auto_indent_mode = true
 
       ruby_lex = RubyLex.new(context)
-      io = MockIO_AutoIndent.new([lines, last_line_index, byte_pointer, add_new_line]) do |auto_indent|
-        error_message = "Calculated the wrong number of spaces for:\n #{lines.join("\n")}"
-        assert_equal(correct_space_count, auto_indent, error_message)
-      end
+      mock_io = MockIO_AutoIndent.new(lines, last_line_index, byte_pointer, add_new_line)
 
-      ruby_lex.set_input(io)
-      auto_indent_space_count = ruby_lex.set_auto_indent
+      ruby_lex.set_input(mock_io)
+      ruby_lex.set_auto_indent
+      mock_io.calculated_indent
+    end
+
+    def assert_row_indenting(lines, row)
+      actual_current_line_spaces = calculate_indenting(lines, false)
+
+      error_message = <<~MSG
+        Incorrect spaces calculation for line:
+
+        ```
+      > #{lines.last}
+        ```
+
+        All lines:
+
+        ```
+        #{lines.join("\n")}
+        ```
+      MSG
+      assert_equal(row.current_line_spaces, actual_current_line_spaces, error_message)
+
+      error_message = <<~MSG
+        Incorrect spaces calculation for line after the current line:
+
+        ```
+        #{lines.last}
+      >
+        ```
+
+        All lines:
+
+        ```
+        #{lines.join("\n")}
+        ```
+      MSG
+      actual_next_line_spaces = calculate_indenting(lines, true)
+      assert_equal(row.new_line_spaces, actual_next_line_spaces, error_message)
+    end
+
+    def assert_indenting(lines, expected_space_count, add_new_line)
+      auto_indent_space_count = calculate_indenting(lines, add_new_line)
       error_message = "Calculated the wrong number of spaces for:\n #{lines.join("\n")}"
       assert_equal(expected_space_count, auto_indent_space_count, error_message)
     end
@@ -110,8 +151,7 @@ module TestIRB
       lines = []
       input_with_correct_indents.each do |row|
         lines << row.content
-        assert_indenting(lines, row.current_line_spaces, false)
-        assert_indenting(lines, row.new_line_spaces, true)
+        assert_row_indenting(lines, row)
       end
     end
 
