@@ -6,7 +6,13 @@ The `irb` command from your shell will start the interpreter.
 
 ## Installation
 
-Add this line to your application's Gemfile:
+> **Note**
+>
+> IRB is a default gem of Ruby so you shouldn't need to install it separately.
+>
+> But if you're using Ruby 2.6 or later and want to upgrade/install a specific version of IRB, please follow these steps.
+
+To install it with `bundler`, add this line to your application's Gemfile:
 
 ```ruby
 gem 'irb'
@@ -14,11 +20,15 @@ gem 'irb'
 
 And then execute:
 
-    $ bundle
+```shell
+$ bundle
+```
 
-Or install it yourself as:
+Or install it directly with:
 
-    $ gem install irb
+```shell
+$ gem install irb
+```
 
 ## Usage
 
@@ -45,7 +55,7 @@ irb(main):007:0> Foo.new.foo
 
 ### The `binding.irb` Breakpoint
 
-If you use Ruby 2.5+, you can also use `binding.irb` in your program as breakpoints.
+If you use Ruby 2.5 or later versions, you can also use `binding.irb` in your program as breakpoints.
 
 Once a `binding.irb` is evaluated, a new IRB session will be started with the surrounding context:
 
