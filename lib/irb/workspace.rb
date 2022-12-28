@@ -169,8 +169,5 @@ EOF
 
       "\nFrom: #{file} @ line #{pos + 1} :\n\n#{body}#{Color.clear}\n"
     end
-
-    def IRB.delete_caller
-    end
   end
 end
