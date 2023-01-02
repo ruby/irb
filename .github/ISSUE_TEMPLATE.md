@@ -13,7 +13,7 @@ irb(main):001:0> irb_info
 =>
 Ruby version: 3.0.0
 IRB version: irb 1.2.7 (2020-09-19)
-InputMethod: ReidlineInputMethod with Reline 0.1.9 and /home/aycabta/.inputrc
+InputMethod: RelineInputMethod with Reline 0.1.9 and /home/aycabta/.inputrc
 .irbrc path: /home/aycabta/.irbrc
 ```
 

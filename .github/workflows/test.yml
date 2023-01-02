@@ -12,36 +12,30 @@ jobs:
     strategy:
       matrix:
         ruby:
+          - '3.2'
           - '3.1'
           - '3.0'
           - '2.7'
           - '2.6'
-          - '2.5'
           - head
           - truffleruby-head
         os: [ubuntu-latest]
         with_latest_reline: [true, false]
-        exclude:
-          - ruby: '2.5'
-            os: ubuntu-latest
-            with_latest_reline: true
       fail-fast: false
     runs-on: ${{ matrix.os }}
     env:
       WITH_LATEST_RELINE: ${{matrix.with_latest_reline}}
     steps:
-    - uses: actions/checkout@master
-    - name: Set up Ruby
-      uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: ${{ matrix.ruby }}
-    - name: Install dependencies
-      run: |
-        gem update --system
-        gem install bundler --no-document
-        bundle install
-    - name: Run test
-      run: bundle exec rake test
+      - uses: actions/checkout@master
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+      - name: Run tests
+        run: bundle exec rake test
+      - name: Run tests in isolation
+        run: bundle exec rake test_in_isolation
   vterm-yamatanooroti:
     name: >-
       vterm-yamatanooroti ${{ matrix.ruby }} ${{ matrix.with_latest_reline && '(latest reline)' || '' }}
@@ -49,6 +43,7 @@ jobs:
     strategy:
       matrix:
         ruby:
+          - '3.2'
           - '3.1'
           - '3.0'
           - '2.7'
@@ -78,4 +73,4 @@ jobs:
           gem install bundler --no-document
           WITH_VTERM=1 bundle install
       - name: rake test_yamatanooroti
-        run:  bundle exec rake test_yamatanooroti
+        run: WITH_VTERM=1 bundle exec rake test_yamatanooroti
