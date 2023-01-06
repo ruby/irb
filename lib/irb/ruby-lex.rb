@@ -6,6 +6,7 @@
 
 require "ripper"
 require "jruby" if RUBY_ENGINE == "jruby"
+require_relative "nesting_parser"
 
 # :stopdoc:
 class RubyLex
@@ -54,8 +55,7 @@ class RubyLex
     if @io.respond_to?(:check_termination)
       @io.check_termination do |code|
         if Reline::IOGate.in_pasting?
-          lex = RubyLex.new(@context)
-          rest = lex.check_termination_in_prev_line(code)
+          rest = check_termination_in_prev_line(code)
           if rest
             Reline.delete_text
             rest.bytes.reverse_each do |c|
@@ -65,68 +65,43 @@ class RubyLex
           else
             false
           end
-        else
+        elsif single_line_command?(code)
           # Accept any single-line input for symbol aliases or commands that transform args
-          next true if single_line_command?(code)
-
-          ltype, indent, continue, code_block_open = check_code_state(code)
-          if ltype or indent > 0 or continue or code_block_open
-            false
-          else
-            true
-          end
+          true
+        else
+          check_target_code, tokens, opens = check_code_state(code)
+          continue = process_continue(tokens)
+          opens.empty? && !continue && !check_code_block(check_target_code, tokens)
         end
       end
     end
     if @io.respond_to?(:dynamic_prompt)
       @io.dynamic_prompt do |lines|
         lines << '' if lines.empty?
-        result = []
         tokens = self.class.ripper_lex_without_warning(lines.map{ |l| l + "\n" }.join, context: @context)
-        code = String.new
-        partial_tokens = []
-        unprocessed_tokens = []
-        line_num_offset = 0
-        tokens.each do |t|
-          partial_tokens << t
-          unprocessed_tokens << t
-          if t.tok.include?("\n")
-            t_str = t.tok
-            t_str.each_line("\n") do |s|
-              code << s
-              next unless s.include?("\n")
-              ltype, indent, continue, code_block_open = check_state(code, partial_tokens)
-              result << @prompt.call(ltype, indent, continue || code_block_open, @line_no + line_num_offset)
-              line_num_offset += 1
-            end
-            unprocessed_tokens = []
-          else
-            code << t.tok
+        line_results = IRB::NestingParser.parse_by_line(tokens)
+        tokens_until_line = []
+        line_results.map.with_index do |(line_tokens, _prev_opens, next_opens), line_num_offset|
+          line_tokens.each do |token, _s|
+            tokens_until_line << token if token != tokens_until_line.last
           end
+          continue = process_continue(tokens_until_line)
+          prompt(next_opens, continue, line_num_offset)
         end
-
-        unless unprocessed_tokens.empty?
-          ltype, indent, continue, code_block_open = check_state(code, unprocessed_tokens)
-          result << @prompt.call(ltype, indent, continue || code_block_open, @line_no + line_num_offset)
-        end
-        result
       end
     end
 
     if @io.respond_to?(:auto_indent) and @context.auto_indent_mode
       @io.auto_indent do |lines, line_index, byte_pointer, is_newline|
         if is_newline
-          @tokens = self.class.ripper_lex_without_warning(lines[0..line_index].join("\n"), context: @context)
-          prev_spaces = find_prev_spaces(line_index)
-          depth_difference = check_newline_depth_difference
-          depth_difference = 0 if depth_difference < 0
-          prev_spaces + depth_difference * 2
+          tokens = self.class.ripper_lex_without_warning(lines[0..line_index].join("\n"), context: @context)
+          process_indent_level(tokens, lines)
         else
           code = line_index.zero? ? '' : lines[0..(line_index - 1)].map{ |l| l + "\n" }.join
           last_line = lines[line_index]&.byteslice(0, byte_pointer)
           code += last_line if last_line
-          @tokens = self.class.ripper_lex_without_warning(code, context: @context)
-          check_corresponding_token_depth(lines, line_index)
+          tokens = self.class.ripper_lex_without_warning(code, context: @context)
+          check_corresponding_token_depth(tokens, lines, line_index)
         end
       end
     end
@@ -176,50 +151,26 @@ class RubyLex
     $VERBOSE = verbose
   end
 
-  def find_prev_spaces(line_index)
-    return 0 if @tokens.size == 0
-    md = @tokens[0].tok.match(/(\A +)/)
-    prev_spaces = md.nil? ? 0 : md[1].count(' ')
-    line_count = 0
-    @tokens.each_with_index do |t, i|
-      if t.tok.include?("\n")
-        line_count += t.tok.count("\n")
-        if line_count >= line_index
-          return prev_spaces
-        end
-        next if t.event == :on_tstring_content || t.event == :on_words_sep
-        if (@tokens.size - 1) > i
-          md = @tokens[i + 1].tok.match(/(\A +)/)
-          prev_spaces = md.nil? ? 0 : md[1].count(' ')
-        end
-      end
-    end
-    prev_spaces
-  end
-
-  def check_state(code, tokens)
-    ltype = process_literal_type(tokens)
-    indent = process_nesting_level(tokens)
-    continue = process_continue(tokens)
-    lvars_code = self.class.generate_local_variables_assign_code(@context.local_variables)
-    code = "#{lvars_code}\n#{code}" if lvars_code
-    code_block_open = check_code_block(code, tokens)
-    [ltype, indent, continue, code_block_open]
+  def prompt(opens, continue, line_num_offset)
+    ltype = ltype_from_open_tokens(opens)
+    _indent, nesting_level = calc_nesting_depth(opens)
+    @prompt&.call(ltype, nesting_level, opens.any? || continue, @line_no + line_num_offset)
   end
 
   def check_code_state(code)
     check_target_code = code.gsub(/\s*\z/, '').concat("\n")
     tokens = self.class.ripper_lex_without_warning(check_target_code, context: @context)
-    check_state(check_target_code, tokens)
+    opens = IRB::NestingParser.scan(tokens)
+    [check_target_code, tokens, opens]
   end
 
-  def save_prompt_to_context_io(ltype, indent, continue, line_num_offset)
+  def save_prompt_to_context_io(opens, continue, line_num_offset)
     # Implicitly saves prompt string to `@context.io.prompt`. This will be used in the next `@input.call`.
-    @prompt.call(ltype, indent, continue, @line_no + line_num_offset)
+    prompt(opens, continue, line_num_offset)
   end
 
   def readmultiline
-    save_prompt_to_context_io(nil, 0, false, 0)
+    save_prompt_to_context_io([], false, 0)
 
     # multiline
     return @input.call if @io.respond_to?(:check_termination)
@@ -237,11 +188,12 @@ class RubyLex
       # Accept any single-line input for symbol aliases or commands that transform args
       return code if single_line_command?(code)
 
-      ltype, indent, continue, code_block_open = check_code_state(code)
-      return code unless ltype or indent > 0 or continue or code_block_open
+      check_target_code, tokens, opens = check_code_state(code)
+      continue = process_continue(tokens)
+      return code if opens.empty? && !continue && !check_code_block(check_target_code, tokens)
 
       line_offset += 1
-      save_prompt_to_context_io(ltype, indent, continue, line_offset)
+      save_prompt_to_context_io(opens, continue, line_offset)
     end
   end
 
@@ -282,9 +234,6 @@ class RubyLex
 
   def check_code_block(code, tokens)
     return true if tokens.empty?
-    if tokens.last.event == :on_heredoc_beg
-      return true
-    end
 
     begin # check if parser error are available
       verbose, $VERBOSE = $VERBOSE, nil
@@ -372,365 +321,74 @@ class RubyLex
     false
   end
 
-  def process_nesting_level(tokens)
-    indent = 0
-    in_oneliner_def = nil
-    tokens.each_with_index { |t, index|
-      # detecting one-liner method definition
-      if in_oneliner_def.nil?
-        if t.state.allbits?(Ripper::EXPR_ENDFN)
-          in_oneliner_def = :ENDFN
-        end
-      else
-        if t.state.allbits?(Ripper::EXPR_ENDFN)
-          # continuing
-        elsif t.state.allbits?(Ripper::EXPR_BEG)
-          if t.tok == '='
-            in_oneliner_def = :BODY
-          end
-        else
-          if in_oneliner_def == :BODY
-            # one-liner method definition
-            indent -= 1
-          end
-          in_oneliner_def = nil
-        end
-      end
-
+  def calc_nesting_depth(opens)
+    indent_level = 0
+    nesting_level = 0
+    opens.each do |t|
       case t.event
-      when :on_lbracket, :on_lbrace, :on_lparen, :on_tlambeg
-        indent += 1
-      when :on_rbracket, :on_rbrace, :on_rparen
-        indent -= 1
-      when :on_kw
-        next if index > 0 and tokens[index - 1].state.allbits?(Ripper::EXPR_FNAME)
-        case t.tok
-        when 'do'
-          syntax_of_do = take_corresponding_syntax_to_kw_do(tokens, index)
-          indent += 1 if syntax_of_do == :method_calling
-        when 'def', 'case', 'for', 'begin', 'class', 'module'
-          indent += 1
-        when 'if', 'unless', 'while', 'until'
-          # postfix if/unless/while/until must be Ripper::EXPR_LABEL
-          indent += 1 unless t.state.allbits?(Ripper::EXPR_LABEL)
-        when 'end'
-          indent -= 1
-        end
+      when :on_heredoc_beg
+        # TODO: indent heredoc
+      when :on_tstring_beg, :on_regexp_beg, :on_symbeg
+        # can be indented if t.tok starts with `%`
+      when :on_words_beg, :on_qwords_beg, :on_symbols_beg, :on_qsymbols_beg, :on_embexpr_beg
+        # can be indented but not indented in current implementation
+      when :on_embdoc_beg
+        indent_level = 0
+      else
+        nesting_level += 1
+        indent_level += 1
       end
-      # percent literals are not indented
-    }
+    end
+    [indent_level, nesting_level]
+  end
+
+  def free_indent_token(opens, line_index)
+    last_token = opens.last
+    return unless last_token
+    if last_token.event == :on_heredoc_beg && last_token.pos.first < line_index + 1
+      # accept extra indent spaces inside heredoc
+      last_token
+    end
+  end
+
+  def process_indent_level(tokens, lines)
+    opens = IRB::NestingParser.scan(tokens)
+    depth, _nesting = calc_nesting_depth(opens)
+    indent = depth * 2
+    line_index = lines.size - 2
+    if free_indent_token(opens, line_index)
+      return [indent, lines[line_index][/^ */].length].max
+    end
     indent
   end
 
-  def is_method_calling?(tokens, index)
-    tk = tokens[index]
-    if tk.state.anybits?(Ripper::EXPR_CMDARG) and tk.event == :on_ident
-      # The target method call to pass the block with "do".
-      return true
-    elsif tk.state.anybits?(Ripper::EXPR_ARG) and tk.event == :on_ident
-      non_sp_index = tokens[0..(index - 1)].rindex{ |t| t.event != :on_sp }
-      if non_sp_index
-        prev_tk = tokens[non_sp_index]
-        if prev_tk.state.anybits?(Ripper::EXPR_DOT) and prev_tk.event == :on_period
-          # The target method call with receiver to pass the block with "do".
-          return true
-        end
-      end
-    end
-    false
-  end
-
-  def take_corresponding_syntax_to_kw_do(tokens, index)
-    syntax_of_do = nil
-    # Finding a syntax corresponding to "do".
-    index.downto(0) do |i|
-      tk = tokens[i]
-      # In "continue", the token isn't the corresponding syntax to "do".
-      non_sp_index = tokens[0..(i - 1)].rindex{ |t| t.event != :on_sp }
-      first_in_fomula = false
-      if non_sp_index.nil?
-        first_in_fomula = true
-      elsif [:on_ignored_nl, :on_nl, :on_comment].include?(tokens[non_sp_index].event)
-        first_in_fomula = true
-      end
-      if is_method_calling?(tokens, i)
-        syntax_of_do = :method_calling
-        break if first_in_fomula
-      elsif tk.event == :on_kw && %w{while until for}.include?(tk.tok)
-        # A loop syntax in front of "do" found.
-        #
-        #   while cond do # also "until" or "for"
-        #   end
-        #
-        # This "do" doesn't increment indent because the loop syntax already
-        # incremented.
-        syntax_of_do = :loop_syntax
-        break if first_in_fomula
-      end
-    end
-    syntax_of_do
-  end
-
-  def is_the_in_correspond_to_a_for(tokens, index)
-    syntax_of_in = nil
-    # Finding a syntax corresponding to "do".
-    index.downto(0) do |i|
-      tk = tokens[i]
-      # In "continue", the token isn't the corresponding syntax to "do".
-      non_sp_index = tokens[0..(i - 1)].rindex{ |t| t.event != :on_sp }
-      first_in_fomula = false
-      if non_sp_index.nil?
-        first_in_fomula = true
-      elsif [:on_ignored_nl, :on_nl, :on_comment].include?(tokens[non_sp_index].event)
-        first_in_fomula = true
-      end
-      if tk.event == :on_kw && tk.tok == 'for'
-        # A loop syntax in front of "do" found.
-        #
-        #   while cond do # also "until" or "for"
-        #   end
-        #
-        # This "do" doesn't increment indent because the loop syntax already
-        # incremented.
-        syntax_of_in = :for
-      end
-      break if first_in_fomula
-    end
-    syntax_of_in
-  end
-
-  def check_newline_depth_difference
-    depth_difference = 0
-    open_brace_on_line = 0
-    in_oneliner_def = nil
-    @tokens.each_with_index do |t, index|
-      # detecting one-liner method definition
-      if in_oneliner_def.nil?
-        if t.state.allbits?(Ripper::EXPR_ENDFN)
-          in_oneliner_def = :ENDFN
-        end
-      else
-        if t.state.allbits?(Ripper::EXPR_ENDFN)
-          # continuing
-        elsif t.state.allbits?(Ripper::EXPR_BEG)
-          if t.tok == '='
-            in_oneliner_def = :BODY
-          end
-        else
-          if in_oneliner_def == :BODY
-            # one-liner method definition
-            depth_difference -= 1
-          end
-          in_oneliner_def = nil
-        end
-      end
-
-      case t.event
-      when :on_ignored_nl, :on_nl, :on_comment
-        if index != (@tokens.size - 1) and in_oneliner_def != :BODY
-          depth_difference = 0
-          open_brace_on_line = 0
-        end
-        next
-      when :on_sp
-        next
-      end
-
-      case t.event
-      when :on_lbracket, :on_lbrace, :on_lparen, :on_tlambeg
-        depth_difference += 1
-        open_brace_on_line += 1
-      when :on_rbracket, :on_rbrace, :on_rparen
-        depth_difference -= 1 if open_brace_on_line > 0
-      when :on_kw
-        next if index > 0 and @tokens[index - 1].state.allbits?(Ripper::EXPR_FNAME)
-        case t.tok
-        when 'do'
-          syntax_of_do = take_corresponding_syntax_to_kw_do(@tokens, index)
-          depth_difference += 1 if syntax_of_do == :method_calling
-        when 'def', 'case', 'for', 'begin', 'class', 'module'
-          depth_difference += 1
-        when 'if', 'unless', 'while', 'until', 'rescue'
-          # postfix if/unless/while/until/rescue must be Ripper::EXPR_LABEL
-          unless t.state.allbits?(Ripper::EXPR_LABEL)
-            depth_difference += 1
-          end
-        when 'else', 'elsif', 'ensure', 'when'
-          depth_difference += 1
-        when 'in'
-          unless is_the_in_correspond_to_a_for(@tokens, index)
-            depth_difference += 1
-          end
-        when 'end'
-          depth_difference -= 1
-        end
-      end
-    end
-    depth_difference
-  end
-
-  def check_corresponding_token_depth(lines, line_index)
-    corresponding_token_depth = nil
-    is_first_spaces_of_line = true
-    is_first_printable_of_line = true
-    spaces_of_nest = []
-    spaces_at_line_head = 0
-    open_brace_on_line = 0
-    in_oneliner_def = nil
-
-    if heredoc_scope?
+  def check_corresponding_token_depth(tokens, lines, line_index)
+    line_results = IRB::NestingParser.parse_by_line(tokens)
+    result = line_results[line_index]
+    return unless result
+    _tokens, prev_opens, opens, min_depth = result
+    depth, = calc_nesting_depth(opens.take(min_depth))
+    indent = depth * 2
+    free_indent_tok = free_indent_token(opens, line_index)
+    prev_line_free_indent_tok = free_indent_token(prev_opens, line_index - 1)
+    if prev_line_free_indent_tok && prev_line_free_indent_tok != free_indent_tok
+      return indent
+    elsif free_indent_tok
       return lines[line_index][/^ */].length
     end
-
-    @tokens.each_with_index do |t, index|
-      # detecting one-liner method definition
-      if in_oneliner_def.nil?
-        if t.state.allbits?(Ripper::EXPR_ENDFN)
-          in_oneliner_def = :ENDFN
-        end
-      else
-        if t.state.allbits?(Ripper::EXPR_ENDFN)
-          # continuing
-        elsif t.state.allbits?(Ripper::EXPR_BEG)
-          if t.tok == '='
-            in_oneliner_def = :BODY
-          end
-        else
-          if in_oneliner_def == :BODY
-            # one-liner method definition
-            if is_first_printable_of_line
-              corresponding_token_depth = spaces_of_nest.pop
-            else
-              spaces_of_nest.pop
-              corresponding_token_depth = nil
-            end
-          end
-          in_oneliner_def = nil
-        end
-      end
-
-      case t.event
-      when :on_ignored_nl, :on_nl, :on_comment, :on_heredoc_end, :on_embdoc_end
-        if in_oneliner_def != :BODY
-          corresponding_token_depth = nil
-          spaces_at_line_head = 0
-          is_first_spaces_of_line = true
-          is_first_printable_of_line = true
-          open_brace_on_line = 0
-        end
-        next
-      when :on_sp
-        spaces_at_line_head = t.tok.count(' ') if is_first_spaces_of_line
-        is_first_spaces_of_line = false
-        next
-      end
-
-      case t.event
-      when :on_lbracket, :on_lbrace, :on_lparen, :on_tlambeg
-        spaces_of_nest.push(spaces_at_line_head + open_brace_on_line * 2)
-        open_brace_on_line += 1
-      when :on_rbracket, :on_rbrace, :on_rparen
-        if is_first_printable_of_line
-          corresponding_token_depth = spaces_of_nest.pop
-        else
-          spaces_of_nest.pop
-          corresponding_token_depth = nil
-        end
-        open_brace_on_line -= 1
-      when :on_kw
-        next if index > 0 and @tokens[index - 1].state.allbits?(Ripper::EXPR_FNAME)
-        case t.tok
-        when 'do'
-          syntax_of_do = take_corresponding_syntax_to_kw_do(@tokens, index)
-          if syntax_of_do == :method_calling
-            spaces_of_nest.push(spaces_at_line_head)
-          end
-        when 'def', 'case', 'for', 'begin', 'class', 'module'
-          spaces_of_nest.push(spaces_at_line_head)
-        when 'rescue'
-          unless t.state.allbits?(Ripper::EXPR_LABEL)
-            corresponding_token_depth = spaces_of_nest.last
-          end
-        when 'if', 'unless', 'while', 'until'
-          # postfix if/unless/while/until must be Ripper::EXPR_LABEL
-          unless t.state.allbits?(Ripper::EXPR_LABEL)
-            spaces_of_nest.push(spaces_at_line_head)
-          end
-        when 'else', 'elsif', 'ensure', 'when'
-          corresponding_token_depth = spaces_of_nest.last
-        when 'in'
-          if in_keyword_case_scope?
-            corresponding_token_depth = spaces_of_nest.last
-          end
-        when 'end'
-          if is_first_printable_of_line
-            corresponding_token_depth = spaces_of_nest.pop
-          else
-            spaces_of_nest.pop
-            corresponding_token_depth = nil
-          end
-        end
-      end
-      is_first_spaces_of_line = false
-      is_first_printable_of_line = false
-    end
-    corresponding_token_depth
+    prev_depth, = calc_nesting_depth(prev_opens)
+    indent if depth < prev_depth
   end
 
-  def check_string_literal(tokens)
-    i = 0
-    start_token = []
-    end_type = []
-    pending_heredocs = []
-    while i < tokens.size
-      t = tokens[i]
-      case t.event
-      when *end_type.last
-        start_token.pop
-        end_type.pop
-      when :on_tstring_beg
-        start_token << t
-        end_type << [:on_tstring_end, :on_label_end]
-      when :on_regexp_beg
-        start_token << t
-        end_type << :on_regexp_end
-      when :on_symbeg
-        acceptable_single_tokens = %i{on_ident on_const on_op on_cvar on_ivar on_gvar on_kw on_int on_backtick}
-        if (i + 1) < tokens.size
-          if acceptable_single_tokens.all?{ |st| tokens[i + 1].event != st }
-            start_token << t
-            end_type << :on_tstring_end
-          else
-            i += 1
-          end
-        end
-      when :on_backtick
-        if t.state.allbits?(Ripper::EXPR_BEG)
-          start_token << t
-          end_type << :on_tstring_end
-        end
-      when :on_qwords_beg, :on_words_beg, :on_qsymbols_beg, :on_symbols_beg
-        start_token << t
-        end_type << :on_tstring_end
-      when :on_heredoc_beg
-        pending_heredocs << t
-      end
-
-      if pending_heredocs.any? && t.tok.include?("\n")
-        pending_heredocs.reverse_each do |t|
-          start_token << t
-          end_type << :on_heredoc_end
-        end
-        pending_heredocs = []
-      end
-      i += 1
+  def ltype_from_open_tokens(opens)
+    start_token = opens.reverse_each.find do |tok|
+      %i[
+        on_heredoc_beg on_tstring_beg on_symbeg on_regexp_beg
+        on_symbols_beg on_qsymbols_beg
+        on_words_beg on_qwords_beg
+      ].include?(tok.event)
     end
-    pending_heredocs.first || start_token.last
-  end
-
-  def process_literal_type(tokens)
-    start_token = check_string_literal(tokens)
-    return nil if start_token == ""
+    return nil unless start_token
 
     case start_token&.event
     when :on_tstring_beg
@@ -783,44 +441,13 @@ class RubyLex
         end
       end
 
-      if first_token.nil?
-        return false
-      elsif first_token && first_token.state == Ripper::EXPR_DOT
-        return false
-      else
+      if first_token && first_token.state != Ripper::EXPR_DOT
         tokens_without_last_line = tokens[0..index]
-        ltype = process_literal_type(tokens_without_last_line)
-        indent = process_nesting_level(tokens_without_last_line)
-        continue = process_continue(tokens_without_last_line)
-        code_block_open = check_code_block(tokens_without_last_line.map(&:tok).join(''), tokens_without_last_line)
-        if ltype or indent > 0 or continue or code_block_open
-          return false
-        else
-          return last_line_tokens.map(&:tok).join('')
+        code_without_last_line = tokens_without_last_line.map(&:tok).join
+        opens_without_last_line = IRB::NestingParser.scan(tokens_without_last_line)
+        if opens_without_last_line.empty? && !process_continue(tokens_without_last_line) && !check_code_block(code_without_last_line, tokens_without_last_line)
+          return last_line_tokens.map(&:tok).join
         end
-      end
-    end
-    false
-  end
-
-  private
-
-  def heredoc_scope?
-    heredoc_tokens = @tokens.select { |t| [:on_heredoc_beg, :on_heredoc_end].include?(t.event) }
-    heredoc_tokens[-1]&.event == :on_heredoc_beg
-  end
-
-  def in_keyword_case_scope?
-    kw_tokens = @tokens.select { |t| t.event == :on_kw && ['case', 'for', 'end'].include?(t.tok) }
-    counter = 0
-    kw_tokens.reverse.each do |t|
-      if t.tok == 'case'
-        return true if counter.zero?
-        counter += 1
-      elsif t.tok == 'for'
-        counter += 1
-      elsif t.tok == 'end'
-        counter -= 1
       end
     end
     false
