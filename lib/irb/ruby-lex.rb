@@ -65,10 +65,10 @@ class RubyLex
           else
             false
           end
-        elsif single_line_command?(code)
-          # Accept any single-line input for symbol aliases or commands that transform args
-          true
         else
+          # Accept any single-line input for symbol aliases or commands that transform args
+          next true if single_line_command?(code)
+
           check_target_code, tokens, opens = check_code_state(code)
           continue = process_continue(tokens)
           opens.empty? && !continue && !check_code_block(check_target_code, tokens)
