@@ -25,6 +25,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       WITH_LATEST_RELINE: ${{matrix.with_latest_reline}}
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@master
       - name: Set up Ruby
@@ -53,6 +54,7 @@ jobs:
       fail-fast: false
     env:
       WITH_LATEST_RELINE: ${{matrix.with_latest_reline}}
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v3
       - name: Set up Ruby
