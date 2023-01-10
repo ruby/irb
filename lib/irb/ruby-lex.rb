@@ -72,7 +72,8 @@ class RubyLex
           end
 
           code.gsub!(/\s*\z/, '').concat("\n")
-          ltype, indent, continue, code_block_open = check_state(code, context: context)
+          tokens = self.class.ripper_lex_without_warning(code, context: context)
+          ltype, indent, continue, code_block_open = check_state(code, tokens, context: context)
           if ltype or indent > 0 or continue or code_block_open
             false
           else
@@ -219,8 +220,7 @@ class RubyLex
     end
   end
 
-  def check_state(code, tokens = nil, context:)
-    tokens = self.class.ripper_lex_without_warning(code, context: context) unless tokens
+  def check_state(code, tokens, context:)
     ltype = process_literal_type(tokens)
     indent = process_nesting_level(tokens)
     continue = process_continue(tokens)
