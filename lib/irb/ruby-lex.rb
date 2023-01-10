@@ -219,7 +219,7 @@ class RubyLex
     end
   end
 
-  def check_state(code, tokens = nil, context: nil)
+  def check_state(code, tokens = nil, context:)
     tokens = self.class.ripper_lex_without_warning(code, context: context) unless tokens
     ltype = process_literal_type(tokens)
     indent = process_nesting_level(tokens)
@@ -790,7 +790,7 @@ class RubyLex
     end
   end
 
-  def check_termination_in_prev_line(code, context: nil)
+  def check_termination_in_prev_line(code, context:)
     tokens = self.class.ripper_lex_without_warning(code, context: context)
     past_first_newline = false
     index = tokens.rindex do |t|
