@@ -4,8 +4,6 @@ on:
   pull_request:
 
   push:
-    branches:
-      - master
 
 concurrency:
   group: ci-${{ github.ref }}-${{ github.workflow }}
@@ -54,5 +52,5 @@ jobs:
           ruby tool/sync_default_gems.rb irb
         working-directory: ruby/ruby
       - name: Test IRB
-        run: make -j2 -s test-all TESTS="irb --no-retry"
+        run: make -j2 -s test-all
         working-directory: ruby/ruby
