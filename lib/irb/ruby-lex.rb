@@ -48,7 +48,7 @@ class RubyLex
   end
 
   # io functions
-  def set_input(io, p = nil, context:, &block)
+  def set_input(io, context:, &block)
     @io = io
     if @io.respond_to?(:check_termination)
       @io.check_termination do |code|
@@ -116,9 +116,7 @@ class RubyLex
       end
     end
 
-    if p.respond_to?(:call)
-      @input = p
-    elsif block_given?
+    if block_given?
       @input = block
     else
       @input = Proc.new{@io.gets}
