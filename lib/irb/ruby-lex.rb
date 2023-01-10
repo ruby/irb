@@ -125,13 +125,8 @@ class RubyLex
     end
   end
 
-  def set_prompt(p = nil, &block)
-    p = block if block_given?
-    if p.respond_to?(:call)
-      @prompt = p
-    else
-      @prompt = Proc.new{print p}
-    end
+  def set_prompt(&block)
+    @prompt = block
   end
 
   ERROR_TOKENS = [
