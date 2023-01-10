@@ -100,8 +100,10 @@ module IRB # :nodoc:
     # Proc to call when the input is evaluated and output in irb.
     def inspect_value(v)
       @inspect.call(v)
-    rescue
+    rescue => e
       puts "(Object doesn't support #inspect)"
+      puts e.message
+      puts e.backtrace
       ''
     end
   end
