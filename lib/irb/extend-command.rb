@@ -306,7 +306,7 @@ module IRB # :nodoc:
           end
           alias_method to, from
         }
-      else
+      elsif !defined?(HushAliasWarning)
         Kernel.print "irb: warn: can't alias #{to} from #{from}.\n"
       end
     end
