@@ -56,10 +56,9 @@ module TestIRB
       }
     end
 
-    def test_evaluate_with_onigmo_warning
-      pend if RUBY_ENGINE == 'truffleruby'
-      assert_warning("(irb):1: warning: character class has duplicated range: /[aa]/\n") do
-        @context.evaluate('/[aa]/', 1)
+    def test_evaluate_still_emits_warning
+      assert_warning("(irb):1: warning: END in method; use at_exit\n") do
+        @context.evaluate(%q[def foo; END {}; end], 1)
       end
     end
 
