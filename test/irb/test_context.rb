@@ -64,7 +64,6 @@ module TestIRB
     end
 
     def test_eval_input
-      pend if RUBY_ENGINE == 'truffleruby'
       verbose, $VERBOSE = $VERBOSE, nil
       input = TestInputMethod.new([
         "raise 'Foo'\n",
@@ -87,7 +86,6 @@ module TestIRB
     end
 
     def test_eval_input_raise2x
-      pend if RUBY_ENGINE == 'truffleruby'
       input = TestInputMethod.new([
         "raise 'Foo'\n",
         "raise 'Bar'\n",
@@ -512,7 +510,6 @@ module TestIRB
     end
 
     def test_eval_input_with_invalid_byte_sequence_exception
-      pend if RUBY_ENGINE == 'truffleruby'
       verbose, $VERBOSE = $VERBOSE, nil
       input = TestInputMethod.new([
         %Q{def hoge() fuga; end; def fuga() raise "A\\xF3B"; end; hoge\n},
