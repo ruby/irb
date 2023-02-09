@@ -6,7 +6,13 @@ The `irb` command from your shell will start the interpreter.
 
 ## Installation
 
-Add this line to your application's Gemfile:
+> **Note**
+>
+> IRB is a default gem of Ruby so you shouldn't need to install it separately.
+>
+> But if you're using Ruby 2.6 or later and want to upgrade/install a specific version of IRB, please follow these steps.
+
+To install it with `bundler`, add this line to your application's Gemfile:
 
 ```ruby
 gem 'irb'
@@ -14,31 +20,62 @@ gem 'irb'
 
 And then execute:
 
-    $ bundle
+```shell
+$ bundle
+```
 
-Or install it yourself as:
+Or install it directly with:
 
-    $ gem install irb
+```shell
+$ gem install irb
+```
 
 ## Usage
 
-Use of irb is easy if you know Ruby.
+### The `irb` Executable
 
-When executing irb, prompts are displayed as follows. Then, enter the Ruby expression. An input is executed when it is syntactically complete.
+You can start a fresh IRB session by typing `irb` in your terminal.
 
-```
+In the session, you can evaluate Ruby expressions or even prototype a small Ruby script. An input is executed when it is syntactically complete.
+
+```shell
 $ irb
-irb(main):001:0> 1+2
-#=> 3
-irb(main):002:0> class Foo
-irb(main):003:1>   def foo
-irb(main):004:2>     print 1
-irb(main):005:2>   end
-irb(main):006:1> end
-#=> nil
+irb(main):001:0> 1 + 2
+=> 3
+irb(main):002:1* class Foo
+irb(main):003:2*   def foo
+irb(main):004:2*     puts 1
+irb(main):005:1*   end
+irb(main):006:0> end
+=> :foo
+irb(main):007:0> Foo.new.foo
+1
+=> nil
 ```
 
-The Readline extension module can be used with irb. Use of Readline is default if it's installed.
+### The `binding.irb` Breakpoint
+
+If you use Ruby 2.5 or later versions, you can also use `binding.irb` in your program as breakpoints.
+
+Once a `binding.irb` is evaluated, a new IRB session will be started with the surrounding context:
+
+```shell
+$ ruby test.rb
+
+From: test.rb @ line 2 :
+
+    1: def greet(word)
+ => 2:   binding.irb
+    3:   puts "Hello #{word}"
+    4: end
+    5:
+    6: greet("World")
+
+irb(main):001:0> word
+=> "World"
+irb(main):002:0> exit
+Hello World
+```
 
 ## Commands
 

@@ -1,13 +1,7 @@
 # frozen_string_literal: false
 #
 #   irb/workspace-binding.rb -
-#   	$Release Version: 0.9.6$
-#   	$Revision$
 #   	by Keiju ISHITSUKA(keiju@ruby-lang.org)
-#
-# --
-#
-#
 #
 
 require "delegate"
@@ -142,11 +136,7 @@ EOF
     end
 
     def code_around_binding
-      if @binding.respond_to?(:source_location)
-        file, pos = @binding.source_location
-      else
-        file, pos = @binding.eval('[__FILE__, __LINE__]')
-      end
+      file, pos = @binding.source_location
 
       if defined?(::SCRIPT_LINES__[file]) && lines = ::SCRIPT_LINES__[file]
         code = ::SCRIPT_LINES__[file].join('')
@@ -172,9 +162,6 @@ EOF
       end.join("")
 
       "\nFrom: #{file} @ line #{pos + 1} :\n\n#{body}#{Color.clear}\n"
-    end
-
-    def IRB.delete_caller
     end
   end
 end
