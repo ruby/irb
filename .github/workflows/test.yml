@@ -19,10 +19,9 @@ jobs:
     strategy:
       matrix:
         ruby: ${{ fromJson(needs.ruby-versions.outputs.versions) }}
-        os: [ubuntu-latest]
         with_latest_reline: [true, false]
       fail-fast: false
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     env:
       WITH_LATEST_RELINE: ${{matrix.with_latest_reline}}
     timeout-minutes: 30
@@ -40,7 +39,7 @@ jobs:
   vterm-yamatanooroti:
     name: >-
       vterm-yamatanooroti ${{ matrix.ruby }} ${{ matrix.with_latest_reline && '(latest reline)' || '' }}
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         ruby:
@@ -49,7 +48,6 @@ jobs:
           - '3.0'
           - '2.7'
           - head
-        os: [ubuntu-latest]
         with_latest_reline: [true, false]
       fail-fast: false
     env:
