@@ -39,6 +39,7 @@ jobs:
       - name: Run tests in isolation
         run: bundle exec rake test_in_isolation
   vterm-yamatanooroti:
+    needs: ruby-versions
     name: >-
       vterm-yamatanooroti ${{ matrix.ruby }} ${{ matrix.with_latest_reline && '(latest reline)' || '' }}
     runs-on: ubuntu-latest
