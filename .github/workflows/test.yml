@@ -47,6 +47,7 @@ jobs:
         ruby: ${{ fromJson(needs.ruby-versions.outputs.versions) }}
         with_latest_reline: [true, false]
         exclude:
+          - ruby: 2.6
           - ruby: truffleruby
           - ruby: truffleruby-head
       fail-fast: false
