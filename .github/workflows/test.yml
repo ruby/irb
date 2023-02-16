@@ -20,6 +20,8 @@ jobs:
       matrix:
         ruby: ${{ fromJson(needs.ruby-versions.outputs.versions) }}
         with_latest_reline: [true, false]
+        exclude:
+          - ruby: truffleruby
       fail-fast: false
     runs-on: ubuntu-latest
     env:
