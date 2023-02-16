@@ -7,18 +7,18 @@ on:
     - cron: '30 14 * * *'
 
 jobs:
+  ruby-versions:
+    uses: ruby/actions/.github/workflows/ruby_versions.yml@master
+    with:
+      engine: cruby-truffleruby
+      min_version: 2.6
+
   irb:
+    needs: ruby-versions
     name: rake test ${{ matrix.ruby }} ${{ matrix.with_latest_reline && '(latest reline)' || '' }}
     strategy:
       matrix:
-        ruby:
-          - '3.2'
-          - '3.1'
-          - '3.0'
-          - '2.7'
-          - '2.6'
-          - head
-          - truffleruby-head
+        ruby: ${{ fromJson(needs.ruby-versions.outputs.versions) }}
         os: [ubuntu-latest]
         with_latest_reline: [true, false]
       fail-fast: false
