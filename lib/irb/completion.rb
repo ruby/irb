@@ -166,10 +166,10 @@ module IRB
 
     def self.retrieve_completion_data(input, bind: IRB.conf[:MAIN_CONTEXT].workspace.binding, doc_namespace: false)
       case input
-      when /^((["'`]).*\2)\.([^.]*)$/
+      when /^(.*["'`])\.([^.]*)$/
         # String
         receiver = $1
-        message = $3
+        message = $2
 
         if doc_namespace
           "String.#{message}"
@@ -178,7 +178,7 @@ module IRB
           select_message(receiver, message, candidates)
         end
 
-      when /^(\/[^\/]*\/)\.([^.]*)$/
+      when /^(.*\/)\.([^.]*)$/
         # Regexp
         receiver = $1
         message = $2
