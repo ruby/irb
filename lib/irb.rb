@@ -775,6 +775,15 @@ module IRB
       end
     end
 
+    def truncate_prompt_main(str, size = 32, omission: '...') # :nodoc:
+      str = str.tr("\x00-\x1F", ' ')
+      if str.size <= size
+        str
+      else
+        str[0, size - omission.size] + omission
+      end
+    end
+
     def prompt(prompt, ltype, indent, line_no) # :nodoc:
       p = prompt.dup
       p.gsub!(/%([0-9]+)?([a-zA-Z])/) do
@@ -782,9 +791,9 @@ module IRB
         when "N"
           @context.irb_name
         when "m"
-          @context.main.to_s
+          truncate_prompt_main(@context.main.to_s)
         when "M"
-          @context.main.inspect
+          truncate_prompt_main(@context.main.inspect)
         when "l"
           ltype
         when "i"
