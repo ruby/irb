@@ -669,8 +669,8 @@ module TestIRB
 
     def test_prompt_main_truncate
       irb = IRB::Irb.new(IRB::WorkSpace.new("a" * 100))
-      assert_match(/irb\(a.+\.\.\.\)>/, irb.prompt('irb(%m)>', nil, 1, 1))
-      assert_match(/irb\("a.+\.\.\.\)>/, irb.prompt('irb(%M)>', nil, 1, 1))
+      assert_equal('irb(aaaaaaaaaaaaaaaaaaaaaaaaaaaaa...)>', irb.prompt('irb(%m)>', nil, 1, 1))
+      assert_equal('irb("aaaaaaaaaaaaaaaaaaaaaaaaaaaa...)>', irb.prompt('irb(%M)>', nil, 1, 1))
     end
 
     def test_lineno
