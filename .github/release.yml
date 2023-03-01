@@ -1,0 +1,13 @@
+# release.yml
+
+changelog:
+  categories:
+    - title: ✨ Enhancements
+      labels:
+        - enhancement
+    - title: 🐛 Bug Fixes
+      labels:
+        - bug
+    - title: 🛠 Other Changes
+      labels:
+        - "*"
