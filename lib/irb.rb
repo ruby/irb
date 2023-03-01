@@ -463,6 +463,10 @@ module IRB
     # be parsed as :assign and echo will be suppressed, but the latter is
     # parsed as a :method_add_arg and the output won't be suppressed
 
+    PROMPT_MAIN_TRUNCATE_LENGTH = 32
+    PROMPT_MAIN_TRUNCATE_OMISSION = '...'.freeze
+    CONTROL_CHARACTERS_PATTERN = "\x00-\x1F".freeze
+
     # Creates a new irb session
     def initialize(workspace = nil, input_method = nil)
       @context = Context.new(self, workspace, input_method)
@@ -775,12 +779,12 @@ module IRB
       end
     end
 
-    def truncate_prompt_main(str, size = 32, omission: '...') # :nodoc:
-      str = str.tr("\x00-\x1F", ' ')
-      if str.size <= size
+    def truncate_prompt_main(str) # :nodoc:
+      str = str.tr(CONTROL_CHARACTERS_PATTERN, ' ')
+      if str.size <= PROMPT_MAIN_TRUNCATE_LENGTH
         str
       else
-        str[0, size - omission.size] + omission
+        str[0, PROMPT_MAIN_TRUNCATE_LENGTH - PROMPT_MAIN_TRUNCATE_OMISSION.size] + PROMPT_MAIN_TRUNCATE_OMISSION
       end
     end
 
