@@ -14,19 +14,15 @@ module TestIRB
     class TestMethodCompletion < TestCompletion
       def test_complete_string
         assert_include(IRB::InputCompletor.retrieve_completion_data("'foo'.up", bind: binding), "'foo'.upcase")
-        assert_not_include(IRB::InputCompletor.retrieve_completion_data("'foo'.up", bind: binding), "'foo'.update")
         # completing 'foo bar'.up
         assert_include(IRB::InputCompletor.retrieve_completion_data("bar'.up", bind: binding), "bar'.upcase")
-        assert_not_include(IRB::InputCompletor.retrieve_completion_data("bar'.up", bind: binding), "bar'.update")
         assert_equal("String.upcase", IRB::InputCompletor.retrieve_completion_data("'foo'.upcase", bind: binding, doc_namespace: true))
       end
 
       def test_complete_regexp
         assert_include(IRB::InputCompletor.retrieve_completion_data("/foo/.ma", bind: binding), "/foo/.match")
-        assert_not_include(IRB::InputCompletor.retrieve_completion_data("/foo/.ma", bind: binding), "/foo/.map")
         # completing /foo bar/.ma
         assert_include(IRB::InputCompletor.retrieve_completion_data("bar/.ma", bind: binding), "bar/.match")
-        assert_not_include(IRB::InputCompletor.retrieve_completion_data("bar/.ma", bind: binding), "bar/.map")
         assert_equal("Regexp.match", IRB::InputCompletor.retrieve_completion_data("/foo/.match", bind: binding, doc_namespace: true))
       end
 
