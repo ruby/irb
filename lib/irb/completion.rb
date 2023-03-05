@@ -180,6 +180,8 @@ module IRB
           select_message(receiver, message, candidates)
         end
 
+      # this regexp only matches the closing character because of irb's Reline.completer_quote_characters setting
+      # details are described in: https://github.com/ruby/irb/pull/523
       when /^(.*\/)\.([^.]*)$/
         # Regexp
         receiver = $1
