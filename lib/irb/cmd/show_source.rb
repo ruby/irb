@@ -13,15 +13,6 @@ module IRB
       description "Show the source code of a given method or constant."
 
       class << self
-        def transform_args(args)
-          # Return a string literal as is for backward compatibility
-          if args.empty? || string_literal?(args)
-            args
-          else # Otherwise, consider the input as a String for convenience
-            args.strip.dump
-          end
-        end
-
         def find_source(str, irb_context)
           case str
           when /\A[A-Z]\w*(::[A-Z]\w*)*\z/ # Const::Name

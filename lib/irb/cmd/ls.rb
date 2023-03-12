@@ -21,6 +21,26 @@ module IRB
         end
       end
 
+      def execute_with_raw_args(raw_args)
+        raw_args = raw_args.strip
+
+        if raw_args.empty?
+          execute
+        else
+          if match = raw_args.match(/\A(?<args>.+\s|)(-g|-G)\s+(?<grep>[^\s]+)\s*\z/)
+            args = match[:args]
+
+            if !args.empty?
+              execute(evaluate(args), grep: /#{match[:grep]}/)
+            else
+              execute(grep: /#{match[:grep]}/)
+            end
+          else
+            execute(evaluate(raw_args))
+          end
+        end
+      end
+
       def execute(*arg, grep: nil)
         o = Output.new(grep: grep)
 

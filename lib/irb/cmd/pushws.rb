@@ -25,7 +25,8 @@ module IRB
       description "Push an object to the workspace stack."
 
       def execute(*obj)
-        irb_context.push_workspace(*obj)
+        objs = obj.map { |o| irb_context.workspace.binding.eval(o)}
+        irb_context.push_workspace(*objs)
         super
       end
     end

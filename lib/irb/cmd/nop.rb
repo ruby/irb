@@ -46,6 +46,41 @@ module IRB
       def execute(*opts)
         #nop
       end
+
+      def transform_args(raw_args)
+        if string_literal?(raw_args)
+          evaluate(raw_args)
+        else
+          raw_args
+        end
+      end
+
+      def execute_with_raw_args(raw_args)
+        if raw_args.nil? || raw_args.empty?
+          execute
+        else
+          raw_args = raw_args.strip
+
+          args =
+            if respond_to?(:transform_args)
+              transform_args(raw_args)
+            else
+              evaluate(raw_args)
+            end
+          execute(args)
+        end
+      end
+
+      private
+
+      def string_literal?(args)
+        sexp = Ripper.sexp(args)
+        sexp && sexp.size == 2 && sexp.last&.first&.first == :string_literal
+      end
+
+      def evaluate(str)
+        eval(str, @irb_context.workspace.binding)
+      end
     end
   end
 
