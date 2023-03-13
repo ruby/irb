@@ -22,7 +22,7 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Set up latest ruby head
-        uses: ruby/setup-ruby@de6f5b9c340068d049670c6b6ae8dc94cff4667a # v1.125.0
+        uses: ruby/setup-ruby@9669f3ee51dc3f4eda8447ab696b3ab19a90d14b # v1.144.0
         with:
           ruby-version: head
           bundler: none
