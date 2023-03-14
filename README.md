@@ -1,5 +1,8 @@
 # IRB
 
+[![Gem Version](https://badge.fury.io/rb/irb.svg)](https://badge.fury.io/rb/irb) 
+[![build](https://github.com/ruby/irb/actions/workflows/test.yml/badge.svg)](https://github.com/ruby/irb/actions/workflows/test.yml)
+
 IRB stands for "interactive Ruby" and is a tool to interactively execute Ruby expressions read from the standard input.
 
 The `irb` command from your shell will start the interpreter.
