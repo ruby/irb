@@ -79,8 +79,8 @@ class IRB::TestRendering < Yamatanooroti::TestCase
       => #<A>
       irb(main):008:0>
       irb(main):009:0> a
-      irb(main):010:0>  .a
-      irb(main):011:0>  .b
+      irb(main):010:0>   .a
+      irb(main):011:0>   .b
       => true
       irb(main):012:0>
     EOC
