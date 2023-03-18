@@ -32,6 +32,7 @@ module IRB # :nodoc:
       IRB.CurrentContext
     end
 
+    # Alias of extension methods
     @ALIASES = [
       [:context, :irb_context, NO_OVERRIDE],
       [:conf, :irb_context, NO_OVERRIDE],
@@ -40,7 +41,7 @@ module IRB # :nodoc:
       [:quit, :irb_exit, OVERRIDE_PRIVATE_ONLY],
     ]
 
-
+    # Extension command and its alias
     @EXTEND_COMMANDS = [
       [
         :irb_current_working_workspace, :CurrentWorkingWorkspace, "cmd/chws",
@@ -233,64 +234,20 @@ module IRB # :nodoc:
       nil
     end
 
-    # Installs the default irb commands.
-    def self.install_extend_commands
-      for args in @EXTEND_COMMANDS
-        def_extend_command(*args)
+    def self.def_extend_command(*)
+    end
+
+    def self.command_visibility(command)
+      command = command.to_sym
+      @EXTEND_COMMANDS.each do |cmd_name, _cmd_class, _load_file, *aliases|
+        return [cmd_name, OVERRIDE_ALL] if cmd_name == command
+
+        _, visibility = aliases.find { |alias_name,| alias_name == command }
+        return [cmd_name, visibility] if visibility
       end
     end
 
-    # Evaluate the given +cmd_name+ on the given +cmd_class+ Class.
-    #
-    # Will also define any given +aliases+ for the method.
-    #
-    # The optional +load_file+ parameter will be required within the method
-    # definition.
-    def self.def_extend_command(cmd_name, cmd_class, load_file = nil, *aliases)
-      case cmd_class
-      when Symbol
-        cmd_class = cmd_class.id2name
-      when String
-      when Class
-        cmd_class = cmd_class.name
-      end
-
-      if load_file
-        kwargs = ", **kwargs" if RUBY_ENGINE == "ruby" && RUBY_VERSION >= "2.7.0"
-        line = __LINE__; eval %[
-          def #{cmd_name}(*opts#{kwargs}, &b)
-            Kernel.require_relative "#{load_file}"
-            arity = ::IRB::ExtendCommand::#{cmd_class}.instance_method(:execute).arity
-            args = (1..(arity < 0 ? ~arity : arity)).map {|i| "arg" + i.to_s }
-            args << "*opts#{kwargs}" if arity < 0
-            args << "&block"
-            args = args.join(", ")
-            line = __LINE__; eval %[
-              unless singleton_class.class_variable_defined?(:@@#{cmd_name}_)
-                singleton_class.class_variable_set(:@@#{cmd_name}_, true)
-                def self.#{cmd_name}_(\#{args})
-                  ::IRB::ExtendCommand::#{cmd_class}.execute(irb_context, \#{args})
-                end
-              end
-            ], nil, __FILE__, line
-            __send__ :#{cmd_name}_, *opts#{kwargs}, &b
-          end
-        ], nil, __FILE__, line
-      else
-        line = __LINE__; eval %[
-          def #{cmd_name}(*opts, &b)
-            ::IRB::ExtendCommand::#{cmd_class}.execute(irb_context, *opts, &b)
-          end
-        ], nil, __FILE__, line
-      end
-
-      for ali, flag in aliases
-        @ALIASES.push [ali, cmd_name, flag]
-      end
-    end
-
-    # Installs alias methods for the default irb commands, see
-    # ::install_extend_commands.
+    # Installs alias methods for the default irb extension methods
     def install_alias_method(to, from, override = NO_OVERRIDE)
       to = to.id2name unless to.kind_of?(String)
       from = from.id2name unless from.kind_of?(String)
@@ -325,8 +282,6 @@ module IRB # :nodoc:
         end
       end
     end
-
-    install_extend_commands
   end
 
   # Extends methods for the Context module

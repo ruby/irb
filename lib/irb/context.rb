@@ -481,20 +481,13 @@ module IRB
         @workspace.local_variable_set(:_, exception)
       end
 
-      # Transform a non-identifier alias (@, $) or keywords (next, break)
       command, args = line.split(/\s/, 2)
-      if original = command_aliases[command.to_sym]
-        line = line.gsub(/\A#{Regexp.escape(command)}/, original.to_s)
-        command = original
+      if command?(command)
+        command_class = ExtendCommandBundle.load_command(command_aliases[command.to_sym] || command)
+        set_last_value(command_class.new(self).execute_command(args.chomp))
+      else
+        set_last_value(@workspace.evaluate(line, irb_path, line_no))
       end
-
-      # Hook command-specific transformation
-      command_class = ExtendCommandBundle.load_command(command)
-      if command_class&.respond_to?(:transform_args)
-        line = "#{command} #{command_class.transform_args(args)}"
-      end
-
-      set_last_value(@workspace.evaluate(line, irb_path, line_no))
     end
 
     def inspect_last_value # :nodoc:
@@ -540,16 +533,21 @@ module IRB
       workspace.binding.local_variables
     end
 
-    # Return true if it's aliased from the argument and it's not an identifier.
-    def symbol_alias?(command)
-      return nil if command.match?(/\A\w+\z/)
-      command_aliases.key?(command.to_sym)
-    end
+    def command?(command)
+      command = command.to_sym
+      return true if command_aliases.key?(command)
 
-    # Return true if the command supports transforming args
-    def transform_args?(command)
-      command = command_aliases.fetch(command.to_sym, command)
-      ExtendCommandBundle.load_command(command)&.respond_to?(:transform_args)
+      command_name, visibility = IRB::ExtendCommandBundle.command_visibility(command)
+      return false unless command_name
+
+      case visibility
+      when IRB::ExtendCommandBundle::OVERRIDE_ALL
+        true
+      when IRB::ExtendCommandBundle::OVERRIDE_PRIVATE_ONLY
+        !main.respond_to?(command)
+      when IRB::ExtendCommandBundle::NO_OVERRIDE
+        !main.respond_to?(command, true)
+      end
     end
   end
 end

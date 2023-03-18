@@ -56,8 +56,26 @@ module IRB
         @irb_context.irb
       end
 
-      def execute(*opts)
-        #nop
+      def execute_command(string_arg)
+        if respond_to?(:execute)
+          # workaround for legacy command implementation
+          if self.class.respond_to?(:transform_args)
+            string_arg = self.class.transform_args(string_arg)
+          end
+          args, kwargs, block = extract_args(string_arg)
+          execute(*args, **kwargs, &block)
+        else
+          puts 'Not Implemented'
+        end
+      end
+
+      private
+      def evaluate(str)
+        eval(str, @irb_context.workspace.binding)
+      end
+
+      def extract_args(string_arg)
+        evaluate("->(*args,**kwargs,&block){[args,kwargs,block]}.call #{string_arg}")
       end
     end
   end

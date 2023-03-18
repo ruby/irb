@@ -62,7 +62,7 @@ class RubyLex
         else
           # Accept any single-line input for symbol aliases or commands that transform args
           command = code.split(/\s/, 2).first
-          if @context.symbol_alias?(command) || @context.transform_args?(command)
+          if @context.command?(command)
             next true
           end
 
