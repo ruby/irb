@@ -897,11 +897,6 @@ module IRB
     ensure
       $VERBOSE = verbose
     end
-
-    ATTR_TTY = "\e[%sm"
-    def ATTR_TTY.[](*a) self % a.join(";"); end
-    ATTR_PLAIN = ""
-    def ATTR_PLAIN.[](*) self; end
   end
 
   def @CONF.inspect
