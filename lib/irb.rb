@@ -416,11 +416,6 @@ module IRB
     irb.run(@CONF)
   end
 
-  # Calls each event hook of <code>IRB.conf[:AT_EXIT]</code> when the current session quits.
-  def IRB.irb_at_exit
-    @CONF[:AT_EXIT].each{|hook| hook.call}
-  end
-
   # Quits irb
   def IRB.irb_exit(irb, ret)
     throw :IRB_EXIT, ret
