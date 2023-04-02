@@ -11,7 +11,7 @@ jobs:
     uses: ruby/actions/.github/workflows/ruby_versions.yml@master
     with:
       engine: cruby-truffleruby
-      min_version: 2.6
+      min_version: 2.7
 
   irb:
     needs: ruby-versions
@@ -48,7 +48,6 @@ jobs:
         ruby: ${{ fromJson(needs.ruby-versions.outputs.versions) }}
         with_latest_reline: [true, false]
         exclude:
-          - ruby: 2.6
           - ruby: truffleruby
           - ruby: truffleruby-head
       fail-fast: false
