@@ -246,7 +246,7 @@ module IRB # :nodoc:
     #
     # The optional +load_file+ parameter will be required within the method
     # definition.
-    def self.def_extend_command(cmd_name, cmd_class, load_file = nil, *aliases)
+    def self.def_extend_command(cmd_name, cmd_class, load_file, *aliases)
       case cmd_class
       when Symbol
         cmd_class = cmd_class.id2name
@@ -255,28 +255,20 @@ module IRB # :nodoc:
         cmd_class = cmd_class.name
       end
 
-      if load_file
-        line = __LINE__; eval %[
-          def #{cmd_name}(*opts, **kwargs, &b)
-            Kernel.require_relative "#{load_file}"
-            line = __LINE__; eval %[
-              unless singleton_class.class_variable_defined?(:@@#{cmd_name}_)
-                singleton_class.class_variable_set(:@@#{cmd_name}_, true)
-                def self.#{cmd_name}_(*opts, **kwargs, &b)
-                  ::IRB::ExtendCommand::#{cmd_class}.execute(irb_context, *opts, **kwargs, &b)
-                end
+      line = __LINE__; eval %[
+        def #{cmd_name}(*opts, **kwargs, &b)
+          Kernel.require_relative "#{load_file}"
+          line = __LINE__; eval %[
+            unless singleton_class.class_variable_defined?(:@@#{cmd_name}_)
+              singleton_class.class_variable_set(:@@#{cmd_name}_, true)
+              def self.#{cmd_name}_(*opts, **kwargs, &b)
+                ::IRB::ExtendCommand::#{cmd_class}.execute(irb_context, *opts, **kwargs, &b)
               end
-            ], nil, __FILE__, line
-            __send__ :#{cmd_name}_, *opts, **kwargs, &b
-          end
-        ], nil, __FILE__, line
-      else
-        line = __LINE__; eval %[
-          def #{cmd_name}(*opts, &b)
-            ::IRB::ExtendCommand::#{cmd_class}.execute(irb_context, *opts, &b)
-          end
-        ], nil, __FILE__, line
-      end
+            end
+          ], nil, __FILE__, line
+          __send__ :#{cmd_name}_, *opts, **kwargs, &b
+        end
+      ], nil, __FILE__, line
 
       for ali, flag in aliases
         @ALIASES.push [ali, cmd_name, flag]
