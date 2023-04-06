@@ -258,15 +258,7 @@ module IRB # :nodoc:
       line = __LINE__; eval %[
         def #{cmd_name}(*opts, **kwargs, &b)
           Kernel.require_relative "#{load_file}"
-          line = __LINE__; eval %[
-            unless singleton_class.class_variable_defined?(:@@#{cmd_name}_)
-              singleton_class.class_variable_set(:@@#{cmd_name}_, true)
-              def self.#{cmd_name}_(*opts, **kwargs, &b)
-                ::IRB::ExtendCommand::#{cmd_class}.execute(irb_context, *opts, **kwargs, &b)
-              end
-            end
-          ], nil, __FILE__, line
-          __send__ :#{cmd_name}_, *opts, **kwargs, &b
+          ::IRB::ExtendCommand::#{cmd_class}.execute(irb_context, *opts, **kwargs, &b)
         end
       ], nil, __FILE__, line
 
