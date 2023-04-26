@@ -109,7 +109,7 @@ module IRB # :nodoc:
 
     alias toplevel_load load
 
-    def load(file, priv=nil)
+    def load(file)
       found = find(file)
       if found
         unless @@loaded.include?(found)
