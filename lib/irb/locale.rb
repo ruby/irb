@@ -82,33 +82,6 @@ module IRB # :nodoc:
       super(*ary)
     end
 
-    def require(file, priv = nil)
-      rex = Regexp.new("lc/#{Regexp.quote(file)}\.(so|o|sl|rb)?")
-      return false if $".find{|f| f =~ rex}
-
-      case file
-      when /\.rb$/
-        begin
-          load(file, priv)
-          $".push file
-          return true
-        rescue LoadError
-        end
-      when /\.(so|o|sl)$/
-        return super
-      end
-
-      begin
-        load(f = file + ".rb")
-        $".push f  #"
-        return true
-      rescue LoadError
-        return ruby_require(file)
-      end
-    end
-
-    alias toplevel_load load
-
     def load(file)
       found = find(file)
       if found
