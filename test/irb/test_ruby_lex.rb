@@ -83,27 +83,24 @@ module TestIRB
     end
 
     def assert_nesting_level(lines, expected, local_variables: [])
-      ruby_lex = ruby_lex_for_lines(lines, local_variables: local_variables)
+      _ltype, indent, _code_block_open = check_state(lines, local_variables: local_variables)
       error_message = "Calculated the wrong number of nesting level for:\n #{lines.join("\n")}"
-      assert_equal(expected, ruby_lex.instance_variable_get(:@indent), error_message)
+      assert_equal(expected, indent, error_message)
     end
 
     def assert_code_block_open(lines, expected, local_variables: [])
-      ruby_lex = ruby_lex_for_lines(lines, local_variables: local_variables)
+      _ltype, _indent, code_block_open = check_state(lines, local_variables: local_variables)
       error_message = "Wrong result of code_block_open for:\n #{lines.join("\n")}"
-      assert_equal(expected, ruby_lex.instance_variable_get(:@code_block_open), error_message)
+      assert_equal(expected, code_block_open, error_message)
     end
 
-    def ruby_lex_for_lines(lines, local_variables: [])
+    def check_state(lines, local_variables: [])
       context = build_context(local_variables)
+      code = lines.join("\n")
+      tokens = RubyLex.ripper_lex_without_warning(code, context: context)
       ruby_lex = RubyLex.new(context)
-
-      io = proc{ lines.join("\n") }
-      ruby_lex.set_input do
-        lines.join("\n")
-      end
-      ruby_lex.lex
-      ruby_lex
+      ltype, indent, _continue, code_block_open = ruby_lex.check_state(code, tokens)
+      [ltype, indent, code_block_open]
     end
 
     def test_auto_indent
