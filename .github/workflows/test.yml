@@ -10,7 +10,6 @@ jobs:
   ruby-versions:
     uses: ruby/actions/.github/workflows/ruby_versions.yml@master
     with:
-      engine: cruby-truffleruby
       min_version: 2.7
 
   irb:
@@ -22,6 +21,7 @@ jobs:
         with_latest_reline: [true, false]
         exclude:
           - ruby: truffleruby
+          - ruby: jruby
       fail-fast: false
     runs-on: ubuntu-latest
     env:
