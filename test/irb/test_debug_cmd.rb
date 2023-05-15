@@ -211,7 +211,15 @@ module TestIRB
       cmd = [EnvUtil.rubybin, "-I", LIB, @ruby_file.to_path]
       tmp_dir = Dir.mktmpdir
       rc_file = File.open(File.join(tmp_dir, ".irbrc"), "w+")
-      rc_file.write("IRB.conf[:USE_SINGLELINE] = true")
+      rc_file.write(<<~RUBY)
+        IRB.conf[:USE_SINGLELINE] = true
+        require 'readline'
+        if Readline.const_defined?(:IOGate)
+          def (Reline::IOGate).cursor_pos
+            Reline::GeneralIO.cursor_pos
+          end
+        end
+      RUBY
       rc_file.close
 
       @commands = []
