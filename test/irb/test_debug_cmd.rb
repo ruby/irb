@@ -9,6 +9,7 @@ end
 require "tempfile"
 require "tmpdir"
 require "envutil"
+require "readline"
 
 require_relative "helper"
 
