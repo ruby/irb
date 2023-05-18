@@ -96,10 +96,8 @@ module TestIRB
 
     def check_state(lines, local_variables: [])
       context = build_context(local_variables)
-      code = lines.join("\n")
-      tokens = RubyLex.ripper_lex_without_warning(code, context: context)
       ruby_lex = RubyLex.new(context)
-      _ltype, indent, _continue, code_block_open = ruby_lex.check_state(code, tokens)
+      _ltype, indent, _continue, code_block_open = ruby_lex.check_code_state(lines.join("\n"))
       [indent, code_block_open]
     end
 

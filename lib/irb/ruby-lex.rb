@@ -69,9 +69,7 @@ class RubyLex
           # Accept any single-line input for symbol aliases or commands that transform args
           next true if single_line_command?(code)
 
-          code.gsub!(/\s*\z/, '').concat("\n")
-          tokens = self.class.ripper_lex_without_warning(code, context: @context)
-          ltype, indent, continue, code_block_open = check_state(code, tokens)
+          ltype, indent, continue, code_block_open = check_code_state(code)
           if ltype or indent > 0 or continue or code_block_open
             false
           else
@@ -209,6 +207,12 @@ class RubyLex
     [ltype, indent, continue, code_block_open]
   end
 
+  def check_code_state(code)
+    check_target_code = code.gsub(/\s*\z/, '').concat("\n")
+    tokens = self.class.ripper_lex_without_warning(check_target_code, context: @context)
+    check_state(check_target_code, tokens)
+  end
+
   def save_prompt_to_context_io(ltype, indent, continue, line_num_offset)
     # Implicitly saves prompt string to `@context.io.prompt`. This will be used in the next `@input.call`.
     @prompt.call(ltype, indent, continue, @line_no + line_num_offset)
@@ -233,9 +237,7 @@ class RubyLex
       # Accept any single-line input for symbol aliases or commands that transform args
       return code if single_line_command?(code)
 
-      check_target_code = code.gsub(/\s*\z/, '').concat("\n")
-      tokens = self.class.ripper_lex_without_warning(check_target_code, context: @context)
-      ltype, indent, continue, code_block_open = check_state(check_target_code, tokens)
+      ltype, indent, continue, code_block_open = check_code_state(code)
       return code unless ltype or indent > 0 or continue or code_block_open
 
       line_offset += 1
