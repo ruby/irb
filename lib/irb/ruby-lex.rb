@@ -225,7 +225,9 @@ class RubyLex
     line_offset = 0
     loop do
       line = @input.call
-      return code.empty? ? nil : code unless line
+      unless line
+        return code.empty? ? nil : code
+      end
 
       code << line
       # Accept any single-line input for symbol aliases or commands that transform args
