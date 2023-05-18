@@ -253,7 +253,7 @@ class RubyLex
         yield code, @line_no
       end
       @line_no += code.count("\n")
-    rescue RubyLex::TerminateLineInput
+    rescue TerminateLineInput
     end
   end
 
