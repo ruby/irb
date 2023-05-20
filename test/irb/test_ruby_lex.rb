@@ -670,7 +670,7 @@ module TestIRB
       assert_dynamic_prompt(lines, expected_prompt_list)
     end
 
-    def test_dynamic_prompt_with_double_newline_braking_code
+    def test_dynamic_prompt_with_double_newline_breaking_code
       input_with_prompt = [
         PromptRow.new('001:1: :* ', %q(if true)),
         PromptRow.new('002:1: :* ', %q(%)),
