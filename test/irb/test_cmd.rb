@@ -496,7 +496,7 @@ module TestIRB
           private def show_source_test_method
             unless true
             end
-          end unless defined?(show_source_test_method)
+          end unless private_method_defined?(:show_source_test_method)
         end
       EOS
 
@@ -516,7 +516,7 @@ module TestIRB
           private def show_source_test_method
             unless true
             end
-          end unless defined?(show_source_test_method)
+          end unless private_method_defined?(:show_source_test_method)
         end
 
         Instance = PrivateTest.new unless defined?(Instance)
