@@ -358,7 +358,7 @@ module IRB # :nodoc:
     if @CONF[:RC]
       begin
         load rc_file
-      rescue LoadError, Errno::ENOENT
+      rescue Errno::ENOENT
       rescue # StandardError, ScriptError
         print "load error: #{rc_file}\n"
         print $!.class, ": ", $!, "\n"
