@@ -8,8 +8,8 @@ end
 
 require "tempfile"
 require "tmpdir"
-require "envutil"
 
+require_relative "../lib/envutil"
 require_relative "helper"
 
 module TestIRB
