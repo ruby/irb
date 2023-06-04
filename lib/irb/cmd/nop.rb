@@ -43,10 +43,6 @@ module IRB
 
       attr_reader :irb_context
 
-      def irb
-        @irb_context.irb
-      end
-
       def execute(*opts)
         #nop
       end
