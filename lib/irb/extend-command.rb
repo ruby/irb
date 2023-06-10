@@ -259,12 +259,34 @@ module IRB # :nodoc:
         cmd_class = cmd_class.name
       end
 
-      line = __LINE__; eval %[
-        def #{cmd_name}(*opts, **kwargs, &b)
-          Kernel.require_relative "#{load_file}"
-          ::IRB::ExtendCommand::#{cmd_class}.execute(irb_context, *opts, **kwargs, &b)
-        end
-      ], nil, __FILE__, line
+      # TODO: Remove this condition after 2.0
+      if cmd_name == :irb_measure
+        line = __LINE__; eval %[
+          def irb_measure(type = nil, arg = nil, &block)
+            if block
+              warn <<~MSG
+                Passing a block to measure is deprecated and will be removed in the next IRB major release.
+                Please activate measuring with `IRB.conf[:MEASURE] = true`, and set the callback with `IRB.set_measure_callback(&block)` instead.
+              MSG
+
+              IRB.conf[:MEASURE] = true
+              added = IRB.set_measure_callback(&block)
+              puts "\#{added[0]} is added." if added
+            else
+              Kernel.require_relative "cmd/measure"
+              ::IRB::ExtendCommand::Measure.execute(irb_context, type, arg)
+            end
+          end
+        ], nil, __FILE__, line
+      else
+        line = __LINE__; eval %[
+          def #{cmd_name}(*opts, **kwargs, &b)
+            Kernel.require_relative "#{load_file}"
+            ::IRB::ExtendCommand::#{cmd_class}.execute(irb_context, *opts, **kwargs, &b)
+          end
+        ], nil, __FILE__, line
+      end
+
 
       for ali, flag in aliases
         @ALIASES.push [ali, cmd_name, flag]

@@ -251,6 +251,36 @@ module TestIRB
       assert_match(/\A=> 3\nTIME is added\.\n=> nil\nprocessing time: .+\n=> 3\n=> nil\n=> 3\n/, out)
       assert_empty(c.class_variables)
     end
+    def test_measure_doesnt_override
+      conf = {
+        PROMPT: {
+          DEFAULT: {
+            PROMPT_I: '> ',
+            PROMPT_S: '> ',
+            PROMPT_C: '> ',
+            PROMPT_N: '> '
+          }
+        },
+        PROMPT_MODE: :DEFAULT,
+        MEASURE: false
+      }
+
+      c = Class.new(Object) do
+        def measure(*)
+          puts "measure defined by user"
+        end
+      end
+
+      out, err = execute_lines(
+        "measure :on\n",
+        conf: conf,
+        main: c.new
+      )
+
+      assert_empty err
+      assert_match(/measure defined by user/, out)
+      assert_empty(c.class_variables)
+    end
 
     def test_measure_enabled_by_rc
       conf = {
@@ -375,7 +405,7 @@ module TestIRB
         main: c
       )
 
-      assert_empty err
+      assert_match(/Passing a block to measure is deprecated/, err)
       assert_match(/\A=> 3\nBLOCK is added\.\n=> nil\naaa\n=> 3\nBLOCK is added.\naaa\n=> nil\nbbb\n=> 3\n=> nil\n=> 3\n/, out)
       assert_empty(c.class_variables)
     end
