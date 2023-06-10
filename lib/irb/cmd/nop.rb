@@ -30,9 +30,9 @@ module IRB
         end
       end
 
-      def self.execute(irb_context, *opts, **kwargs, &block)
+      def self.execute(irb_context, *opts, **kwargs)
         command = new(irb_context)
-        command.execute(*opts, **kwargs, &block)
+        command.execute(*opts, **kwargs)
       rescue CommandArgumentError => e
         puts e.message
       end
