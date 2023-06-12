@@ -1,11 +1,10 @@
-$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
+# frozen_string_literal: false
 require 'irb'
-require 'rubygems'
 
 require_relative "helper"
 
 module TestIRB
-  class TestNestingParser < TestCase
+  class NestingParserTest < TestCase
     def setup
       save_encodings
     end
@@ -18,7 +17,7 @@ module TestIRB
       IRB::NestingParser.parse_by_line(RubyLex.ripper_lex_without_warning(code))
     end
 
-    def test_scan
+    def test_open_tokens
       code = <<~'EOS'
         class A
           def f
@@ -78,7 +77,11 @@ module TestIRB
         end
       EOS
       line_results = parse_by_line(code)
-      line_results[1...-1].each {|result| assert_equal(['class'], result[2].map(&:tok)) }
+      assert_equal(code.lines.size, line_results.size)
+      class_open, *inner_line_results, class_close = line_results
+      assert_equal(['class'], class_open[2].map(&:tok))
+      inner_line_results.each {|result| assert_equal(['class'], result[2].map(&:tok)) }
+      assert_equal([], class_close[2].map(&:tok))
     end
 
     def test_multiline_string
@@ -93,13 +96,14 @@ module TestIRB
         A
       EOS
       line_results = parse_by_line(code)
+      assert_equal(code.lines.size, line_results.size)
       string_content_line, string_opens = line_results[1]
-      assert_equal("\naaa\nbbb\n", string_content_line.map(&:first).map(&:tok).join)
-      assert_equal("aaa\n", string_content_line.map(&:last).join)
+      assert_equal("\naaa\nbbb\n", string_content_line.first.first.tok)
+      assert_equal("aaa\n", string_content_line.first.last)
       assert_equal(['"'], string_opens.map(&:tok))
       heredoc_content_line, heredoc_opens = line_results[6]
-      assert_equal("aaa\nbbb\n", heredoc_content_line.map(&:first).map(&:tok).join)
-      assert_equal("bbb\n", heredoc_content_line.map(&:last).join)
+      assert_equal("aaa\nbbb\n", heredoc_content_line.first.first.tok)
+      assert_equal("bbb\n", heredoc_content_line.first.last)
       assert_equal(['<<A'], heredoc_opens.map(&:tok))
       _line, _prev_opens, next_opens, _min_depth = line_results.last
       assert_equal([], next_opens)
@@ -230,7 +234,7 @@ module TestIRB
           here
         end
       EOS
-      line_results = parse_by_line(code).select { |tokens,| tokens.map(&:last).include? 'here' }
+      line_results = parse_by_line(code).select { |tokens,| tokens.map(&:last).include?('here') }
       assert_equal(7, line_results.size)
       line_results.each do |_tokens, _prev_opens, next_opens, _min_depth|
         assert_equal(['for'], next_opens.map(&:tok))
@@ -268,7 +272,7 @@ module TestIRB
       EOS
       %w[while until].each do |keyword|
         code = base_code.gsub('while_or_until', keyword)
-        line_results = parse_by_line(code).select { |tokens,| tokens.map(&:last).include? 'here' }
+        line_results = parse_by_line(code).select { |tokens,| tokens.map(&:last).include?('here') }
         assert_equal(7, line_results.size)
         line_results.each do |_tokens, _prev_opens, next_opens, _min_depth|
           assert_equal([keyword], next_opens.map(&:tok) )
