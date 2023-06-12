@@ -96,7 +96,7 @@ module TestIRB
     def check_state(lines, local_variables: [])
       context = build_context(local_variables)
       tokens = RubyLex.ripper_lex_without_warning(lines.join("\n"), context: context)
-      opens = IRB::NestingParser.scan(tokens)
+      opens = IRB::NestingParser.open_tokens(tokens)
       ruby_lex = RubyLex.new(context)
       indent, _nesting_level = ruby_lex.calc_nesting_depth(opens)
       code_block_open = !opens.empty? || ruby_lex.process_continue(tokens)
@@ -768,7 +768,7 @@ module TestIRB
     def test_unterminated_heredoc_string_literal
       ['<<A;<<B', "<<A;<<B\n", "%W[\#{<<A;<<B", "%W[\#{<<A;<<B\n"].each do |code|
         tokens = RubyLex.ripper_lex_without_warning(code)
-        string_literal = IRB::NestingParser.scan(tokens).last
+        string_literal = IRB::NestingParser.open_tokens(tokens).last
         assert_equal('<<A', string_literal&.tok)
       end
     end

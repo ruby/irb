@@ -1,7 +1,10 @@
+# frozen_string_literal: true
 module IRB
   module NestingParser
     IGNORE_TOKENS = %i[on_sp on_ignored_nl on_comment on_embdoc_beg on_embdoc on_embdoc_end]
-    def self.scan(tokens)
+
+    # Scan each token and call the given block with array of token and other information for parsing
+    def self.scan_opens(tokens)
       opens = []
       pending_heredocs = []
       first_token_on_line = true
@@ -176,12 +179,31 @@ module IRB
       opens.map(&:first) + pending_heredocs.reverse
     end
 
+    def self.open_tokens(tokens)
+      # scan_opens without block will return a list of open tokens at last token position
+      scan_opens(tokens)
+    end
+
+    # Calculates token information [line_tokens, prev_opens, next_opens, min_depth] for each line.
+    # Example code
+    #   ["hello
+    #   world"+(
+    # First line
+    #   line_tokens: [[lbracket, '['], [tstring_beg, '"'], [tstring_content("hello\nworld"), "hello\n"]]
+    #   prev_opens:  []
+    #   next_tokens: [lbracket, tstring_beg]
+    #   min_depth:   0 (minimum at beginning of line)
+    # Second line
+    #   line_tokens: [[tstring_content("hello\nworld"), "world"], [tstring_end, '"'], [op, '+'], [lparen, '(']]
+    #   prev_opens:  [lbracket, tstring_beg]
+    #   next_tokens: [lbracket, lparen]
+    #   min_depth:   1 (minimum just after tstring_end)
     def self.parse_by_line(tokens)
       line_tokens = []
       prev_opens = []
       min_depth = 0
       output = []
-      last_opens = scan(tokens) do |t, opens|
+      last_opens = scan_opens(tokens) do |t, opens|
         depth = t == opens.last&.first ? opens.size - 1 : opens.size
         min_depth = depth if depth < min_depth
         if t.tok.include?("\n")

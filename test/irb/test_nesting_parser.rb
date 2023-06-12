@@ -28,7 +28,7 @@ module TestIRB
                   x: "
                     #{p(1, 2, 3
       EOS
-      opens = IRB::NestingParser.scan(RubyLex.ripper_lex_without_warning(code))
+      opens = IRB::NestingParser.open_tokens(RubyLex.ripper_lex_without_warning(code))
       assert_equal(%w[class def if do { " #{ (], opens.map(&:tok))
     end
 

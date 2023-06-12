@@ -160,7 +160,7 @@ class RubyLex
   def check_code_state(code)
     check_target_code = code.gsub(/\s*\z/, '').concat("\n")
     tokens = self.class.ripper_lex_without_warning(check_target_code, context: @context)
-    opens = IRB::NestingParser.scan(tokens)
+    opens = IRB::NestingParser.open_tokens(tokens)
     [check_target_code, tokens, opens]
   end
 
@@ -352,7 +352,7 @@ class RubyLex
   end
 
   def process_indent_level(tokens, lines)
-    opens = IRB::NestingParser.scan(tokens)
+    opens = IRB::NestingParser.open_tokens(tokens)
     depth, _nesting = calc_nesting_depth(opens)
     indent = depth * 2
     line_index = lines.size - 2
@@ -444,7 +444,7 @@ class RubyLex
       if first_token && first_token.state != Ripper::EXPR_DOT
         tokens_without_last_line = tokens[0..index]
         code_without_last_line = tokens_without_last_line.map(&:tok).join
-        opens_without_last_line = IRB::NestingParser.scan(tokens_without_last_line)
+        opens_without_last_line = IRB::NestingParser.open_tokens(tokens_without_last_line)
         if opens_without_last_line.empty? && !process_continue(tokens_without_last_line) && !check_code_block(code_without_last_line, tokens_without_last_line)
           return last_line_tokens.map(&:tok).join
         end
