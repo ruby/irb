@@ -69,9 +69,8 @@ class RubyLex
           # Accept any single-line input for symbol aliases or commands that transform args
           next true if single_line_command?(code)
 
-          check_target_code, tokens, opens = check_code_state(code)
-          continue = process_continue(tokens)
-          opens.empty? && !continue && !check_code_block(check_target_code, tokens)
+          _tokens, _opens, terminated = check_code_state(code)
+          terminated
         end
       end
     end
@@ -81,8 +80,9 @@ class RubyLex
         tokens = self.class.ripper_lex_without_warning(lines.map{ |l| l + "\n" }.join, context: @context)
         line_results = IRB::NestingParser.parse_by_line(tokens)
         tokens_until_line = []
-        line_results.map.with_index do |(line_tokens, _prev_opens, next_opens), line_num_offset|
+        line_results.map.with_index do |(line_tokens, _prev_opens, next_opens, _min_depth), line_num_offset|
           line_tokens.each do |token, _s|
+            # Avoid appending duplicated token. Tokens that include "\n" like multiline tstring_content can exist in multiple lines.
             tokens_until_line << token if token != tokens_until_line.last
           end
           continue = process_continue(tokens_until_line)
@@ -153,7 +153,7 @@ class RubyLex
 
   def prompt(opens, continue, line_num_offset)
     ltype = ltype_from_open_tokens(opens)
-    _indent, nesting_level = calc_nesting_depth(opens)
+    _indent_level, nesting_level = calc_nesting_depth(opens)
     @prompt&.call(ltype, nesting_level, opens.any? || continue, @line_no + line_num_offset)
   end
 
@@ -161,7 +161,11 @@ class RubyLex
     check_target_code = code.gsub(/\s*\z/, '').concat("\n")
     tokens = self.class.ripper_lex_without_warning(check_target_code, context: @context)
     opens = IRB::NestingParser.open_tokens(tokens)
-    [check_target_code, tokens, opens]
+    [tokens, opens, code_terminated?(code, tokens, opens)]
+  end
+
+  def code_terminated?(code, tokens, opens)
+    opens.empty? && !process_continue(tokens) && !check_code_block(code, tokens)
   end
 
   def save_prompt_to_context_io(opens, continue, line_num_offset)
@@ -188,11 +192,11 @@ class RubyLex
       # Accept any single-line input for symbol aliases or commands that transform args
       return code if single_line_command?(code)
 
-      check_target_code, tokens, opens = check_code_state(code)
-      continue = process_continue(tokens)
-      return code if opens.empty? && !continue && !check_code_block(check_target_code, tokens)
+      tokens, opens, terminated = check_code_state(code)
+      return code if terminated
 
       line_offset += 1
+      continue = process_continue(tokens)
       save_prompt_to_context_io(opens, continue, line_offset)
     end
   end
@@ -321,6 +325,7 @@ class RubyLex
     false
   end
 
+  # Calculates [indent_level, nesting_level]. nesting_level is used in prompt string.
   def calc_nesting_depth(opens)
     indent_level = 0
     nesting_level = 0
@@ -353,12 +358,13 @@ class RubyLex
 
   def process_indent_level(tokens, lines)
     opens = IRB::NestingParser.open_tokens(tokens)
-    depth, _nesting = calc_nesting_depth(opens)
-    indent = depth * 2
+    indent_level, _nesting_level = calc_nesting_depth(opens)
+    indent = indent_level * 2
     line_index = lines.size - 2
     if free_indent_token(opens, line_index)
       return [indent, lines[line_index][/^ */].length].max
     end
+
     indent
   end
 
@@ -366,9 +372,12 @@ class RubyLex
     line_results = IRB::NestingParser.parse_by_line(tokens)
     result = line_results[line_index]
     return unless result
+
+    # To correctly indent line like `end.map do`, we use shortest open tokens on each line for indent calculation.
+    # Shortest open tokens can be calculated by `opens.take(min_depth)`
     _tokens, prev_opens, opens, min_depth = result
-    depth, = calc_nesting_depth(opens.take(min_depth))
-    indent = depth * 2
+    indent_level, _nesting_level = calc_nesting_depth(opens.take(min_depth))
+    indent = indent_level * 2
     free_indent_tok = free_indent_token(opens, line_index)
     prev_line_free_indent_tok = free_indent_token(prev_opens, line_index - 1)
     if prev_line_free_indent_tok && prev_line_free_indent_tok != free_indent_tok
@@ -376,8 +385,8 @@ class RubyLex
     elsif free_indent_tok
       return lines[line_index][/^ */].length
     end
-    prev_depth, = calc_nesting_depth(prev_opens)
-    indent if depth < prev_depth
+    prev_indent_level, _prev_nesting_level = calc_nesting_depth(prev_opens)
+    indent if indent_level < prev_indent_level
   end
 
   def ltype_from_open_tokens(opens)
@@ -445,7 +454,7 @@ class RubyLex
         tokens_without_last_line = tokens[0..index]
         code_without_last_line = tokens_without_last_line.map(&:tok).join
         opens_without_last_line = IRB::NestingParser.open_tokens(tokens_without_last_line)
-        if opens_without_last_line.empty? && !process_continue(tokens_without_last_line) && !check_code_block(code_without_last_line, tokens_without_last_line)
+        if code_terminated?(code_without_last_line, tokens_without_last_line, opens_without_last_line)
           return last_line_tokens.map(&:tok).join
         end
       end
