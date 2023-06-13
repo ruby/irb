@@ -389,13 +389,16 @@ class RubyLex
     indent if indent_level < prev_indent_level
   end
 
+  LTYPE_TOKENS = %i[
+    on_heredoc_beg on_tstring_beg
+    on_regexp_beg on_symbeg on_backtick
+    on_symbols_beg on_qsymbols_beg
+    on_words_beg on_qwords_beg
+  ]
+
   def ltype_from_open_tokens(opens)
     start_token = opens.reverse_each.find do |tok|
-      %i[
-        on_heredoc_beg on_tstring_beg on_symbeg on_regexp_beg
-        on_symbols_beg on_qsymbols_beg
-        on_words_beg on_qwords_beg
-      ].include?(tok.event)
+      LTYPE_TOKENS.include?(tok.event)
     end
     return nil unless start_token
 
