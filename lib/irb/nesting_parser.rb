@@ -223,5 +223,34 @@ module IRB
       output << [line_tokens, prev_opens, last_opens, min_depth] if line_tokens.any?
       output
     end
+
+    def self.closing_code(opens)
+      closing_tokens = opens.map do |t|
+        case t.tok
+        when /\A%.[<>]\z/
+          '>'
+        when '{', '#{', /\A%.?[{}]\z/
+          '}'
+        when '(', /\A%.?[()]\z/
+          # do not insert \n before closing paren. workaround to avoid syntax error of "a in ^(b\n)"
+          ')'
+        when '[', /\A%.?[\[\]]\z/
+          ']'
+        when /\A%.?(.)\z/
+          $1
+        when '"', "'", '/', '`'
+          t.tok
+        when /\A<<[~-]?(?:"(?<s>.+)"|'(?<s>.+)'|(?<s>.+))/
+          "\n#{s}\n"
+        when ':"', ":'", ':'
+          t.tok[1]
+        when 'case'
+          "\nwhen true\nend"
+        else
+          "\nend"
+        end
+      end
+      closing_tokens.reverse.join
+    end
   end
 end

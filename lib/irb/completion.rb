@@ -24,11 +24,25 @@ module IRB
         end
 
         def eval_global_variables
-          ::Kernel.instance_method(:global_variables).bind(eval("self")).call
+          ::Kernel.global_variables
         end
 
-        def eval_class_constants
-          ::Module.instance_method(:constants).bind(eval("self.class")).call
+        def eval_constants
+          [Object, *eval('::Module.nesting')].flat_map(&:constants).uniq.sort rescue []
+        end
+
+        def eval_class_variables
+          mod = eval('::Module.nesting').first
+          mod&.class_variables || [] rescue []
+        end
+
+        def eval_instance_variable_get(name)
+          ::Kernel.instance_method(:instance_variable_get).bind_call(eval('self'), name) rescue nil
+        end
+
+        def eval_class_variable_get(name)
+          mod = eval('::Module.nesting').first
+          mod&.class_variable_get(name) rescue nil
         end
       end
     }
@@ -109,287 +123,289 @@ module IRB
       }
     end
 
-    CompletionRequireProc = lambda { |target, preposing = nil, postposing = nil|
-      if target =~ /\A(['"])([^'"]+)\Z/
-        quote = $1
-        actual_target = $2
+    def self.retrieve_completion_sexp_nodes(code)
+      tokens = RubyLex.ripper_lex_without_warning(code)
+
+      # remove error tokens
+      tokens.pop while tokens&.last&.tok&.empty?
+
+      event = tokens.last&.event
+      tok = tokens.last&.tok
+
+      if (event == :on_ignored_by_ripper || event == :on_op || event == :on_period) && (tok == '.' || tok == '::' || tok == '&.')
+        suffix = tok == '::' ? 'Const' : 'method'
+        tok = ''
+      elsif event == :on_symbeg
+        suffix = 'symbol'
+        tok = ''
+      elsif event == :on_ident || event == :on_kw
+        suffix = 'method'
+      elsif event == :on_const
+        suffix = 'Const'
+      elsif event == :on_tstring_content
+        suffix = 'string'
+      elsif event == :on_gvar
+        suffix = '$gvar'
+      elsif event == :on_ivar
+        suffix = '@ivar'
+      elsif event == :on_cvar
+        suffix = '@@cvar'
       else
-        return nil # It's not String literal
+        return
       end
-      tokens = RubyLex.ripper_lex_without_warning(preposing.gsub(/\s*\z/, ''))
-      tok = nil
-      tokens.reverse_each do |t|
-        unless [:on_lparen, :on_sp, :on_ignored_sp, :on_nl, :on_ignored_nl, :on_comment].include?(t.event)
-          tok = t
-          break
+
+      code = code.delete_suffix(tok)
+      last_opens = IRB::NestingParser.open_tokens(tokens)
+      closing_code = IRB::NestingParser.closing_code(last_opens)
+      sexp = Ripper.sexp("#{code}#{suffix}#{closing_code}")
+      return unless sexp
+
+      lines = code.split("\n", -1)
+      row = lines.empty? ? 1 : lines.size
+      col = lines.last&.bytesize || 0
+      matched_nodes = find_target_from_sexp(sexp, row, col)
+      [matched_nodes, tok] if matched_nodes
+    end
+
+    def self.find_target_from_sexp(sexp, row, col)
+      return unless sexp.is_a? Array
+
+      sexp.each do |child|
+        event, tok, pos = child
+        if event.is_a?(Symbol) && tok.is_a?(String) && pos == [row, col]
+          return [child]
+        else
+          result = find_target_from_sexp(child, row, col)
+          if result
+            result.unshift child
+            return result
+          end
         end
       end
-      result = []
-      if tok && tok.event == :on_ident && tok.state == Ripper::EXPR_CMDARG
-        case tok.tok
-        when 'require'
-          result = retrieve_files_to_require_from_load_path.select { |path|
-            path.start_with?(actual_target)
-          }.map { |path|
-            quote + path
-          }
-        when 'require_relative'
-          result = retrieve_files_to_require_relative_from_current_dir.select { |path|
-            path.start_with?(actual_target)
-          }.map { |path|
-            quote + path
-          }
+      nil
+    end
+
+    def self.evaluate_receiver_with_visibility(receiver_node, bind)
+      event, *data = receiver_node
+      case event
+      when :var_ref
+        if (value, visibility = evaluate_var_ref_with_visibility(data[0], bind))
+          [value.nil? ? NilClass : nil, value, visibility]
+        end
+      when :const_path_ref
+        _reciever_class, reciever, _visibility = evaluate_receiver_with_visibility(data[0], bind)
+        if reciever
+          [nil, reciever.const_get(data[1][1]), false] rescue nil
+        end
+      when :top_const_ref
+        [nil, Object.const_get(data[0][1]), false] rescue nil
+      when :array
+        [Array, nil, false]
+      when :hash
+        [Hash, nil, false]
+      when :lambda
+        [Proc, nil, false]
+      when :symbol_literal, :dyna_symbol, :def
+        [Symbol, nil, false]
+      when :string_literal, :xstring_literal
+        [String, nil, false]
+      when :@int
+        [Integer, nil, false]
+      when :@float
+        [Float, nil, false]
+      when :@rational
+        [Rational, nil, false]
+      when :@imaginary
+        [Complex, nil, false]
+      when :regexp_literal
+        [Regexp, nil, false]
+      end
+    end
+
+    def self.evaluate_var_ref_with_visibility(node, bind)
+      type, value = node
+      case type
+      when :@kw
+        case value
+        when 'self'
+          [bind.eval('self'), true]
+        when 'true'
+          [true, false]
+        when 'false'
+          [false, false]
+        when 'nil'
+          [nil, false]
+        end
+      when :@ident
+        [bind.local_variable_get(value), false]
+      when :@gvar
+        [eval(value), false] if global_variables.include? value
+      when :@ivar
+        [bind.eval_instance_variable_get(value), false]
+      when :@cvar
+        [bind.class_variable_get(value), false]
+      when :@const
+        [bind.eval(value), false] rescue nil
+      end
+    end
+
+    def self.retrieve_completion_target(code)
+      matched_nodes, name = retrieve_completion_sexp_nodes(code)
+      return unless matched_nodes
+
+      *parents, expression, (target_event,) = matched_nodes
+
+      case target_event
+      when :@gvar
+        return [:gvar, name]
+      when :@ivar
+        return [:ivar, name]
+      when :@cvar
+        return [:cvar, name]
+      end
+      return unless expression
+
+      if target_event == :@tstring_content
+        req_event, (ident_event, ident_name) = parents[-4]
+        if req_event == :command && ident_event == :@ident && (ident_name == 'require' || ident_name == 'require_relative')
+          return [ident_name.to_sym, name.rstrip]
         end
       end
-      result
-    }
 
-    CompletionProc = lambda { |target, preposing = nil, postposing = nil|
-      if preposing && postposing
-        result = CompletionRequireProc.(target, preposing, postposing)
-        unless result
-          result = retrieve_completion_data(target).compact.map{ |i| i.encode(Encoding.default_external) }
+      expression_event = expression[0]
+      case expression_event
+      when :symbol
+        [:symbol, name]
+      when :vcall
+        [:lvar_or_method, name]
+      when :var_ref
+        if target_event == :@ident
+          [:lvar_or_method, name]
+        elsif target_event == :@const
+          [:const_or_method, name]
         end
-        result
-      else
-        retrieve_completion_data(target).compact.map{ |i| i.encode(Encoding.default_external) }
+      when :const_ref
+        [:const, name]
+      when :const_path_ref
+        [:const, name, expression[1]]
+      when :top_const_ref
+        [:top_const, name]
+      when :def
+        [:const_or_lvar_or_method, name]
+      when :call, :defs
+        [:call, name, expression[1]]
       end
-    }
+    end
 
-    def self.retrieve_completion_data(input, bind: IRB.conf[:MAIN_CONTEXT].workspace.binding, doc_namespace: false)
-      case input
-      # this regexp only matches the closing character because of irb's Reline.completer_quote_characters setting
-      # details are described in: https://github.com/ruby/irb/pull/523
-      when /^(.*["'`])\.([^.]*)$/
-        # String
-        receiver = $1
-        message = $2
+    def self.retrieve_completion_data(code, bind:)
+      lvars_code = RubyLex.generate_local_variables_assign_code(bind.local_variables)
+      type, name, receiver_node = retrieve_completion_target("#{lvars_code}\n#{code}")
+      receiver_class, receiver_object, public_visibility = evaluate_receiver_with_visibility(receiver_node, bind) if receiver_node
+      [type, name, receiver_class, receiver_object, public_visibility]
+    end
 
-        if doc_namespace
-          "String.#{message}"
+    def self.completion_candidates(completion_data, bind:)
+      type, name, receiver_class, receiver_object, public_visibility = completion_data
+      return [] unless type
+
+      case type
+      when :require
+        retrieve_files_to_require_from_load_path
+      when :require_relative
+        retrieve_files_to_require_relative_from_current_dir
+      when :symbol
+        if name.empty?
+          []
         else
-          candidates = String.instance_methods.collect{|m| m.to_s}
-          select_message(receiver, message, candidates)
-        end
-
-      # this regexp only matches the closing character because of irb's Reline.completer_quote_characters setting
-      # details are described in: https://github.com/ruby/irb/pull/523
-      when /^(.*\/)\.([^.]*)$/
-        # Regexp
-        receiver = $1
-        message = $2
-
-        if doc_namespace
-          "Regexp.#{message}"
-        else
-          candidates = Regexp.instance_methods.collect{|m| m.to_s}
-          select_message(receiver, message, candidates)
-        end
-
-      when /^([^\]]*\])\.([^.]*)$/
-        # Array
-        receiver = $1
-        message = $2
-
-        if doc_namespace
-          "Array.#{message}"
-        else
-          candidates = Array.instance_methods.collect{|m| m.to_s}
-          select_message(receiver, message, candidates)
-        end
-
-      when /^([^\}]*\})\.([^.]*)$/
-        # Proc or Hash
-        receiver = $1
-        message = $2
-
-        if doc_namespace
-          ["Proc.#{message}", "Hash.#{message}"]
-        else
-          proc_candidates = Proc.instance_methods.collect{|m| m.to_s}
-          hash_candidates = Hash.instance_methods.collect{|m| m.to_s}
-          select_message(receiver, message, proc_candidates | hash_candidates)
-        end
-
-      when /^(:[^:.]+)$/
-        # Symbol
-        if doc_namespace
-          nil
-        else
-          sym = $1
-          candidates = Symbol.all_symbols.collect do |s|
-            s.inspect
+          Symbol.all_symbols.filter_map do |s|
+            s.inspect[1..]
           rescue EncodingError
-            # ignore
-          end
-          candidates.grep(/^#{Regexp.quote(sym)}/)
-        end
-      when /^::([A-Z][^:\.\(\)]*)$/
-        # Absolute Constant or class methods
-        receiver = $1
-
-        candidates = Object.constants.collect{|m| m.to_s}
-
-        if doc_namespace
-          candidates.find { |i| i == receiver }
-        else
-          candidates.grep(/^#{Regexp.quote(receiver)}/).collect{|e| "::" + e}
-        end
-
-      when /^([A-Z].*)::([^:.]*)$/
-        # Constant or class methods
-        receiver = $1
-        message = $2
-
-        if doc_namespace
-          "#{receiver}::#{message}"
-        else
-          begin
-            candidates = eval("#{receiver}.constants.collect{|m| m.to_s}", bind)
-            candidates |= eval("#{receiver}.methods.collect{|m| m.to_s}", bind)
-          rescue Exception
-            candidates = []
-          end
-
-          select_message(receiver, message, candidates.sort, "::")
-        end
-
-      when /^(:[^:.]+)(\.|::)([^.]*)$/
-        # Symbol
-        receiver = $1
-        sep = $2
-        message = $3
-
-        if doc_namespace
-          "Symbol.#{message}"
-        else
-          candidates = Symbol.instance_methods.collect{|m| m.to_s}
-          select_message(receiver, message, candidates, sep)
-        end
-
-      when /^(?<num>-?(?:0[dbo])?[0-9_]+(?:\.[0-9_]+)?(?:(?:[eE][+-]?[0-9]+)?i?|r)?)(?<sep>\.|::)(?<mes>[^.]*)$/
-        # Numeric
-        receiver = $~[:num]
-        sep = $~[:sep]
-        message = $~[:mes]
-
-        begin
-          instance = eval(receiver, bind)
-
-          if doc_namespace
-            "#{instance.class.name}.#{message}"
-          else
-            candidates = instance.methods.collect{|m| m.to_s}
-            select_message(receiver, message, candidates, sep)
-          end
-        rescue Exception
-          if doc_namespace
-            nil
-          else
-            []
+            # ignore for truffleruby
           end
         end
-
-      when /^(-?0x[0-9a-fA-F_]+)(\.|::)([^.]*)$/
-        # Numeric(0xFFFF)
-        receiver = $1
-        sep = $2
-        message = $3
-
-        begin
-          instance = eval(receiver, bind)
-          if doc_namespace
-            "#{instance.class.name}.#{message}"
-          else
-            candidates = instance.methods.collect{|m| m.to_s}
-            select_message(receiver, message, candidates, sep)
-          end
-        rescue Exception
-          if doc_namespace
-            nil
-          else
-            []
-          end
-        end
-
-      when /^(\$[^.]*)$/
-        # global var
-        gvar = $1
-        all_gvars = global_variables.collect{|m| m.to_s}
-
-        if doc_namespace
-          all_gvars.find{ |i| i == gvar }
+      when :gvar
+        global_variables
+      when :ivar
+        bind.eval_instance_variables
+      when :cvar
+        bind.eval_class_variables
+      when :call
+        if receiver_class
+          public_visibility ? receiver_class.public_instance_methods : receiver_class.instance_methods
+        elsif receiver_object.nil?
+          []
         else
-          all_gvars.grep(Regexp.new(Regexp.quote(gvar)))
+          public_visibility ? receiver_object.public_methods | receiver_object.private_methods : receiver_object.public_methods
         end
-
-      when /^([^.:"].*)(\.|::)([^.]*)$/
-        # variable.func or func.func
-        receiver = $1
-        sep = $2
-        message = $3
-
-        gv = bind.eval_global_variables.collect{|m| m.to_s}.push("true", "false", "nil")
-        lv = bind.local_variables.collect{|m| m.to_s}
-        iv = bind.eval_instance_variables.collect{|m| m.to_s}
-        cv = bind.eval_class_constants.collect{|m| m.to_s}
-
-        if (gv | lv | iv | cv).include?(receiver) or /^[A-Z]/ =~ receiver && /\./ !~ receiver
-          # foo.func and foo is var. OR
-          # foo::func and foo is var. OR
-          # foo::Const and foo is var. OR
-          # Foo::Bar.func
-          begin
-            candidates = []
-            rec = eval(receiver, bind)
-            if sep == "::" and rec.kind_of?(Module)
-              candidates = rec.constants.collect{|m| m.to_s}
-            end
-            candidates |= rec.methods.collect{|m| m.to_s}
-          rescue Exception
-            candidates = []
-          end
+      when :top_const
+        Object.constants.sort
+      when :const
+        if receiver_object
+          receiver_object.constants.sort
         else
-          # func1.func2
-          candidates = []
+          bind.eval_constants.sort
         end
-
-        if doc_namespace
-          rec_class = rec.is_a?(Module) ? rec : rec.class
-          "#{rec_class.name}#{sep}#{candidates.find{ |i| i == message }}"
-        else
-          select_message(receiver, message, candidates, sep)
-        end
-
-      when /^\.([^.]*)$/
-        # unknown(maybe String)
-
-        receiver = ""
-        message = $1
-
-        candidates = String.instance_methods(true).collect{|m| m.to_s}
-
-        if doc_namespace
-          "String.#{candidates.find{ |i| i == message }}"
-        else
-          select_message(receiver, message, candidates.sort)
-        end
-
+      when :const_or_method
+        (bind.eval_constants | bind.eval_methods | bind.eval_private_methods | ReservedWords).map(&:to_s).sort
+      when :const_or_lvar_or_method
+        (bind.eval_constants | bind.local_variables | bind.eval_methods | bind.eval_private_methods | ReservedWords).map(&:to_s).sort
+      when :lvar_or_method
+        (bind.local_variables | bind.eval_methods | bind.eval_private_methods | ReservedWords).map(&:to_s).sort
       else
-        if doc_namespace
-          vars = (bind.local_variables | bind.eval_instance_variables).collect{|m| m.to_s}
-          perfect_match_var = vars.find{|m| m.to_s == input}
-          if perfect_match_var
-            eval("#{perfect_match_var}.class.name", bind)
-          else
-            candidates = (bind.eval_methods | bind.eval_private_methods | bind.local_variables | bind.eval_instance_variables | bind.eval_class_constants).collect{|m| m.to_s}
-            candidates |= ReservedWords
-            candidates.find{ |i| i == input }
-          end
+        []
+      end
+    end
+
+    @@previous_completion_data = nil
+
+    def self.previous_completion_data
+      @@previous_completion_data
+    end
+
+    CompletionProc = lambda { |target, preposing, postposing|
+      context = IRB.conf[:MAIN_CONTEXT]
+      bind = context.workspace.binding
+      completion_data = retrieve_completion_data("#{preposing}#{target}", bind: bind)
+      candidates = completion_candidates(completion_data, bind: bind)
+
+      # Hack to use completion_data from SHOW_DOC_DIALOG and from PerfectMatchedProc
+      @@previous_completion_data = completion_data
+
+      type, name, = completion_data
+      return [] unless type
+
+      prefix = target.delete_suffix name
+      candidates.map(&:to_s).select { |s| s.start_with? name }.map do |s|
+        prefix + s
+      end
+    }
+
+    def self.retrieve_doc_namespace(target, completion_data, bind:)
+      name = target[/(\$|@|@@)?[a-zA-Z_0-9]+[?=!]?\z/]
+      return unless name
+
+      type, _name, receiver_class, receiver_object, _public_visibility = completion_data
+      receiver_class ||= receiver_object.class
+      case type
+      when :call
+        if receiver_object.is_a?(Module)
+          "#{receiver_object}.#{name}"
         else
-          candidates = (bind.eval_methods | bind.eval_private_methods | bind.local_variables | bind.eval_instance_variables | bind.eval_class_constants).collect{|m| m.to_s}
-          candidates |= ReservedWords
-          candidates.grep(/^#{Regexp.quote(input)}/).sort
+          "#{receiver_class}.#{name}"
+        end
+      when :top_const
+        name
+      when :const
+        "#{receiver_object}::#{name}" if receiver_object.is_a?(Module)
+      when :const_or_method
+        name
+      when :ivar
+        bind.eval_instance_variable_get(name).class.to_s rescue nil
+      when :lvar_or_method
+        if bind.local_variables.include?(name.to_sym)
+          bind.local_variable_get(name).class.to_s
+        else
+          "#{bind.eval('self').class}.#{name}"
         end
       end
     end
@@ -408,39 +424,13 @@ module IRB
         return
       end
 
-      namespace = retrieve_completion_data(matched, bind: bind, doc_namespace: true)
+      namespace = retrieve_doc_namespace(matched, previous_completion_data, bind: bind)
       return unless namespace
 
-      if namespace.is_a?(Array)
-        out = RDoc::Markup::Document.new
-        namespace.each do |m|
-          begin
-            RDocRIDriver.add_method(out, m)
-          rescue RDoc::RI::Driver::NotFoundError
-          end
-        end
-        RDocRIDriver.display(out)
-      else
-        begin
-          RDocRIDriver.display_names([namespace])
-        rescue RDoc::RI::Driver::NotFoundError
-        end
+      begin
+        RDocRIDriver.display_names([namespace])
+      rescue RDoc::RI::Driver::NotFoundError
       end
     }
-
-    # Set of available operators in Ruby
-    Operators = %w[% & * ** + - / < << <= <=> == === =~ > >= >> [] []= ^ ! != !~]
-
-    def self.select_message(receiver, message, candidates, sep = ".")
-      candidates.grep(/^#{Regexp.quote(message)}/).collect do |e|
-        case e
-        when /^[a-zA-Z_]/
-          receiver + sep + e
-        when /^[0-9]/
-        when *Operators
-          #receiver + " " + e
-        end
-      end
-    end
   end
 end

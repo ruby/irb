@@ -196,7 +196,12 @@ module IRB
           Readline.basic_word_break_characters = IRB::InputCompletor::BASIC_WORD_BREAK_CHARACTERS
         end
         Readline.completion_append_character = nil
-        Readline.completion_proc = IRB::InputCompletor::CompletionProc
+        Readline.completion_proc = ->(target) {
+          line_buffer = Readline.line_buffer || ''
+          preposing_target = line_buffer[...Readline.point]
+          postposing = line_buffer[Readline.point..]
+          IRB::InputCompletor::CompletionProc.call(target, preposing_target.delete_suffix(target), postposing)
+        }
       end
 
       # Reads the next line from this input method.
@@ -326,8 +331,9 @@ module IRB
       end
       cursor_pos_to_render, result, pointer, autocomplete_dialog = context.pop(4)
       return nil if result.nil? or pointer.nil? or pointer < 0
+      bind = IRB.conf[:MAIN_CONTEXT].workspace.binding
       name = result[pointer]
-      name = IRB::InputCompletor.retrieve_completion_data(name, doc_namespace: true)
+      name = IRB::InputCompletor.retrieve_doc_namespace(name, IRB::InputCompletor.previous_completion_data, bind: bind)
 
       options = {}
       options[:extra_doc_dirs] = IRB.conf[:EXTRA_DOC_DIRS] unless IRB.conf[:EXTRA_DOC_DIRS].empty?
