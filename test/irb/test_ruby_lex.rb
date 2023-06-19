@@ -598,6 +598,29 @@ module TestIRB
       assert_code_block_open(lines, false, local_variables: ['a'])
     end
 
+    def test_embdoc_indent
+      input_with_correct_indents = [
+        Row.new(%q(=begin), 0, 0, 0),
+        Row.new(%q(a), 0, 0, 0),
+        Row.new(%q( b), 1, 1, 0),
+        Row.new(%q(=end), 0, 0, 0),
+        Row.new(%q(if 1), 0, 2, 1),
+        Row.new(%q(  2), 2, 2, 1),
+        Row.new(%q(=begin), 0, 0, 1),
+        Row.new(%q(a), 0, 0, 1),
+        Row.new(%q( b), 1, 1, 1),
+        Row.new(%q(=end), 0, 2, 1),
+        Row.new(%q(  3), 2, 2, 1),
+        Row.new(%q(end), 0, 0, 0),
+      ]
+      lines = []
+      input_with_correct_indents.each do |row|
+        lines << row.content
+        assert_row_indenting(lines, row)
+        assert_nesting_level(lines, row.nesting_level)
+      end
+    end
+
     def test_heredoc_with_indent
       if Gem::Version.new(RUBY_VERSION) < Gem::Version.new('2.7.0')
         pend 'This test needs Ripper::Lexer#scan to take broken tokens'
