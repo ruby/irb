@@ -93,6 +93,7 @@ class RubyLex
 
     if @io.respond_to?(:auto_indent) and @context.auto_indent_mode
       @io.auto_indent do |lines, line_index, byte_pointer, is_newline|
+        next nil if lines == [nil] # Workaround for exit IRB with CTRL+d
         next nil if !is_newline && lines[line_index]&.byteslice(0, byte_pointer)&.match?(/\A\s*\z/)
 
         code = lines[0..line_index].map { |l| "#{l}\n" }.join
