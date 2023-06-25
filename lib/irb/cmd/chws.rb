@@ -26,7 +26,8 @@ module IRB
       description "Change the current workspace to an object."
 
       def execute(*obj)
-        irb_context.change_workspace(*obj)
+        objs = obj.map { |o| irb_context.workspace.binding.eval(o)}
+        irb_context.change_workspace(*objs)
         irb_context.main
       end
     end

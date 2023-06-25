@@ -490,11 +490,13 @@ module IRB
 
       # Hook command-specific transformation
       command_class = ExtendCommandBundle.load_command(command)
-      if command_class&.respond_to?(:transform_args)
-        line = "#{command} #{command_class.transform_args(args)}"
-      end
 
-      set_last_value(@workspace.evaluate(line, irb_path, line_no))
+      if command_class
+        command_class.new(self).execute_with_raw_args(args)
+        set_last_value(nil)
+      else
+        set_last_value(@workspace.evaluate(line, irb_path, line_no))
+      end
     end
 
     def inspect_last_value # :nodoc:
