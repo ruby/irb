@@ -33,7 +33,7 @@ module TestIRB
     def calculate_indenting(lines, add_new_line)
       lines = lines + [""] if add_new_line
       last_line_index = lines.length - 1
-      byte_pointer = lines.last.length
+      byte_pointer = lines.last.bytesize
 
       context = build_context
       context.auto_indent_mode = true
@@ -934,6 +934,18 @@ module TestIRB
       assert_indent_level(reference_code.lines, expected)
       assert_indent_level(code_with_heredoc.lines, expected)
       assert_indent_level(code_with_embdoc.lines, expected)
+    end
+
+    def test_auto_indent_proc_incorrect_byte_pointer
+      # Reline sometimes passes wrong byte_pointer that might cause `invalid byte sequence in UTF-8`
+      context = build_context
+      context.auto_indent_mode = true
+
+      ruby_lex = RubyLex.new(context)
+      mock_io = MockIO_AutoIndent.new(['あ'], 0, 2, false)
+
+      ruby_lex.configure_io(mock_io)
+      assert_equal(mock_io.calculated_indent, 0)
     end
 
     private

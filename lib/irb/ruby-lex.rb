@@ -94,7 +94,10 @@ class RubyLex
     if @io.respond_to?(:auto_indent) and @context.auto_indent_mode
       @io.auto_indent do |lines, line_index, byte_pointer, is_newline|
         next nil if lines == [nil] # Workaround for exit IRB with CTRL+d
-        next nil if !is_newline && lines[line_index]&.byteslice(0, byte_pointer)&.match?(/\A\s*\z/)
+
+        text_before_cursor = lines[line_index]&.byteslice(0, byte_pointer)
+        # Need to validate encoding because Reline has a bug that passes wrong byte_pointer. See https://github.com/ruby/reline/issues/553
+        next nil if !is_newline && text_before_cursor&.valid_encoding? && text_before_cursor&.match?(/\A\s*\z/)
 
         code = lines[0..line_index].map { |l| "#{l}\n" }.join
         tokens = self.class.ripper_lex_without_warning(code, context: @context)
