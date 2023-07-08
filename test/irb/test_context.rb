@@ -13,18 +13,10 @@ module TestIRB
       IRB.conf[:VERBOSE] = false
       workspace = IRB::WorkSpace.new(Object.new)
       @context = IRB::Context.new(nil, workspace, TestInputMethod.new)
-
-      @get_screen_size = Reline.method(:get_screen_size)
-      Reline.instance_eval { undef :get_screen_size }
-      def Reline.get_screen_size
-        [36, 80]
-      end
       save_encodings
     end
 
     def teardown
-      Reline.instance_eval { undef :get_screen_size }
-      Reline.define_singleton_method(:get_screen_size, @get_screen_size)
       restore_encodings
     end
 
