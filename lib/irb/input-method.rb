@@ -123,8 +123,6 @@ module IRB
       @io = file.is_a?(IO) ? file : File.open(file)
       @external_encoding = @io.external_encoding
     end
-    # The file name of this input method, usually given during initialization.
-    attr_reader :file_name
 
     # Whether the end of this input method has been reached, returns +true+ if
     # there is no more data to read.
