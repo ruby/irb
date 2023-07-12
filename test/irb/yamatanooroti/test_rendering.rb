@@ -8,7 +8,7 @@ rescue LoadError, NameError
   return
 end
 
-class IRB::TestRendering < Yamatanooroti::TestCase
+class IRB::RenderingTest < Yamatanooroti::TestCase
   def setup
     @pwd = Dir.pwd
     suffix = '%010d' % Random.rand(0..65535)
@@ -176,7 +176,6 @@ class IRB::TestRendering < Yamatanooroti::TestCase
   end
 
   def test_autocomplete_with_showdoc_in_gaps_on_narrow_screen_right
-    pend "Needs a dummy document to show doc"
     write_irbrc <<~'LINES'
       IRB.conf[:PROMPT][:MY_PROMPT] = {
         :PROMPT_I => "%03n> ",
@@ -191,15 +190,14 @@ class IRB::TestRendering < Yamatanooroti::TestCase
     write("Str\C-i")
     close
     assert_screen(<<~EOC)
+      start IRB
       001> String
-            StringPress A
-            StructString
-                  of byte
+           StringPress O
+           StructString
     EOC
   end
 
   def test_autocomplete_with_showdoc_in_gaps_on_narrow_screen_left
-    pend "Needs a dummy document to show doc"
     write_irbrc <<~'LINES'
       IRB.conf[:PROMPT][:MY_PROMPT] = {
         :PROMPT_I => "%03n> ",
@@ -214,10 +212,10 @@ class IRB::TestRendering < Yamatanooroti::TestCase
     write("Str\C-i")
     close
     assert_screen(<<~EOC)
+      start IRB
       001> String
       PressString
       StrinStruct
-      of by
     EOC
   end
 
