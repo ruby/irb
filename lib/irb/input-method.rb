@@ -255,6 +255,7 @@ module IRB
   end
 
   class RelineInputMethod < InputMethod
+    HISTORY = Reline::HISTORY
     # Creates a new input method object using Reline
     def initialize
       IRB.__send__(:set_encoding, Reline.encoding_system_needs.name, override: false)
