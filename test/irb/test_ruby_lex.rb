@@ -81,6 +81,19 @@ module TestIRB
       assert_equal(row.new_line_spaces, actual_next_line_spaces, error_message)
     end
 
+    def assert_rows_with_correct_indents(rows_with_spaces, assert_indent_level: false)
+      lines = []
+      rows_with_spaces.map do |row|
+        row = Row.new(*row)
+        lines << row.content
+        assert_row_indenting(lines, row)
+
+        if assert_indent_level
+          assert_indent_level(lines, row.indent_level)
+        end
+      end
+    end
+
     def assert_indent_level(lines, expected, local_variables: [])
       indent_level, _continue, _code_block_open = check_state(lines, local_variables: local_variables)
       error_message = "Calculated the wrong number of indent level for:\n #{lines.join("\n")}"
@@ -168,12 +181,7 @@ module TestIRB
         [%q(end), 0, 0],
       ]
 
-      lines = []
-      input_with_correct_indents.each do |row|
-        row = Row.new(*row)
-        lines << row.content
-        assert_row_indenting(lines, row)
-      end
+      assert_rows_with_correct_indents(input_with_correct_indents)
     end
 
     def test_braces_on_their_own_line
@@ -184,12 +192,7 @@ module TestIRB
         [%q(end), 0, 0],
       ]
 
-      lines = []
-      input_with_correct_indents.each do |row|
-        row = Row.new(*row)
-        lines << row.content
-        assert_row_indenting(lines, row)
-      end
+      assert_rows_with_correct_indents(input_with_correct_indents)
     end
 
     def test_multiple_braces_in_a_line
@@ -203,12 +206,7 @@ module TestIRB
         [%q(FOO), 0, 0],
       ]
 
-      lines = []
-      input_with_correct_indents.each do |row|
-        row = Row.new(*row)
-        lines << row.content
-        assert_row_indenting(lines, row)
-      end
+      assert_rows_with_correct_indents(input_with_correct_indents)
     end
 
     def test_a_closed_brace_and_not_closed_brace_in_a_line
@@ -217,12 +215,7 @@ module TestIRB
         [%q(}), 0, 0],
       ]
 
-      lines = []
-      input_with_correct_indents.each do |row|
-        row = Row.new(*row)
-        lines << row.content
-        assert_row_indenting(lines, row)
-      end
+      assert_rows_with_correct_indents(input_with_correct_indents)
     end
 
     def test_symbols
@@ -237,12 +230,7 @@ module TestIRB
         [%q(:`), 0, 0],
       ]
 
-      lines = []
-      input_with_correct_indents.each do |row|
-        row = Row.new(*row)
-        lines << row.content
-        assert_row_indenting(lines, row)
-      end
+      assert_rows_with_correct_indents(input_with_correct_indents)
     end
 
     def test_endless_range_at_end_of_line
@@ -313,12 +301,7 @@ module TestIRB
         [%q(#coding:u), 0, 0],
       ]
 
-      lines = []
-      input_with_correct_indents.each do |row|
-        row = Row.new(*row)
-        lines << row.content
-        assert_row_indenting(lines, row)
-      end
+      assert_rows_with_correct_indents(input_with_correct_indents)
     end
 
     def test_incomplete_encoding_magic_comment
@@ -326,12 +309,7 @@ module TestIRB
         [%q(#encoding:u), 0, 0],
       ]
 
-      lines = []
-      input_with_correct_indents.each do |row|
-        row = Row.new(*row)
-        lines << row.content
-        assert_row_indenting(lines, row)
-      end
+      assert_rows_with_correct_indents(input_with_correct_indents)
     end
 
     def test_incomplete_emacs_coding_magic_comment
@@ -339,12 +317,7 @@ module TestIRB
         [%q(# -*- coding: u), 0, 0],
       ]
 
-      lines = []
-      input_with_correct_indents.each do |row|
-        row = Row.new(*row)
-        lines << row.content
-        assert_row_indenting(lines, row)
-      end
+      assert_rows_with_correct_indents(input_with_correct_indents)
     end
 
     def test_incomplete_vim_coding_magic_comment
@@ -352,12 +325,7 @@ module TestIRB
         [%q(# vim:set fileencoding=u), 0, 0],
       ]
 
-      lines = []
-      input_with_correct_indents.each do |row|
-        row = Row.new(*row)
-        lines << row.content
-        assert_row_indenting(lines, row)
-      end
+      assert_rows_with_correct_indents(input_with_correct_indents)
     end
 
     def test_mixed_rescue
@@ -379,12 +347,7 @@ module TestIRB
         [%q(end), 0, 0],
       ]
 
-      lines = []
-      input_with_correct_indents.each do |row|
-        row = Row.new(*row)
-        lines << row.content
-        assert_row_indenting(lines, row)
-      end
+      assert_rows_with_correct_indents(input_with_correct_indents)
     end
 
     def test_oneliner_method_definition
@@ -410,12 +373,7 @@ module TestIRB
         [%q(end), 0, 0],
       ]
 
-      lines = []
-      input_with_correct_indents.each do |row|
-        row = Row.new(*row)
-        lines << row.content
-        assert_row_indenting(lines, row)
-      end
+      assert_rows_with_correct_indents(input_with_correct_indents)
     end
 
     def test_tlambda
@@ -426,13 +384,7 @@ module TestIRB
         [%q(end), 0, 0, 0],
       ]
 
-      lines = []
-      input_with_correct_indents.each do |row|
-        row = Row.new(*row)
-        lines << row.content
-        assert_row_indenting(lines, row)
-        assert_indent_level(lines, row.indent_level)
-      end
+      assert_rows_with_correct_indents(input_with_correct_indents, assert_indent_level: true)
     end
 
     def test_corresponding_syntax_to_keyword_do_in_class
@@ -447,13 +399,7 @@ module TestIRB
         [%q(end), 0, 0, 0],
       ]
 
-      lines = []
-      input_with_correct_indents.each do |row|
-        row = Row.new(*row)
-        lines << row.content
-        assert_row_indenting(lines, row)
-        assert_indent_level(lines, row.indent_level)
-      end
+      assert_rows_with_correct_indents(input_with_correct_indents, assert_indent_level: true)
     end
 
     def test_corresponding_syntax_to_keyword_do
@@ -496,13 +442,7 @@ module TestIRB
         [%q(end), 0, 0, 0],
       ]
 
-      lines = []
-      input_with_correct_indents.each do |row|
-        row = Row.new(*row)
-        lines << row.content
-        assert_row_indenting(lines, row)
-        assert_indent_level(lines, row.indent_level)
-      end
+      assert_rows_with_correct_indents(input_with_correct_indents, assert_indent_level: true)
     end
 
     def test_corresponding_syntax_to_keyword_for
@@ -512,13 +452,7 @@ module TestIRB
         [%q(end), 0, 0, 0],
       ]
 
-      lines = []
-      input_with_correct_indents.each do |row|
-        row = Row.new(*row)
-        lines << row.content
-        assert_row_indenting(lines, row)
-        assert_indent_level(lines, row.indent_level)
-      end
+      assert_rows_with_correct_indents(input_with_correct_indents, assert_indent_level: true)
     end
 
     def test_corresponding_syntax_to_keyword_for_with_do
@@ -528,13 +462,7 @@ module TestIRB
         [%q(end), 0, 0, 0],
       ]
 
-      lines = []
-      input_with_correct_indents.each do |row|
-        row = Row.new(*row)
-        lines << row.content
-        assert_row_indenting(lines, row)
-        assert_indent_level(lines, row.indent_level)
-      end
+      assert_rows_with_correct_indents(input_with_correct_indents, assert_indent_level: true)
     end
 
     def test_typing_incomplete_include_interpreted_as_keyword_in
@@ -545,13 +473,8 @@ module TestIRB
         [%q(  in), 2, 2, 1] # scenario typing `include E`
       ]
 
-      lines = []
-      input_with_correct_indents.each do |row|
-        row = Row.new(*row)
-        lines << row.content
-        assert_row_indenting(lines, row)
-        assert_indent_level(lines, row.indent_level)
-      end
+      assert_rows_with_correct_indents(input_with_correct_indents, assert_indent_level: true)
+
     end
 
     def test_bracket_corresponding_to_times
@@ -561,13 +484,7 @@ module TestIRB
         [%q(}), 0, 0, 0],
       ]
 
-      lines = []
-      input_with_correct_indents.each do |row|
-        row = Row.new(*row)
-        lines << row.content
-        assert_row_indenting(lines, row)
-        assert_indent_level(lines, row.indent_level)
-      end
+      assert_rows_with_correct_indents(input_with_correct_indents, assert_indent_level: true)
     end
 
     def test_do_corresponding_to_times
@@ -577,13 +494,7 @@ module TestIRB
         [%q(end), 0, 0, 0],
       ]
 
-      lines = []
-      input_with_correct_indents.each do |row|
-        row = Row.new(*row)
-        lines << row.content
-        assert_row_indenting(lines, row)
-        assert_indent_level(lines, row.indent_level)
-      end
+      assert_rows_with_correct_indents(input_with_correct_indents, assert_indent_level: true)
     end
 
     def test_bracket_corresponding_to_loop
@@ -593,13 +504,7 @@ module TestIRB
         ['}', 0, 0, 0],
       ]
 
-      lines = []
-      input_with_correct_indents.each do |row|
-        row = Row.new(*row)
-        lines << row.content
-        assert_row_indenting(lines, row)
-        assert_indent_level(lines, row.indent_level)
-      end
+      assert_rows_with_correct_indents(input_with_correct_indents, assert_indent_level: true)
     end
 
     def test_do_corresponding_to_loop
@@ -609,13 +514,7 @@ module TestIRB
         [%q(end), 0, 0, 0],
       ]
 
-      lines = []
-      input_with_correct_indents.each do |row|
-        row = Row.new(*row)
-        lines << row.content
-        assert_row_indenting(lines, row)
-        assert_indent_level(lines, row.indent_level)
-      end
+      assert_rows_with_correct_indents(input_with_correct_indents, assert_indent_level: true)
     end
 
     def test_local_variables_dependent_code
@@ -641,13 +540,8 @@ module TestIRB
         [%q(  3), 2, 2, 1],
         [%q(end), 0, 0, 0],
       ]
-      lines = []
-      input_with_correct_indents.each do |row|
-        row = Row.new(*row)
-        lines << row.content
-        assert_row_indenting(lines, row)
-        assert_indent_level(lines, row.indent_level)
-      end
+
+      assert_rows_with_correct_indents(input_with_correct_indents, assert_indent_level: true)
     end
 
     def test_heredoc_with_indent
@@ -655,56 +549,39 @@ module TestIRB
         pend 'This test needs Ripper::Lexer#scan to take broken tokens'
       end
       input_with_correct_indents = [
-        Row.new(%q(<<~Q+<<~R), 0, 2, 1),
-        Row.new(%q(a), 2, 2, 1),
-        Row.new(%q(a), 2, 2, 1),
-        Row.new(%q(  b), 2, 2, 1),
-        Row.new(%q(  b), 2, 2, 1),
-        Row.new(%q(  Q), 0, 2, 1),
-        Row.new(%q(    c), 4, 4, 1),
-        Row.new(%q(    c), 4, 4, 1),
-        Row.new(%q(    R), 0, 0, 0),
+        [%q(<<~Q+<<~R), 0, 2, 1],
+        [%q(a), 2, 2, 1],
+        [%q(a), 2, 2, 1],
+        [%q(  b), 2, 2, 1],
+        [%q(  b), 2, 2, 1],
+        [%q(  Q), 0, 2, 1],
+        [%q(    c), 4, 4, 1],
+        [%q(    c), 4, 4, 1],
+        [%q(    R), 0, 0, 0],
       ]
 
-      lines = []
-      input_with_correct_indents.each do |row|
-        row = Row.new(*row)
-        lines << row.content
-        assert_row_indenting(lines, row)
-        assert_indent_level(lines, row.indent_level)
-      end
+      assert_rows_with_correct_indents(input_with_correct_indents, assert_indent_level: true)
     end
 
     def test_oneliner_def_in_multiple_lines
       input_with_correct_indents = [
-        Row.new(%q(def a()=[), 0, 2, 1),
-        Row.new(%q(  1,), 2, 2, 1),
-        Row.new(%q(].), 0, 0, 0),
-        Row.new(%q(to_s), 0, 0, 0),
+        [%q(def a()=[), 0, 2, 1],
+        [%q(  1,), 2, 2, 1],
+        [%q(].), 0, 0, 0],
+        [%q(to_s), 0, 0, 0],
       ]
 
-      lines = []
-      input_with_correct_indents.each do |row|
-        row = Row.new(*row)
-        lines << row.content
-        assert_row_indenting(lines, row)
-        assert_indent_level(lines, row.indent_level)
-      end
+      assert_rows_with_correct_indents(input_with_correct_indents, assert_indent_level: true)
     end
 
     def test_broken_heredoc
       input_with_correct_indents = [
-        Row.new(%q(def foo), 0, 2, 1),
-        Row.new(%q(  <<~Q), 2, 4, 2),
-        Row.new(%q(  Qend), 4, 4, 2),
+        [%q(def foo), 0, 2, 1],
+        [%q(  <<~Q), 2, 4, 2],
+        [%q(  Qend), 4, 4, 2],
       ]
-      lines = []
-      input_with_correct_indents.each do |row|
-        row = Row.new(*row)
-        lines << row.content
-        assert_row_indenting(lines, row)
-        assert_indent_level(lines, row.indent_level)
-      end
+
+      assert_rows_with_correct_indents(input_with_correct_indents, assert_indent_level: true)
     end
 
     def test_heredoc_keep_indent_spaces
@@ -732,61 +609,51 @@ module TestIRB
 
     def test_pasted_code_keep_base_indent_spaces
       input_with_correct_indents = [
-        Row.new(%q(    def foo), 0, 6, 1),
-        Row.new(%q(        if bar), 6, 10, 2),
-        Row.new(%q(          [1), 10, 12, 3),
-        Row.new(%q(          ]+[["a), 10, 14, 4),
-        Row.new(%q(b" + `c), 0, 14, 4),
-        Row.new(%q(d` + /e), 0, 14, 4),
-        Row.new(%q(f/ + :"g), 0, 14, 4),
-        Row.new(%q(h".tap do), 0, 16, 5),
-        Row.new(%q(                1), 16, 16, 5),
-        Row.new(%q(              end), 14, 14, 4),
-        Row.new(%q(            ]), 12, 12, 3),
-        Row.new(%q(          ]), 10, 10, 2),
-        Row.new(%q(        end), 8, 6, 1),
-        Row.new(%q(    end), 4, 0, 0),
+        [%q(    def foo), 0, 6, 1],
+        [%q(        if bar), 6, 10, 2],
+        [%q(          [1), 10, 12, 3],
+        [%q(          ]+[["a), 10, 14, 4],
+        [%q(b" + `c), 0, 14, 4],
+        [%q(d` + /e), 0, 14, 4],
+        [%q(f/ + :"g), 0, 14, 4],
+        [%q(h".tap do), 0, 16, 5],
+        [%q(                1), 16, 16, 5],
+        [%q(              end), 14, 14, 4],
+        [%q(            ]), 12, 12, 3],
+        [%q(          ]), 10, 10, 2],
+        [%q(        end), 8, 6, 1],
+        [%q(    end), 4, 0, 0],
       ]
-      lines = []
-      input_with_correct_indents.each do |row|
-        row = Row.new(*row)
-        lines << row.content
-        assert_row_indenting(lines, row)
-        assert_indent_level(lines, row.indent_level)
-      end
+
+      assert_rows_with_correct_indents(input_with_correct_indents, assert_indent_level: true)
     end
 
     def test_pasted_code_keep_base_indent_spaces_with_heredoc
       input_with_correct_indents = [
-        Row.new(%q(    def foo), 0, 6, 1),
-        Row.new(%q(        if bar), 6, 10, 2),
-        Row.new(%q(          [1), 10, 12, 3),
-        Row.new(%q(          ]+[["a), 10, 14, 4),
-        Row.new(%q(b" + <<~A + <<-B + <<C), 0, 16, 5),
-        Row.new(%q(                a#{), 16, 18, 6),
-        Row.new(%q(                  1), 18, 18, 6),
-        Row.new(%q(                }), 16, 16, 5),
-        Row.new(%q(              A), 14, 16, 5),
-        Row.new(%q(                b#{), 16, 18, 6),
-        Row.new(%q(                  1), 18, 18, 6),
-        Row.new(%q(                }), 16, 16, 5),
-        Row.new(%q(              B), 14, 0, 0),
-        Row.new(%q(c#{), 0, 2, 1),
-        Row.new(%q(  1), 2, 2, 1),
-        Row.new(%q(}), 0, 0, 0),
-        Row.new(%q(C), 0, 14, 4),
-        Row.new(%q(            ]), 12, 12, 3),
-        Row.new(%q(          ]), 10, 10, 2),
-        Row.new(%q(        end), 8, 6, 1),
-        Row.new(%q(    end), 4, 0, 0),
+        [%q(    def foo), 0, 6, 1],
+        [%q(        if bar), 6, 10, 2],
+        [%q(          [1), 10, 12, 3],
+        [%q(          ]+[["a), 10, 14, 4],
+        [%q(b" + <<~A + <<-B + <<C), 0, 16, 5],
+        [%q(                a#{), 16, 18, 6],
+        [%q(                1), 18, 18, 6],
+        [%q(                }), 16, 16, 5],
+        [%q(              A), 14, 16, 5],
+        [%q(                b#{), 16, 18, 6],
+        [%q(                1), 18, 18, 6],
+        [%q(                }), 16, 16, 5],
+        [%q(              B), 14, 0, 0],
+        [%q(c#{), 0, 2, 1],
+        [%q(1), 2, 2, 1],
+        [%q(}), 0, 0, 0],
+        [%q(C), 0, 14, 4],
+        [%q(            ]), 12, 12, 3],
+        [%q(          ]), 10, 10, 2],
+        [%q(        end), 8, 6, 1],
+        [%q(    end), 4, 0, 0],
       ]
-      lines = []
-      input_with_correct_indents.each do |row|
-        row = Row.new(*row)
-        lines << row.content
-        assert_row_indenting(lines, row)
-        assert_indent_level(lines, row.indent_level)
-      end
+
+      assert_rows_with_correct_indents(input_with_correct_indents, assert_indent_level: true)
     end
 
     def assert_dynamic_prompt(lines, expected_prompt_list)
