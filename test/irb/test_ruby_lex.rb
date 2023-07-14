@@ -235,65 +235,57 @@ module TestIRB
 
     def test_endless_range_at_end_of_line
       input_with_prompt = [
-        PromptRow.new('001:0: :> ', %q(a = 3..)),
-        PromptRow.new('002:0: :> ', %q()),
+        ['001:0: :> ', %q(a = 3..)],
+        ['002:0: :> ', %q()],
       ]
 
-      lines = input_with_prompt.map(&:content)
-      expected_prompt_list = input_with_prompt.map(&:prompt)
-      assert_dynamic_prompt(lines, expected_prompt_list)
+      assert_dynamic_prompt(input_with_prompt)
     end
 
     def test_heredoc_with_embexpr
       input_with_prompt = [
-        PromptRow.new('001:0:":* ', %q(<<A+%W[#{<<B)),
-        PromptRow.new('002:0:":* ', %q(#{<<C+%W[)),
-        PromptRow.new('003:0:":* ', %q(a)),
-        PromptRow.new('004:2:]:* ', %q(C)),
-        PromptRow.new('005:2:]:* ', %q(a)),
-        PromptRow.new('006:0:":* ', %q(]})),
-        PromptRow.new('007:0:":* ', %q(})),
-        PromptRow.new('008:0:":* ', %q(A)),
-        PromptRow.new('009:2:]:* ', %q(B)),
-        PromptRow.new('010:1:]:* ', %q(})),
-        PromptRow.new('011:0: :> ', %q(])),
-        PromptRow.new('012:0: :> ', %q()),
+        ['001:0:":* ', %q(<<A+%W[#{<<B)],
+        ['002:0:":* ', %q(#{<<C+%W[)],
+        ['003:0:":* ', %q(a)],
+        ['004:2:]:* ', %q(C)],
+        ['005:2:]:* ', %q(a)],
+        ['006:0:":* ', %q(]})],
+        ['007:0:":* ', %q(})],
+        ['008:0:":* ', %q(A)],
+        ['009:2:]:* ', %q(B)],
+        ['010:1:]:* ', %q(})],
+        ['011:0: :> ', %q(])],
+        ['012:0: :> ', %q()],
       ]
 
-      lines = input_with_prompt.map(&:content)
-      expected_prompt_list = input_with_prompt.map(&:prompt)
-      assert_dynamic_prompt(lines, expected_prompt_list)
+      assert_dynamic_prompt(input_with_prompt)
     end
 
     def test_heredoc_prompt_with_quotes
       input_with_prompt = [
-        PromptRow.new("001:1:':* ", %q(<<~'A')),
-        PromptRow.new("002:1:':* ", %q(#{foobar})),
-        PromptRow.new("003:0: :> ", %q(A)),
-        PromptRow.new("004:1:`:* ", %q(<<~`A`)),
-        PromptRow.new("005:1:`:* ", %q(whoami)),
-        PromptRow.new("006:0: :> ", %q(A)),
-        PromptRow.new('007:1:":* ', %q(<<~"A")),
-        PromptRow.new('008:1:":* ', %q(foobar)),
-        PromptRow.new('009:0: :> ', %q(A)),
+        ["001:1:':* ", %q(<<~'A')],
+        ["002:1:':* ", %q(#{foobar})],
+        ["003:0: :> ", %q(A)],
+        ["004:1:`:* ", %q(<<~`A`)],
+        ["005:1:`:* ", %q(whoami)],
+        ["006:0: :> ", %q(A)],
+        ['007:1:":* ', %q(<<~"A")],
+        ['008:1:":* ', %q(foobar)],
+        ['009:0: :> ', %q(A)],
       ]
 
-      lines = input_with_prompt.map(&:content)
-      expected_prompt_list = input_with_prompt.map(&:prompt)
-      assert_dynamic_prompt(lines, expected_prompt_list)
+      assert_dynamic_prompt(input_with_prompt)
     end
 
     def test_backtick_method
       input_with_prompt = [
-        PromptRow.new('001:0: :> ', %q(self.`(arg))),
-        PromptRow.new('002:0: :> ', %q()),
-        PromptRow.new('003:0: :> ', %q(def `(); end)),
-        PromptRow.new('004:0: :> ', %q()),
+        ['001:0: :> ', %q(self.`(arg))],
+        ['002:0: :> ', %q()],
+        ['003:0: :> ', %q(def `(); end)],
+        ['004:0: :> ', %q()],
       ]
 
-      lines = input_with_prompt.map(&:content)
-      expected_prompt_list = input_with_prompt.map(&:prompt)
-      assert_dynamic_prompt(lines, expected_prompt_list)
+      assert_dynamic_prompt(input_with_prompt)
     end
 
     def test_incomplete_coding_magic_comment
@@ -593,8 +585,6 @@ module TestIRB
       end
     end
 
-    PromptRow = Struct.new(:prompt, :content)
-
     class MockIO_DynamicPrompt
       def initialize(params, &assertion)
         @params = params
@@ -656,7 +646,8 @@ module TestIRB
       assert_rows_with_correct_indents(input_with_correct_indents, assert_indent_level: true)
     end
 
-    def assert_dynamic_prompt(lines, expected_prompt_list)
+    def assert_dynamic_prompt(input_with_prompt)
+      expected_prompt_list, lines = input_with_prompt.transpose
       context = build_context
       ruby_lex = RubyLex.new(context)
       dynamic_prompt_executed = false
@@ -680,58 +671,50 @@ module TestIRB
 
     def test_dynamic_prompt
       input_with_prompt = [
-        PromptRow.new('001:1: :* ', %q(def hoge)),
-        PromptRow.new('002:1: :* ', %q(  3)),
-        PromptRow.new('003:0: :> ', %q(end)),
+        ['001:1: :* ', %q(def hoge)],
+        ['002:1: :* ', %q(  3)],
+        ['003:0: :> ', %q(end)],
       ]
 
-      lines = input_with_prompt.map(&:content)
-      expected_prompt_list = input_with_prompt.map(&:prompt)
-      assert_dynamic_prompt(lines, expected_prompt_list)
+      assert_dynamic_prompt(input_with_prompt)
     end
 
     def test_dynamic_prompt_with_double_newline_breaking_code
       input_with_prompt = [
-        PromptRow.new('001:1: :* ', %q(if true)),
-        PromptRow.new('002:2: :* ', %q(%)),
-        PromptRow.new('003:1: :* ', %q(;end)),
-        PromptRow.new('004:1: :* ', %q(;hello)),
-        PromptRow.new('005:0: :> ', %q(end)),
+        ['001:1: :* ', %q(if true)],
+        ['002:2: :* ', %q(%)],
+        ['003:1: :* ', %q(;end)],
+        ['004:1: :* ', %q(;hello)],
+        ['005:0: :> ', %q(end)],
       ]
 
-      lines = input_with_prompt.map(&:content)
-      expected_prompt_list = input_with_prompt.map(&:prompt)
-      assert_dynamic_prompt(lines, expected_prompt_list)
+      assert_dynamic_prompt(input_with_prompt)
     end
 
     def test_dynamic_prompt_with_multiline_literal
       input_with_prompt = [
-        PromptRow.new('001:1: :* ', %q(if true)),
-        PromptRow.new('002:2:]:* ', %q(  %w[)),
-        PromptRow.new('003:2:]:* ', %q(  a)),
-        PromptRow.new('004:1: :* ', %q(  ])),
-        PromptRow.new('005:1: :* ', %q(  b)),
-        PromptRow.new('006:2:]:* ', %q(  %w[)),
-        PromptRow.new('007:2:]:* ', %q(  c)),
-        PromptRow.new('008:1: :* ', %q(  ])),
-        PromptRow.new('009:0: :> ', %q(end)),
+        ['001:1: :* ', %q(if true)],
+        ['002:2:]:* ', %q(  %w[)],
+        ['003:2:]:* ', %q(  a)],
+        ['004:1: :* ', %q(  ])],
+        ['005:1: :* ', %q(  b)],
+        ['006:2:]:* ', %q(  %w[)],
+        ['007:2:]:* ', %q(  c)],
+        ['008:1: :* ', %q(  ])],
+        ['009:0: :> ', %q(end)],
       ]
 
-      lines = input_with_prompt.map(&:content)
-      expected_prompt_list = input_with_prompt.map(&:prompt)
-      assert_dynamic_prompt(lines, expected_prompt_list)
+      assert_dynamic_prompt(input_with_prompt)
     end
 
     def test_dynamic_prompt_with_blank_line
       input_with_prompt = [
-        PromptRow.new('001:1:]:* ', %q(%w[)),
-        PromptRow.new('002:1:]:* ', %q()),
-        PromptRow.new('003:0: :> ', %q(])),
+        ['001:1:]:* ', %q(%w[)],
+        ['002:1:]:* ', %q()],
+        ['003:0: :> ', %q(])],
       ]
 
-      lines = input_with_prompt.map(&:content)
-      expected_prompt_list = input_with_prompt.map(&:prompt)
-      assert_dynamic_prompt(lines, expected_prompt_list)
+      assert_dynamic_prompt(input_with_prompt)
     end
 
     def test_should_continue
