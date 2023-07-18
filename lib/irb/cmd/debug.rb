@@ -35,6 +35,11 @@ module IRB
             return
           end
 
+          if IRB.respond_to?(:JobManager)
+            warn "Can't start the debugger when IRB is running in a multi-IRB session."
+            return
+          end
+
           unless IRB::Debug.setup(irb_context.irb)
             puts <<~MSG
               You need to install the debug gem before using this command.

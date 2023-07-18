@@ -352,5 +352,37 @@ module TestIRB
       assert_match(/irb\(main\):001> next/, output)
       assert_include(output, "InputMethod: RelineInputMethod")
     end
+
+    def test_debugger_cant_be_activated_while_multi_irb_is_active
+      write_ruby <<~'ruby'
+        binding.irb
+        a = 1
+      ruby
+
+      output = run_ruby_file do
+        type "jobs"
+        type "next"
+        type "exit"
+      end
+
+      assert_match(/irb\(main\):001> jobs/, output)
+      assert_include(output, "Can't start the debugger when IRB is running in a multi-IRB session.")
+    end
+
+    def test_multi_irb_commands_are_not_available_after_activating_the_debugger
+      write_ruby <<~'ruby'
+        binding.irb
+        a = 1
+      ruby
+
+      output = run_ruby_file do
+        type "next"
+        type "jobs"
+        type "continue"
+      end
+
+      assert_match(/irb\(main\):001> next/, output)
+      assert_include(output, "Multi-IRB commands are not available when the debugger is enabled.")
+    end
   end
 end
