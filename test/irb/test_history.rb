@@ -28,8 +28,6 @@ module TestIRB
       include IRB::HistorySavingAbility
     end
 
-    INPUT_METHODS = [TestInputMethodWithRelineHistory, TestInputMethodWithReadlineHistory].freeze
-
     def test_history_save_1
       omit "Skip Editline" if /EditLine/n.match(Readline::VERSION)
       IRB.conf[:SAVE_HISTORY] = 1
@@ -109,37 +107,16 @@ module TestIRB
       INPUT
     end
 
-    def test_history_concurrent_use
+    def test_history_concurrent_use_reline
       omit "Skip Editline" if /EditLine/n.match(Readline::VERSION)
       IRB.conf[:SAVE_HISTORY] = 1
-      INPUT_METHODS.each do |input_method|
-        assert_history(<<~EXPECTED_HISTORY, <<~INITIAL_HISTORY, <<~INPUT, input_method) do |history_file|
-          exit
-          5
-          exit
-        EXPECTED_HISTORY
-          1
-          2
-          3
-          4
-        INITIAL_HISTORY
-          5
-          exit
-        INPUT
-          assert_history(<<~EXPECTED_HISTORY2, <<~INITIAL_HISTORY2, <<~INPUT2, input_method)
-          exit
-        EXPECTED_HISTORY2
-          1
-          2
-          3
-          4
-        INITIAL_HISTORY2
-          5
-          exit
-        INPUT2
-          File.utime(File.atime(history_file), File.mtime(history_file) + 2, history_file)
-        end
-      end
+      history_concurrent_use_for_input_method(TestInputMethodWithRelineHistory)
+    end
+
+    def test_history_concurrent_use_readline
+      omit "Skip Editline" if /EditLine/n.match(Readline::VERSION)
+      IRB.conf[:SAVE_HISTORY] = 1
+      history_concurrent_use_for_input_method(TestInputMethodWithReadlineHistory)
     end
 
     def test_history_concurrent_use_not_present
@@ -169,6 +146,35 @@ module TestIRB
     end
 
     private
+
+    def history_concurrent_use_for_input_method(input_method)
+      assert_history(<<~EXPECTED_HISTORY, <<~INITIAL_HISTORY, <<~INPUT, input_method) do |history_file|
+        exit
+        5
+        exit
+      EXPECTED_HISTORY
+        1
+        2
+        3
+        4
+      INITIAL_HISTORY
+        5
+        exit
+      INPUT
+        assert_history(<<~EXPECTED_HISTORY2, <<~INITIAL_HISTORY2, <<~INPUT2, input_method)
+        exit
+      EXPECTED_HISTORY2
+        1
+        2
+        3
+        4
+      INITIAL_HISTORY2
+        5
+        exit
+      INPUT2
+        File.utime(File.atime(history_file), File.mtime(history_file) + 2, history_file)
+      end
+    end
 
     def assert_history(expected_history, initial_irb_history, input, input_method = TestInputMethodWithRelineHistory)
       backup_verbose, $VERBOSE = $VERBOSE, nil
