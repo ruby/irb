@@ -51,7 +51,7 @@ module IRB
 
         if File.exist?(history_file) &&
            File.mtime(history_file) != @loaded_history_mtime
-          history = history[@loaded_history_lines..-1] if @loaded_history_lines
+          @loaded_history_lines&.times { history.delete_at(0) }
           append_history = true
         end
 
