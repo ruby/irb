@@ -51,7 +51,13 @@ module IRB
 
         if File.exist?(history_file) &&
            File.mtime(history_file) != @loaded_history_mtime
-          @loaded_history_lines&.times { history.delete_at(0) }
+          lines_to_append = []
+          history.each_with_index do |line, index|
+            next if index < @loaded_history_lines.to_i
+
+            lines_to_append << line
+          end
+          history = lines_to_append
           append_history = true
         end
 
