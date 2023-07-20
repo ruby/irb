@@ -8,6 +8,8 @@ module IRB
 
     def load_history
       history = self.class::HISTORY
+      @loaded_history_lines = 0
+
       if history_file = IRB.conf[:HISTORY_FILE]
         history_file = File.expand_path(history_file)
       end
@@ -53,7 +55,7 @@ module IRB
            File.mtime(history_file) != @loaded_history_mtime
           lines_to_append = []
           history.each_with_index do |line, index|
-            next if index < @loaded_history_lines.to_i
+            next if index < @loaded_history_lines
 
             lines_to_append << line
           end
