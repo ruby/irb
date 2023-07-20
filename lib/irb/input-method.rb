@@ -5,6 +5,7 @@
 #
 
 require_relative 'completion'
+require_relative "history"
 require 'io/console'
 require 'reline'
 
@@ -180,6 +181,8 @@ module IRB
         include ::Readline
       end
 
+      include HistorySavingAbility
+
       # Creates a new input method object using Readline
       def initialize
         self.class.initialize_readline
@@ -233,10 +236,6 @@ module IRB
         true
       end
 
-      def support_history_saving?
-        true
-      end
-
       # Returns the current line number for #io.
       #
       # #line counts the number of times #gets is called.
@@ -264,6 +263,7 @@ module IRB
 
   class RelineInputMethod < InputMethod
     HISTORY = Reline::HISTORY
+    include HistorySavingAbility
     # Creates a new input method object using Reline
     def initialize
       IRB.__send__(:set_encoding, Reline.encoding_system_needs.name, override: false)
@@ -465,10 +465,6 @@ module IRB
       inputrc_path = File.expand_path(config.inputrc_path)
       str += " and #{inputrc_path}" if File.exist?(inputrc_path)
       str
-    end
-
-    def support_history_saving?
-      true
     end
   end
 
