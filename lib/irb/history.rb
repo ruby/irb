@@ -32,7 +32,6 @@ module IRB
     end
 
     def save_history
-      history = self.class::HISTORY
       if num = IRB.conf[:SAVE_HISTORY] and (num = num.to_i) != 0
         if history_file = IRB.conf[:HISTORY_FILE]
           history_file = File.expand_path(history_file)
@@ -51,20 +50,19 @@ module IRB
           raise
         end
 
+        from = 0
         if File.exist?(history_file) &&
            File.mtime(history_file) != @loaded_history_mtime
-          lines_to_append = []
-          history.each_with_index do |line, index|
-            next if index < @loaded_history_lines
-
-            lines_to_append << line
-          end
-          history = lines_to_append
+          from = @loaded_history_lines
           append_history = true
         end
 
+        hist = []
+        from.upto(self.class::HISTORY.size - 1) do |index|
+          hist << self.class::HISTORY[index].split("\n").join("\\\n")
+        end
+
         File.open(history_file, (append_history ? 'a' : 'w'), 0o600, encoding: IRB.conf[:LC_MESSAGES]&.encoding) do |f|
-          hist = history.map{ |l| l.split("\n").join("\\\n") }
           unless append_history
             begin
               hist = hist.last(num) if hist.size > num and num > 0
