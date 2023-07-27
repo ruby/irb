@@ -37,7 +37,7 @@ module IRB
               # in this case, we should just ignore the error
             end
 
-          if source && File.exist?(source.file)
+          if source
             path = source.file
           else
             puts "Can not find file: #{path}"

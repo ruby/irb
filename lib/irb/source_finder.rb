@@ -34,16 +34,15 @@ module IRB
         method = Regexp.last_match[:method]
         file, line = receiver.method(method).source_location if receiver.respond_to?(method, true)
       end
-      if file && line
-        Source.new(file: file, first_line: line, last_line: find_end(file, line, @irb_context))
+      if file && line && File.exist?(file)
+        Source.new(file: file, first_line: line, last_line: find_end(file, line))
       end
     end
 
     private
 
-    def find_end(file, first_line, irb_context)
-      return first_line unless File.exist?(file)
-      lex = RubyLex.new(irb_context)
+    def find_end(file, first_line)
+      lex = RubyLex.new(@irb_context)
       lines = File.read(file).lines[(first_line - 1)..-1]
       tokens = RubyLex.ripper_lex_without_warning(lines.join)
       prev_tokens = []

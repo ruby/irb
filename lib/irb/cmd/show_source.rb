@@ -29,7 +29,7 @@ module IRB
 
         source = SourceFinder.new(@irb_context).find_source(str)
 
-        if source && File.exist?(source.file)
+        if source
           show_source(source)
         else
           puts "Error: Couldn't locate a definition for #{str}"
