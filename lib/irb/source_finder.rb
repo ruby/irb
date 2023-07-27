@@ -17,20 +17,21 @@ module IRB
     end
 
     def find_source(signature)
+      context_binding = @irb_context.workspace.binding
       case signature
       when /\A[A-Z]\w*(::[A-Z]\w*)*\z/ # Const::Name
-        eval(signature, @irb_context.workspace.binding) # trigger autoload
-        base = @irb_context.workspace.binding.receiver.yield_self { |r| r.is_a?(Module) ? r : Object }
+        eval(signature, context_binding) # trigger autoload
+        base = context_binding.receiver.yield_self { |r| r.is_a?(Module) ? r : Object }
         file, line = base.const_source_location(signature)
       when /\A(?<owner>[A-Z]\w*(::[A-Z]\w*)*)#(?<method>[^ :.]+)\z/ # Class#method
-        owner = eval(Regexp.last_match[:owner], @irb_context.workspace.binding)
+        owner = eval(Regexp.last_match[:owner], context_binding)
         method = Regexp.last_match[:method]
         if owner.respond_to?(:instance_method)
           methods = owner.instance_methods + owner.private_instance_methods
           file, line = owner.instance_method(method).source_location if methods.include?(method.to_sym)
         end
       when /\A((?<receiver>.+)(\.|::))?(?<method>[^ :.]+)\z/ # method, receiver.method, receiver::method
-        receiver = eval(Regexp.last_match[:receiver] || 'self', @irb_context.workspace.binding)
+        receiver = eval(Regexp.last_match[:receiver] || 'self', context_binding)
         method = Regexp.last_match[:method]
         file, line = receiver.method(method).source_location if receiver.respond_to?(method, true)
       end
