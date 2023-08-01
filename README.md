@@ -84,14 +84,15 @@ Hello World
 
 The following commands are available on IRB. You can get the same output from the `show_cmds` command.
 
-
 ```
-IRB
+Workspace
   cwws           Show the current workspace.
   chws           Change the current workspace to an object.
   workspaces     Show workspaces.
   pushws         Push an object to the workspace stack.
   popws          Pop a workspace from the workspace stack.
+
+IRB
   irb_load       Load a Ruby file.
   irb_require    Require a Ruby file.
   source         Loads a given file in the current session.
@@ -119,6 +120,7 @@ Misc
   measure        `measure` enables the mode to measure processing time. `measure :off` disables it.
 
 Context
+  help           [DEPRECATED] Enter the mode to look up RI documents.
   show_doc       Enter the mode to look up RI documents.
   ls             Show methods, constants, and variables. `-g [query]` or `-G [query]` allows you to filter out the output.
   show_source    Show the source code of a given method or constant.
