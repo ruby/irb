@@ -1,6 +1,6 @@
 # IRB
 
-[![Gem Version](https://badge.fury.io/rb/irb.svg)](https://badge.fury.io/rb/irb) 
+[![Gem Version](https://badge.fury.io/rb/irb.svg)](https://badge.fury.io/rb/irb)
 [![build](https://github.com/ruby/irb/actions/workflows/test.yml/badge.svg)](https://github.com/ruby/irb/actions/workflows/test.yml)
 
 IRB stands for "interactive Ruby" and is a tool to interactively execute Ruby expressions read from the standard input.
@@ -96,12 +96,14 @@ IRB
   irb_load       Load a Ruby file.
   irb_require    Require a Ruby file.
   source         Loads a given file in the current session.
+  irb_info       Show information about IRB.
+  show_cmds      List all available commands and their description.
+
+Multi-irb (DEPRECATED)
   irb            Start a child IRB.
   jobs           List of current sessions.
   fg             Switches to the session of the given number.
   kill           Kills the session with the given number.
-  irb_info       Show information about IRB.
-  show_cmds      List all available commands and their description.
 
 Debugging
   debug          Start the debugger of debug.gem.
