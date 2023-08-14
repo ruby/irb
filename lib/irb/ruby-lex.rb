@@ -236,13 +236,12 @@ class RubyLex
     command_name = @context.command_aliases[command_or_alias.to_sym]
     command = command_name || command_or_alias
     command_class = IRB::ExtendCommandBundle.load_command(command)
-    IRB::Statement.new(
-      code,
-      assignment_expression?(code),
-      command,
-      arg,
-      command_class
-    )
+
+    if command_class
+      IRB::Statement::Command.new(code, command, arg, command_class)
+    else
+      IRB::Statement::Expression.new(code, assignment_expression?(code))
+    end
   end
 
   def assignment_expression?(code)

@@ -582,7 +582,7 @@ module IRB
 
             # Don't echo if the line ends with a semicolon
             if @context.echo? && !statement.suppresses_echo?
-              if statement.is_assignment
+              if statement.is_assignment?
                 if @context.echo_on_assignment?
                   output_value(@context.echo_on_assignment? == :truncate)
                 end
