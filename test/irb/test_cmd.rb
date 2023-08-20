@@ -987,7 +987,7 @@ module TestIRB
     end
 
     def test_edit_with_editor_env_var
-      original_visual = ENV.delete("VISUAL")
+      ENV.delete("VISUAL")
 
       out, err = execute_lines(
         "edit",
@@ -997,8 +997,6 @@ module TestIRB
       assert_empty err
       assert_match("path: #{__FILE__}", out)
       assert_match("command: ': code2'", out)
-
-      ENV["VISUAL"] = original_visual
     end
   end
 end
