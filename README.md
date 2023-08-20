@@ -118,7 +118,7 @@ Debugging
   info           Start the debugger of debug.gem and run its `info` command.
 
 Misc
-  edit           Open a file with the editor command defined with `ENV["EDITOR"]`.
+  edit           Open a file with the editor command defined with `ENV["VISUAL"]` or `ENV["EDITOR"]`.
   measure        `measure` enables the mode to measure processing time. `measure :off` disables it.
 
 Context
@@ -135,7 +135,8 @@ Context
 
 - `NO_COLOR`: Assigning a value to it disables IRB's colorization.
 - `IRB_USE_AUTOCOMPLETE`: Setting it to `false` disables IRB's autocompletion.
-- `EDITOR`: Its value would be used to open files by the `edit` command.
+- `VISUAL`: Its value would be used to open files by the `edit` command.
+- `EDITOR`: Its value would be used to open files by the `edit` command if `VISUAL` is unset.
 - `IRBRC`: The file specified would be evaluated as IRB's rc-file.
 
 ## Documentation
