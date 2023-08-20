@@ -228,8 +228,7 @@ module TestIRB
           DEFAULT: {
             PROMPT_I: '> ',
             PROMPT_S: '> ',
-            PROMPT_C: '> ',
-            PROMPT_N: '> '
+            PROMPT_C: '> '
           }
         },
         PROMPT_MODE: :DEFAULT,
@@ -258,8 +257,7 @@ module TestIRB
           DEFAULT: {
             PROMPT_I: '> ',
             PROMPT_S: '> ',
-            PROMPT_C: '> ',
-            PROMPT_N: '> '
+            PROMPT_C: '> '
           }
         },
         PROMPT_MODE: :DEFAULT,
@@ -286,8 +284,7 @@ module TestIRB
           DEFAULT: {
             PROMPT_I: '> ',
             PROMPT_S: '> ',
-            PROMPT_C: '> ',
-            PROMPT_N: '> '
+            PROMPT_C: '> '
           }
         },
         PROMPT_MODE: :DEFAULT,
@@ -317,8 +314,7 @@ module TestIRB
           DEFAULT: {
             PROMPT_I: '> ',
             PROMPT_S: '> ',
-            PROMPT_C: '> ',
-            PROMPT_N: '> '
+            PROMPT_C: '> '
           }
         },
         PROMPT_MODE: :DEFAULT,
@@ -348,8 +344,7 @@ module TestIRB
           DEFAULT: {
             PROMPT_I: '> ',
             PROMPT_S: '> ',
-            PROMPT_C: '> ',
-            PROMPT_N: '> '
+            PROMPT_C: '> '
           }
         },
         PROMPT_MODE: :DEFAULT,
@@ -375,8 +370,7 @@ module TestIRB
           DEFAULT: {
             PROMPT_I: '> ',
             PROMPT_S: '> ',
-            PROMPT_C: '> ',
-            PROMPT_N: '> '
+            PROMPT_C: '> '
           }
         },
         PROMPT_MODE: :DEFAULT,
