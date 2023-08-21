@@ -290,12 +290,9 @@ module TestIRB
     end
 
     def test_prompt_irb_name_is_kept
-      @irbrc = Tempfile.new('irbrc')
-      @irbrc.write <<~RUBY
+      write_rc <<~RUBY
         IRB.conf[:IRB_NAME] = "foo"
       RUBY
-      @irbrc.close
-      @envs['IRBRC'] = @irbrc.path
 
       write_ruby <<~'ruby'
         binding.irb
@@ -309,8 +306,6 @@ module TestIRB
 
       assert_match(/foo\(main\):001> next/, output)
       assert_match(/foo:rdbg\(main\):002> continue/, output)
-    ensure
-      @irbrc&.unlink
     end
 
     def test_irb_commands_are_available_after_moving_around_with_the_debugger
