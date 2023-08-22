@@ -331,6 +331,20 @@ module TestIRB
       assert_include(output, "InputMethod: RelineInputMethod")
     end
 
+    def test_help_command_is_delegated_to_the_debugger
+      write_ruby <<~'ruby'
+        binding.irb
+      ruby
+
+      output = run_ruby_file do
+        type "debug"
+        type "help"
+        type "continue"
+      end
+
+      assert_include(output, "### Frame control")
+    end
+
     def test_input_is_evaluated_in_the_context_of_the_current_thread
       write_ruby <<~'ruby'
         current_thread = Thread.current
