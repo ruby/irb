@@ -43,15 +43,15 @@ In the session, you can evaluate Ruby expressions or even prototype a small Ruby
 
 ```shell
 $ irb
-irb(main):001:0> 1 + 2
+irb(main):001> 1 + 2
 => 3
-irb(main):002:1* class Foo
-irb(main):003:2*   def foo
-irb(main):004:2*     puts 1
-irb(main):005:1*   end
-irb(main):006:0> end
+irb(main):002* class Foo
+irb(main):003*   def foo
+irb(main):004*     puts 1
+irb(main):005*   end
+irb(main):006> end
 => :foo
-irb(main):007:0> Foo.new.foo
+irb(main):007> Foo.new.foo
 1
 => nil
 ```
@@ -128,6 +128,91 @@ Context
   show_source    Show the source code of a given method or constant.
   whereami       Show the source code around binding.irb again.
 ```
+
+## Debugging with IRB
+
+Starting from version 1.8.0, IRB boasts a powerful integration with `debug.gem`, providing a debugging experience akin to `pry-byebug`.
+
+After hitting a `binding.irb` breakpoint, you can activate the debugger with the `debug` command.
+
+```shell
+From: test.rb @ line 3 :
+
+    1:
+    2: def greet(word)
+ => 3:   binding.irb
+    4:   puts "Hello #{word}"
+    5: end
+    6:
+    7: greet("World")
+
+irb(main):001> debug
+irb:rdbg(main):002>
+```
+
+Once activated, the prompt's header changes from `irb` to `irb:rdbg`, enabling you to use any of `debug.gem`'s [commands](https://github.com/ruby/debug#debug-command-on-the-debug-console):
+
+```shell
+irb:rdbg(main):002> info # use info command to see available variables
+%self = main
+_ = nil
+word = "World"
+irb:rdbg(main):003> next # use next command to move to the next line
+[1, 7] in test.rb
+     1|
+     2| def greet(word)
+     3|   binding.irb
+=>   4|   puts "Hello #{word}"
+     5| end
+     6|
+     7| greet("World")
+=>#0    Object#greet(word="World") at test.rb:4
+  #1    <main> at test.rb:7
+irb:rdbg(main):004>
+```
+
+Simultaneously, you maintain access to IRB's commands, such as `show_source`:
+
+```shell
+irb:rdbg(main):004> show_source greet
+
+From: test.rb:2
+
+def greet(word)
+  binding.irb
+  puts "Hello #{word}"
+end
+```
+
+### More about `debug.gem`
+
+`debug.gem` offers many advanced debugging features that simple REPLs can't provide, including:
+
+- Step-debugging
+- Frame navigation
+- Setting breakpoints with commands
+- Thread control
+- ...and many more
+
+To learn about these features, please refer to `debug.gem`'s [commands list](https://github.com/ruby/debug#debug-command-on-the-debug-console).
+
+In the `irb:rdbg` session, the `show_cmds` command will also display all commands from `debug.gem`.
+
+### Advantages Over `debug.gem`'s Console
+
+This integration offers several benefits over `debug.gem`'s native console:
+
+1. Access to handy IRB commands like `show_source` or `show_doc`.
+2. Support for multi-line input.
+3. Symbol shortcuts such as `@` (`whereami`) and `$` (`show_source`).
+4. Autocompletion.
+5. Customizable prompt.
+
+However, there are also some limitations to be aware of:
+
+1. `binding.irb` doesn't support `pre` and `do` arguments like [`binding.break`](https://github.com/ruby/debug#bindingbreak-method).
+2. As IRB [doesn't currently support remote-connection](https://github.com/ruby/irb/issues/672), it can't be used with `debug.gem`'s remote debugging feature.
+3. Access to the previous return value via the underscore `_` is not supported.
 
 ## Configuration
 
