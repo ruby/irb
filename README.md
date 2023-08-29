@@ -7,6 +7,23 @@ IRB stands for "interactive Ruby" and is a tool to interactively execute Ruby ex
 
 The `irb` command from your shell will start the interpreter.
 
+- [Installation](#installation)
+- [Usage](#usage)
+  - [The `irb` Executable](#the-irb-executable)
+  - [The `binding.irb` Breakpoint](#the-bindingirb-breakpoint)
+- [Commands](#commands)
+- [Debugging with IRB](#debugging-with-irb)
+  - [More about `debug.gem`](#more-about-debuggem)
+  - [Advantages Over `debug.gem`'s Console](#advantages-over-debuggems-console)
+- [Configuration](#configuration)
+  - [Environment Variables](#environment-variables)
+- [Documentation](#documentation)
+- [Extending IRB](#extending-irb)
+- [Development](#development)
+- [Contributing](#contributing)
+- [Releasing](#releasing)
+- [License](#license)
+
 ## Installation
 
 > **Note**
@@ -227,6 +244,20 @@ However, there are also some limitations to be aware of:
 ## Documentation
 
 https://docs.ruby-lang.org/en/master/IRB.html
+
+## Extending IRB
+
+IRB is currently going through some refactoring to bring in some cool improvements and make things more flexible for developers.
+We know that in the past, due to a lack of public APIs and documentation, many of you have had to use IRB's private APIs
+and components to extend it. We also know that changes can be a bit annoying and might mess with your current setup.
+
+We're sorry if this causes a bit of a scramble. We're working hard to make IRB better and your input is super important to us.
+If you've been using private APIs or components in your projects, we'd love to hear about your use cases. Please feel free to file a new issue. Your feedback will be a massive help in guiding us on how to design and prioritize the development of official APIs in the future.
+
+Right now, we've got command extension APIs on the drawing board, as you can see in [#513](https://github.com/ruby/irb/issues/513).
+We've also got a prototype for helper method extension APIs in the works, as shown in [#588](https://github.com/ruby/irb/issues/588).
+
+We really appreciate your understanding and patience during this transition. We're pretty excited about the improvements these changes will bring to the IRB ecosystem and we hope you are too!
 
 ## Development
 
