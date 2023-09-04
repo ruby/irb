@@ -15,4 +15,5 @@ gem "stackprof" if is_unix && !is_truffleruby
 gem "reline", github: "ruby/reline" if ENV["WITH_LATEST_RELINE"] == "true"
 gem "rake"
 gem "test-unit"
+gem "test-unit-ruby-core"
 gem "debug", github: "ruby/debug"

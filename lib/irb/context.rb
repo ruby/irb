@@ -8,7 +8,6 @@ require_relative "workspace"
 require_relative "inspector"
 require_relative "input-method"
 require_relative "output-method"
-require_relative "history"
 
 module IRB
   # A class that wraps the current state of the irb session, including the
@@ -130,8 +129,6 @@ module IRB
       else
         @io = input_method
       end
-      self.save_history = IRB.conf[:SAVE_HISTORY] if IRB.conf[:SAVE_HISTORY]
-
       @extra_doc_dirs = IRB.conf[:EXTRA_DOC_DIRS]
 
       @echo = IRB.conf[:ECHO]
@@ -154,13 +151,6 @@ module IRB
 
     def save_history=(val)
       IRB.conf[:SAVE_HISTORY] = val
-
-      if val
-        context = (IRB.conf[:MAIN_CONTEXT] || self)
-        if context.io.support_history_saving? && !context.io.singleton_class.include?(HistorySavingAbility)
-          context.io.extend(HistorySavingAbility)
-        end
-      end
     end
 
     def save_history
@@ -239,8 +229,19 @@ module IRB
     #
     # See IRB@Customizing+the+IRB+Prompt for more information.
     attr_accessor :prompt_c
-    # See IRB@Customizing+the+IRB+Prompt for more information.
-    attr_accessor :prompt_n
+
+    # TODO: Remove this when developing v2.0
+    def prompt_n
+      warn "IRB::Context#prompt_n is deprecated and will be removed in the next major release."
+      ""
+    end
+
+    # TODO: Remove this when developing v2.0
+    def prompt_n=(_)
+      warn "IRB::Context#prompt_n= is deprecated and will be removed in the next major release."
+      ""
+    end
+
     # Can be either the default <code>IRB.conf[:AUTO_INDENT]</code>, or the
     # mode set by #prompt_mode=
     #
@@ -355,6 +356,8 @@ module IRB
     # User-defined IRB command aliases
     attr_accessor :command_aliases
 
+    attr_accessor :with_debugger
+
     # Alias for #use_multiline
     alias use_multiline? use_multiline
     # Alias for #use_singleline
@@ -422,7 +425,6 @@ module IRB
       @prompt_i = pconf[:PROMPT_I]
       @prompt_s = pconf[:PROMPT_S]
       @prompt_c = pconf[:PROMPT_C]
-      @prompt_n = pconf[:PROMPT_N]
       @return_format = pconf[:RETURN]
       @return_format = "%s\n" if @return_format == nil
       if ai = pconf.include?(:AUTO_INDENT)
