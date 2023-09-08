@@ -285,8 +285,8 @@ module IRB
       end
       cursor_pos_to_render, result, pointer, autocomplete_dialog = context.pop(4)
       return nil if result.nil? or pointer.nil? or pointer < 0
-      name = result[pointer]
-      name = IRB::InputCompletor.retrieve_completion_data(name, doc_namespace: true)
+
+      name = IRB::InputCompletor.retrieve_completion_doc_namespace(result[pointer])
 
       options = {}
       options[:extra_doc_dirs] = IRB.conf[:EXTRA_DOC_DIRS] unless IRB.conf[:EXTRA_DOC_DIRS].empty?
