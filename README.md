@@ -150,7 +150,7 @@ Context
 
 Starting from version 1.8.0, IRB boasts a powerful integration with `debug.gem`, providing a debugging experience akin to `pry-byebug`.
 
-After hitting a `binding.irb` breakpoint, you can activate the debugger with the `debug` command.
+After hitting a `binding.irb` breakpoint, you can activate the debugger with the `debug` command. Alternatively, if the `debug` method happens to already be defined in the current scope, you can call `irb_debug`.
 
 ```shell
 From: test.rb @ line 3 :
