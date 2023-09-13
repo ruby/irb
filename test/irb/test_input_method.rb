@@ -23,8 +23,8 @@ module TestIRB
       assert_nil Reline.completion_append_character
       assert_equal '', Reline.completer_quote_characters
       assert_equal IRB::InputCompletor::BASIC_WORD_BREAK_CHARACTERS, Reline.basic_word_break_characters
-      assert_equal IRB::InputCompletor::CompletionProc, Reline.completion_proc
-      assert_equal IRB::InputCompletor::PerfectMatchedProc, Reline.dig_perfect_match_proc
+      assert_equal IRB::InputCompletor.method(:complete), Reline.completion_proc
+      assert_equal IRB::InputCompletor.method(:display_doc), Reline.dig_perfect_match_proc
     end
 
     def test_initialization_without_use_autocomplete
@@ -76,4 +76,3 @@ module TestIRB
     end
   end
 end
-

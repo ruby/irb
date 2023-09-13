@@ -67,12 +67,12 @@ module TestIRB
 
     class RequireComepletionTest < CompletionTest
       def test_complete_require
-        candidates = IRB::InputCompletor::CompletionProc.("'irb", "require ", "")
+        candidates = IRB::InputCompletor.complete("'irb", "require ", "")
         %w['irb/init 'irb/ruby-lex].each do |word|
           assert_include candidates, word
         end
         # Test cache
-        candidates = IRB::InputCompletor::CompletionProc.("'irb", "require ", "")
+        candidates = IRB::InputCompletor.complete("'irb", "require ", "")
         %w['irb/init 'irb/ruby-lex].each do |word|
           assert_include candidates, word
         end
@@ -84,7 +84,7 @@ module TestIRB
         test_path = Pathname.new(temp_dir)
         $LOAD_PATH << test_path
 
-        candidates = IRB::InputCompletor::CompletionProc.("'foo", "require ", "")
+        candidates = IRB::InputCompletor.complete("'foo", "require ", "")
         assert_include candidates, "'foo"
       ensure
         $LOAD_PATH.pop if test_path
@@ -98,7 +98,7 @@ module TestIRB
         object.define_singleton_method(:to_s) { temp_dir }
         $LOAD_PATH << object
 
-        candidates = IRB::InputCompletor::CompletionProc.("'foo", "require ", "")
+        candidates = IRB::InputCompletor.complete("'foo", "require ", "")
         assert_include candidates, "'foo"
       ensure
         $LOAD_PATH.pop if object
@@ -111,27 +111,27 @@ module TestIRB
         $LOAD_PATH << object
 
         assert_nothing_raised do
-          IRB::InputCompletor::CompletionProc.("'foo", "require ", "")
+          IRB::InputCompletor.complete("'foo", "require ", "")
         end
       ensure
         $LOAD_PATH.pop if object
       end
 
       def test_complete_require_library_name_first
-        candidates = IRB::InputCompletor::CompletionProc.("'csv", "require ", "")
+        candidates = IRB::InputCompletor.complete("'csv", "require ", "")
         assert_equal "'csv", candidates.first
       end
 
       def test_complete_require_relative
         candidates = Dir.chdir(__dir__ + "/../..") do
-          IRB::InputCompletor::CompletionProc.("'lib/irb", "require_relative ", "")
+          IRB::InputCompletor.complete("'lib/irb", "require_relative ", "")
         end
         %w['lib/irb/init 'lib/irb/ruby-lex].each do |word|
           assert_include candidates, word
         end
         # Test cache
         candidates = Dir.chdir(__dir__ + "/../..") do
-          IRB::InputCompletor::CompletionProc.("'lib/irb", "require_relative ", "")
+          IRB::InputCompletor.complete("'lib/irb", "require_relative ", "")
         end
         %w['lib/irb/init 'lib/irb/ruby-lex].each do |word|
           assert_include candidates, word
@@ -200,23 +200,20 @@ module TestIRB
 
     class PerfectMatchingTest < CompletionTest
       def setup
-        # trigger PerfectMatchedProc to set up RDocRIDriver constant
-        IRB::InputCompletor::PerfectMatchedProc.("foo", bind: binding)
-
-        @original_use_stdout = IRB::InputCompletor::RDocRIDriver.use_stdout
+        @original_use_stdout = IRB::InputCompletor.rdoc_driver.use_stdout
         # force the driver to use stdout so it doesn't start a pager and interrupt tests
-        IRB::InputCompletor::RDocRIDriver.use_stdout = true
+        IRB::InputCompletor.rdoc_driver.use_stdout = true
       end
 
       def teardown
-        IRB::InputCompletor::RDocRIDriver.use_stdout = @original_use_stdout
+        IRB::InputCompletor.rdoc_driver.use_stdout = @original_use_stdout
       end
 
       def test_perfectly_matched_namespace_triggers_document_display
         omit unless has_rdoc_content?
 
         out, err = capture_output do
-          IRB::InputCompletor::PerfectMatchedProc.("String", bind: binding)
+          IRB::InputCompletor.display_doc("String", bind: binding)
         end
 
         assert_empty(err)
@@ -227,7 +224,7 @@ module TestIRB
       def test_perfectly_matched_multiple_namespaces_triggers_document_display
         result = nil
         out, err = capture_output do
-          result = IRB::InputCompletor::PerfectMatchedProc.("{}.nil?", bind: binding)
+          result = IRB::InputCompletor.display_doc("{}.nil?", bind: binding)
         end
 
         assert_empty(err)
@@ -240,7 +237,7 @@ module TestIRB
           assert_include(out, "H\bHa\bas\bsh\bh.\b.n\bni\bil\bl?\b?") # Hash.nil?
         else
           # this is a hacky way to verify the rdoc rendering code path because CI doesn't have rdoc content
-          # if there are multiple namespaces to be rendered, PerfectMatchedProc renders the result with a document
+          # if there are multiple namespaces to be rendered, InputCompletor.display_doc renders the result with a document
           # which always returns the bytes rendered, even if it's 0
           assert_equal(0, result)
         end
@@ -249,7 +246,7 @@ module TestIRB
       def test_not_matched_namespace_triggers_nothing
         result = nil
         out, err = capture_output do
-          result = IRB::InputCompletor::PerfectMatchedProc.("Stri", bind: binding)
+          result = IRB::InputCompletor.display_doc("Stri", bind: binding)
         end
 
         assert_empty(err)
@@ -262,7 +259,7 @@ module TestIRB
 
         out, err = capture_output do
           without_rdoc do
-            result = IRB::InputCompletor::PerfectMatchedProc.("String", bind: binding)
+            result = IRB::InputCompletor.display_doc("String", bind: binding)
           end
         end
 
@@ -274,7 +271,7 @@ module TestIRB
       def test_perfect_matching_handles_nil_namespace
         out, err = capture_output do
           # symbol literal has `nil` doc namespace so it's a good test subject
-          assert_nil(IRB::InputCompletor::PerfectMatchedProc.(":aiueo", bind: binding))
+          assert_nil(IRB::InputCompletor.display_doc(":aiueo", bind: binding))
         end
 
         assert_empty(err)

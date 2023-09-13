@@ -184,7 +184,7 @@ module IRB
         Readline.basic_word_break_characters = IRB::InputCompletor::BASIC_WORD_BREAK_CHARACTERS
       end
       Readline.completion_append_character = nil
-      Readline.completion_proc = IRB::InputCompletor::CompletionProc
+      Readline.completion_proc = IRB::InputCompletor.method(:complete)
     end
 
     # Reads the next line from this input method.
@@ -234,7 +234,7 @@ module IRB
       Reline.basic_word_break_characters = IRB::InputCompletor::BASIC_WORD_BREAK_CHARACTERS
       Reline.completion_append_character = nil
       Reline.completer_quote_characters = ''
-      Reline.completion_proc = IRB::InputCompletor::CompletionProc
+      Reline.completion_proc = IRB::InputCompletor.method(:complete)
       Reline.output_modifier_proc =
         if IRB.conf[:USE_COLORIZE]
           proc do |output, complete: |
@@ -247,7 +247,7 @@ module IRB
             Reline::Unicode.escape_for_print(output)
           end
         end
-      Reline.dig_perfect_match_proc = IRB::InputCompletor::PerfectMatchedProc
+      Reline.dig_perfect_match_proc = IRB::InputCompletor.method(:display_doc)
       Reline.autocompletion = IRB.conf[:USE_AUTOCOMPLETE]
 
       if IRB.conf[:USE_AUTOCOMPLETE]

@@ -61,20 +61,27 @@ module TestIRB
       end
     end
 
+    # It prevents new rdoc require as well as unset any cached rdoc components
     def without_rdoc(&block)
       ::Kernel.send(:alias_method, :irb_original_require, :require)
-
       ::Kernel.define_method(:require) do |name|
         raise LoadError, "cannot load such file -- rdoc (test)" if name.match?("rdoc") || name.match?(/^rdoc\/.*/)
         ::Kernel.send(:irb_original_require, name)
       end
 
+      IRB::InputCompletor.singleton_class.send(:alias_method, :original_rdoc_driver, :rdoc_driver)
+      IRB::InputCompletor.define_singleton_method :rdoc_driver do
+        nil
+      end
+
       yield
     ensure
-      EnvUtil.suppress_warning {
+      EnvUtil.suppress_warning do
         ::Kernel.send(:alias_method, :require, :irb_original_require)
         ::Kernel.undef_method :irb_original_require
-      }
+        IRB::InputCompletor.singleton_class.send(:alias_method, :rdoc_driver, :original_rdoc_driver)
+        IRB::InputCompletor.singleton_class.undef_method :original_rdoc_driver
+      end
     end
   end
 

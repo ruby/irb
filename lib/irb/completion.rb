@@ -109,7 +109,7 @@ module IRB
       }
     end
 
-    CompletionRequireProc = lambda { |target, preposing = nil, postposing = nil|
+    def self.complete_require(target, preposing = nil, postposing = nil)
       if target =~ /\A(['"])([^'"]+)\Z/
         quote = $1
         actual_target = $2
@@ -142,11 +142,11 @@ module IRB
         end
       end
       result
-    }
+    end
 
-    CompletionProc = lambda { |target, preposing = nil, postposing = nil|
+    def self.complete(target, preposing = nil, postposing = nil)
       if preposing && postposing
-        result = CompletionRequireProc.(target, preposing, postposing)
+        result = complete_require(target, preposing, postposing)
         unless result
           result = retrieve_completion_data(target).compact.map{ |i| i.encode(Encoding.default_external) }
         end
@@ -154,7 +154,7 @@ module IRB
       else
         retrieve_completion_data(target).compact.map{ |i| i.encode(Encoding.default_external) }
       end
-    }
+    end
 
     def self.retrieve_completion_data(input, bind: IRB.conf[:MAIN_CONTEXT].workspace.binding, doc_namespace: false)
       case input
@@ -394,14 +394,8 @@ module IRB
       end
     end
 
-    PerfectMatchedProc = ->(matched, bind: IRB.conf[:MAIN_CONTEXT].workspace.binding) {
-      begin
-        require 'rdoc'
-      rescue LoadError
-        return
-      end
-
-      RDocRIDriver ||= RDoc::RI::Driver.new
+    def self.display_doc(matched, bind: IRB.conf[:MAIN_CONTEXT].workspace.binding)
+      return unless rdoc_driver
 
       if matched =~ /\A(?:::)?RubyVM/ and not ENV['RUBY_YES_I_AM_NOT_A_NORMAL_USER']
         IRB.__send__(:easter_egg)
@@ -415,18 +409,29 @@ module IRB
         out = RDoc::Markup::Document.new
         namespace.each do |m|
           begin
-            RDocRIDriver.add_method(out, m)
+            rdoc_driver.add_method(out, m)
           rescue RDoc::RI::Driver::NotFoundError
           end
         end
-        RDocRIDriver.display(out)
+        rdoc_driver.display(out)
       else
         begin
-          RDocRIDriver.display_names([namespace])
+          rdoc_driver.display_names([namespace])
         rescue RDoc::RI::Driver::NotFoundError
         end
       end
-    }
+    end
+
+    def self.rdoc_driver
+      if defined?(@rdoc_driver)
+        @rdoc_driver
+      else
+        require 'rdoc'
+        @rdoc_driver = RDoc::RI::Driver.new
+      end
+    rescue LoadError
+      @rdoc_driver = nil
+    end
 
     # Set of available operators in Ruby
     Operators = %w[% & * ** + - / < << <= <=> == === =~ > >= >> [] []= ^ ! != !~]
