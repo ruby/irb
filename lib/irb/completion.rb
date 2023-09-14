@@ -56,8 +56,6 @@ module IRB
       yield
     ]
 
-    BASIC_WORD_BREAK_CHARACTERS = " \t\n`><=;|&{("
-
     GEM_PATHS =
       if defined?(Gem::Specification)
         Gem::Specification.latest_specs(true).map { |s|

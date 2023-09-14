@@ -11,6 +11,8 @@ require 'reline'
 
 module IRB
   class InputMethod
+    BASIC_WORD_BREAK_CHARACTERS = " \t\n`><=;|&{("
+
     # The irb prompt associated with this input method
     attr_accessor :prompt
 
@@ -181,7 +183,7 @@ module IRB
       @eof = false
 
       if Readline.respond_to?("basic_word_break_characters=")
-        Readline.basic_word_break_characters = IRB::InputCompletor::BASIC_WORD_BREAK_CHARACTERS
+        Readline.basic_word_break_characters = BASIC_WORD_BREAK_CHARACTERS
       end
       Readline.completion_append_character = nil
       Readline.completion_proc = IRB::InputCompletor.method(:complete)
@@ -231,7 +233,7 @@ module IRB
 
       @eof = false
 
-      Reline.basic_word_break_characters = IRB::InputCompletor::BASIC_WORD_BREAK_CHARACTERS
+      Reline.basic_word_break_characters = BASIC_WORD_BREAK_CHARACTERS
       Reline.completion_append_character = nil
       Reline.completer_quote_characters = ''
       Reline.completion_proc = IRB::InputCompletor.method(:complete)
