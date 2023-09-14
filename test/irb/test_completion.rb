@@ -1,78 +1,83 @@
 # frozen_string_literal: false
 require "pathname"
 require "irb"
+require "rdoc"
 
 require_relative "helper"
 
 module TestIRB
   class CompletionTest < TestCase
     def setup
+      driver = RDoc::RI::Driver.new
+      # force the driver to use stdout so it doesn't start a pager and interrupt tests
+      driver.use_stdout = true
+      @completor = IRB::RegexpCompletor.new(driver)
       # make sure require completion candidates are not cached
-      IRB::InputCompletor.class_variable_set(:@@files_from_load_path, nil)
+      @completor.instance_variable_set(:@files_from_load_path, nil)
     end
 
     class MethodCompletionTest < CompletionTest
       def test_complete_string
-        assert_include(IRB::InputCompletor.retrieve_completion_data("'foo'.up", bind: binding), "'foo'.upcase")
+        assert_include(@completor.retrieve_completion_data("'foo'.up", bind: binding), "'foo'.upcase")
         # completing 'foo bar'.up
-        assert_include(IRB::InputCompletor.retrieve_completion_data("bar'.up", bind: binding), "bar'.upcase")
-        assert_equal("String.upcase", IRB::InputCompletor.retrieve_completion_data("'foo'.upcase", bind: binding, doc_namespace: true))
+        assert_include(@completor.retrieve_completion_data("bar'.up", bind: binding), "bar'.upcase")
+        assert_equal("String.upcase", @completor.retrieve_completion_data("'foo'.upcase", bind: binding, doc_namespace: true))
       end
 
       def test_complete_regexp
-        assert_include(IRB::InputCompletor.retrieve_completion_data("/foo/.ma", bind: binding), "/foo/.match")
+        assert_include(@completor.retrieve_completion_data("/foo/.ma", bind: binding), "/foo/.match")
         # completing /foo bar/.ma
-        assert_include(IRB::InputCompletor.retrieve_completion_data("bar/.ma", bind: binding), "bar/.match")
-        assert_equal("Regexp.match", IRB::InputCompletor.retrieve_completion_data("/foo/.match", bind: binding, doc_namespace: true))
+        assert_include(@completor.retrieve_completion_data("bar/.ma", bind: binding), "bar/.match")
+        assert_equal("Regexp.match", @completor.retrieve_completion_data("/foo/.match", bind: binding, doc_namespace: true))
       end
 
       def test_complete_array
-        assert_include(IRB::InputCompletor.retrieve_completion_data("[].an", bind: binding), "[].any?")
-        assert_equal("Array.any?", IRB::InputCompletor.retrieve_completion_data("[].any?", bind: binding, doc_namespace: true))
+        assert_include(@completor.retrieve_completion_data("[].an", bind: binding), "[].any?")
+        assert_equal("Array.any?", @completor.retrieve_completion_data("[].any?", bind: binding, doc_namespace: true))
       end
 
       def test_complete_hash_and_proc
         # hash
-        assert_include(IRB::InputCompletor.retrieve_completion_data("{}.an", bind: binding), "{}.any?")
-        assert_equal(["Proc.any?", "Hash.any?"], IRB::InputCompletor.retrieve_completion_data("{}.any?", bind: binding, doc_namespace: true))
+        assert_include(@completor.retrieve_completion_data("{}.an", bind: binding), "{}.any?")
+        assert_equal(["Proc.any?", "Hash.any?"], @completor.retrieve_completion_data("{}.any?", bind: binding, doc_namespace: true))
 
         # proc
-        assert_include(IRB::InputCompletor.retrieve_completion_data("{}.bin", bind: binding), "{}.binding")
-        assert_equal(["Proc.binding", "Hash.binding"], IRB::InputCompletor.retrieve_completion_data("{}.binding", bind: binding, doc_namespace: true))
+        assert_include(@completor.retrieve_completion_data("{}.bin", bind: binding), "{}.binding")
+        assert_equal(["Proc.binding", "Hash.binding"], @completor.retrieve_completion_data("{}.binding", bind: binding, doc_namespace: true))
       end
 
       def test_complete_numeric
-        assert_include(IRB::InputCompletor.retrieve_completion_data("1.positi", bind: binding), "1.positive?")
-        assert_equal("Integer.positive?", IRB::InputCompletor.retrieve_completion_data("1.positive?", bind: binding, doc_namespace: true))
+        assert_include(@completor.retrieve_completion_data("1.positi", bind: binding), "1.positive?")
+        assert_equal("Integer.positive?", @completor.retrieve_completion_data("1.positive?", bind: binding, doc_namespace: true))
 
-        assert_include(IRB::InputCompletor.retrieve_completion_data("1r.positi", bind: binding), "1r.positive?")
-        assert_equal("Rational.positive?", IRB::InputCompletor.retrieve_completion_data("1r.positive?", bind: binding, doc_namespace: true))
+        assert_include(@completor.retrieve_completion_data("1r.positi", bind: binding), "1r.positive?")
+        assert_equal("Rational.positive?", @completor.retrieve_completion_data("1r.positive?", bind: binding, doc_namespace: true))
 
-        assert_include(IRB::InputCompletor.retrieve_completion_data("0xFFFF.positi", bind: binding), "0xFFFF.positive?")
-        assert_equal("Integer.positive?", IRB::InputCompletor.retrieve_completion_data("0xFFFF.positive?", bind: binding, doc_namespace: true))
+        assert_include(@completor.retrieve_completion_data("0xFFFF.positi", bind: binding), "0xFFFF.positive?")
+        assert_equal("Integer.positive?", @completor.retrieve_completion_data("0xFFFF.positive?", bind: binding, doc_namespace: true))
 
-        assert_empty(IRB::InputCompletor.retrieve_completion_data("1i.positi", bind: binding))
+        assert_empty(@completor.retrieve_completion_data("1i.positi", bind: binding))
       end
 
       def test_complete_symbol
-        assert_include(IRB::InputCompletor.retrieve_completion_data(":foo.to_p", bind: binding), ":foo.to_proc")
-        assert_equal("Symbol.to_proc", IRB::InputCompletor.retrieve_completion_data(":foo.to_proc", bind: binding, doc_namespace: true))
+        assert_include(@completor.retrieve_completion_data(":foo.to_p", bind: binding), ":foo.to_proc")
+        assert_equal("Symbol.to_proc", @completor.retrieve_completion_data(":foo.to_proc", bind: binding, doc_namespace: true))
       end
 
       def test_complete_class
-        assert_include(IRB::InputCompletor.retrieve_completion_data("String.ne", bind: binding), "String.new")
-        assert_equal("String.new", IRB::InputCompletor.retrieve_completion_data("String.new", bind: binding, doc_namespace: true))
+        assert_include(@completor.retrieve_completion_data("String.ne", bind: binding), "String.new")
+        assert_equal("String.new", @completor.retrieve_completion_data("String.new", bind: binding, doc_namespace: true))
       end
     end
 
     class RequireComepletionTest < CompletionTest
       def test_complete_require
-        candidates = IRB::InputCompletor.complete("'irb", "require ", "")
+        candidates = @completor.complete("'irb", "require ", "")
         %w['irb/init 'irb/ruby-lex].each do |word|
           assert_include candidates, word
         end
         # Test cache
-        candidates = IRB::InputCompletor.complete("'irb", "require ", "")
+        candidates = @completor.complete("'irb", "require ", "")
         %w['irb/init 'irb/ruby-lex].each do |word|
           assert_include candidates, word
         end
@@ -84,7 +89,7 @@ module TestIRB
         test_path = Pathname.new(temp_dir)
         $LOAD_PATH << test_path
 
-        candidates = IRB::InputCompletor.complete("'foo", "require ", "")
+        candidates = @completor.complete("'foo", "require ", "")
         assert_include candidates, "'foo"
       ensure
         $LOAD_PATH.pop if test_path
@@ -98,7 +103,7 @@ module TestIRB
         object.define_singleton_method(:to_s) { temp_dir }
         $LOAD_PATH << object
 
-        candidates = IRB::InputCompletor.complete("'foo", "require ", "")
+        candidates = @completor.complete("'foo", "require ", "")
         assert_include candidates, "'foo"
       ensure
         $LOAD_PATH.pop if object
@@ -111,27 +116,27 @@ module TestIRB
         $LOAD_PATH << object
 
         assert_nothing_raised do
-          IRB::InputCompletor.complete("'foo", "require ", "")
+          @completor.complete("'foo", "require ", "")
         end
       ensure
         $LOAD_PATH.pop if object
       end
 
       def test_complete_require_library_name_first
-        candidates = IRB::InputCompletor.complete("'csv", "require ", "")
+        candidates = @completor.complete("'csv", "require ", "")
         assert_equal "'csv", candidates.first
       end
 
       def test_complete_require_relative
         candidates = Dir.chdir(__dir__ + "/../..") do
-          IRB::InputCompletor.complete("'lib/irb", "require_relative ", "")
+          @completor.complete("'lib/irb", "require_relative ", "")
         end
         %w['lib/irb/init 'lib/irb/ruby-lex].each do |word|
           assert_include candidates, word
         end
         # Test cache
         candidates = Dir.chdir(__dir__ + "/../..") do
-          IRB::InputCompletor.complete("'lib/irb", "require_relative ", "")
+          @completor.complete("'lib/irb", "require_relative ", "")
         end
         %w['lib/irb/init 'lib/irb/ruby-lex].each do |word|
           assert_include candidates, word
@@ -160,13 +165,13 @@ module TestIRB
         local_variables.clear
         instance_variables.clear
 
-        assert_include(IRB::InputCompletor.retrieve_completion_data("str_examp", bind: binding), "str_example")
-        assert_equal("String", IRB::InputCompletor.retrieve_completion_data("str_example", bind: binding, doc_namespace: true))
-        assert_equal("String.to_s", IRB::InputCompletor.retrieve_completion_data("str_example.to_s", bind: binding, doc_namespace: true))
+        assert_include(@completor.retrieve_completion_data("str_examp", bind: binding), "str_example")
+        assert_equal("String", @completor.retrieve_completion_data("str_example", bind: binding, doc_namespace: true))
+        assert_equal("String.to_s", @completor.retrieve_completion_data("str_example.to_s", bind: binding, doc_namespace: true))
 
-        assert_include(IRB::InputCompletor.retrieve_completion_data("@str_examp", bind: binding), "@str_example")
-        assert_equal("String", IRB::InputCompletor.retrieve_completion_data("@str_example", bind: binding, doc_namespace: true))
-        assert_equal("String.to_s", IRB::InputCompletor.retrieve_completion_data("@str_example.to_s", bind: binding, doc_namespace: true))
+        assert_include(@completor.retrieve_completion_data("@str_examp", bind: binding), "@str_example")
+        assert_equal("String", @completor.retrieve_completion_data("@str_example", bind: binding, doc_namespace: true))
+        assert_equal("String.to_s", @completor.retrieve_completion_data("@str_example.to_s", bind: binding, doc_namespace: true))
       end
 
       def test_complete_sort_variables
@@ -176,7 +181,7 @@ module TestIRB
         xzy_1.clear
         xzy2.clear
 
-        candidates = IRB::InputCompletor.retrieve_completion_data("xz", bind: binding, doc_namespace: false)
+        candidates = @completor.retrieve_completion_data("xz", bind: binding, doc_namespace: false)
         assert_equal(%w[xzy xzy2 xzy_1], candidates)
       end
     end
@@ -189,31 +194,21 @@ module TestIRB
       end
 
       def test_complete_constants
-        assert_equal(["Foo"], IRB::InputCompletor.retrieve_completion_data("Fo", bind: binding))
-        assert_equal(["Foo::B1", "Foo::B2", "Foo::B3"], IRB::InputCompletor.retrieve_completion_data("Foo::B", bind: binding))
-        assert_equal(["Foo::B1.positive?"], IRB::InputCompletor.retrieve_completion_data("Foo::B1.pos", bind: binding))
+        assert_equal(["Foo"], @completor.retrieve_completion_data("Fo", bind: binding))
+        assert_equal(["Foo::B1", "Foo::B2", "Foo::B3"], @completor.retrieve_completion_data("Foo::B", bind: binding))
+        assert_equal(["Foo::B1.positive?"], @completor.retrieve_completion_data("Foo::B1.pos", bind: binding))
 
-        assert_equal(["::Forwardable"], IRB::InputCompletor.retrieve_completion_data("::Fo", bind: binding))
-        assert_equal("Forwardable", IRB::InputCompletor.retrieve_completion_data("::Forwardable", bind: binding, doc_namespace: true))
+        assert_equal(["::Forwardable"], @completor.retrieve_completion_data("::Fo", bind: binding))
+        assert_equal("Forwardable", @completor.retrieve_completion_data("::Forwardable", bind: binding, doc_namespace: true))
       end
     end
 
-    class PerfectMatchingTest < CompletionTest
-      def setup
-        @original_use_stdout = IRB::InputCompletor.rdoc_driver.use_stdout
-        # force the driver to use stdout so it doesn't start a pager and interrupt tests
-        IRB::InputCompletor.rdoc_driver.use_stdout = true
-      end
-
-      def teardown
-        IRB::InputCompletor.rdoc_driver.use_stdout = @original_use_stdout
-      end
-
+    class DocDisplayTest < CompletionTest
       def test_perfectly_matched_namespace_triggers_document_display
         omit unless has_rdoc_content?
 
         out, err = capture_output do
-          IRB::InputCompletor.display_doc("String", bind: binding)
+          @completor.display_doc("String", bind: binding)
         end
 
         assert_empty(err)
@@ -224,7 +219,7 @@ module TestIRB
       def test_perfectly_matched_multiple_namespaces_triggers_document_display
         result = nil
         out, err = capture_output do
-          result = IRB::InputCompletor.display_doc("{}.nil?", bind: binding)
+          result = @completor.display_doc("{}.nil?", bind: binding)
         end
 
         assert_empty(err)
@@ -246,7 +241,7 @@ module TestIRB
       def test_not_matched_namespace_triggers_nothing
         result = nil
         out, err = capture_output do
-          result = IRB::InputCompletor.display_doc("Stri", bind: binding)
+          result = @completor.display_doc("Stri", bind: binding)
         end
 
         assert_empty(err)
@@ -254,13 +249,11 @@ module TestIRB
         assert_nil(result)
       end
 
-      def test_perfect_matching_stops_without_rdoc
+      def test_display_doc_stops_without_rdoc
         result = nil
 
         out, err = capture_output do
-          without_rdoc do
-            result = IRB::InputCompletor.display_doc("String", bind: binding)
-          end
+          result = IRB::RegexpCompletor.new(nil).display_doc("String", bind: binding)
         end
 
         assert_empty(err)
@@ -268,10 +261,10 @@ module TestIRB
         assert_nil(result)
       end
 
-      def test_perfect_matching_handles_nil_namespace
+      def test_display_doc_handles_nil_namespace
         out, err = capture_output do
           # symbol literal has `nil` doc namespace so it's a good test subject
-          assert_nil(IRB::InputCompletor.display_doc(":aiueo", bind: binding))
+          assert_nil(@completor.display_doc(":aiueo", bind: binding))
         end
 
         assert_empty(err)
@@ -291,34 +284,34 @@ module TestIRB
       rescue
       end
       symbols += [:aiueo, :"aiu eo"]
-      candidates = IRB::InputCompletor.retrieve_completion_data(":a", bind: binding)
+      candidates = @completor.retrieve_completion_data(":a", bind: binding)
       assert_include(candidates, ":aiueo")
       assert_not_include(candidates, ":aiu eo")
-      assert_empty(IRB::InputCompletor.retrieve_completion_data(":irb_unknown_symbol_abcdefg", bind: binding))
+      assert_empty(@completor.retrieve_completion_data(":irb_unknown_symbol_abcdefg", bind: binding))
       # Do not complete empty symbol for performance reason
-      assert_empty(IRB::InputCompletor.retrieve_completion_data(":", bind: binding))
+      assert_empty(@completor.retrieve_completion_data(":", bind: binding))
     end
 
     def test_complete_invalid_three_colons
-      assert_empty(IRB::InputCompletor.retrieve_completion_data(":::A", bind: binding))
-      assert_empty(IRB::InputCompletor.retrieve_completion_data(":::", bind: binding))
+      assert_empty(@completor.retrieve_completion_data(":::A", bind: binding))
+      assert_empty(@completor.retrieve_completion_data(":::", bind: binding))
     end
 
     def test_complete_absolute_constants_with_special_characters
-      assert_empty(IRB::InputCompletor.retrieve_completion_data("::A:", bind: binding))
-      assert_empty(IRB::InputCompletor.retrieve_completion_data("::A.", bind: binding))
-      assert_empty(IRB::InputCompletor.retrieve_completion_data("::A(", bind: binding))
-      assert_empty(IRB::InputCompletor.retrieve_completion_data("::A)", bind: binding))
-      assert_empty(IRB::InputCompletor.retrieve_completion_data("::A[", bind: binding))
+      assert_empty(@completor.retrieve_completion_data("::A:", bind: binding))
+      assert_empty(@completor.retrieve_completion_data("::A.", bind: binding))
+      assert_empty(@completor.retrieve_completion_data("::A(", bind: binding))
+      assert_empty(@completor.retrieve_completion_data("::A)", bind: binding))
+      assert_empty(@completor.retrieve_completion_data("::A[", bind: binding))
     end
 
     def test_complete_reserved_words
-      candidates = IRB::InputCompletor.retrieve_completion_data("de", bind: binding)
+      candidates = @completor.retrieve_completion_data("de", bind: binding)
       %w[def defined?].each do |word|
         assert_include candidates, word
       end
 
-      candidates = IRB::InputCompletor.retrieve_completion_data("__", bind: binding)
+      candidates = @completor.retrieve_completion_data("__", bind: binding)
       %w[__ENCODING__ __LINE__ __FILE__].each do |word|
         assert_include candidates, word
       end
@@ -339,11 +332,11 @@ module TestIRB
       }
       bind = obj.instance_exec { binding }
 
-      assert_include(IRB::InputCompletor.retrieve_completion_data("public_hog", bind: bind), "public_hoge")
-      assert_include(IRB::InputCompletor.retrieve_completion_data("public_hoge", bind: bind, doc_namespace: true), "public_hoge")
+      assert_include(@completor.retrieve_completion_data("public_hog", bind: bind), "public_hoge")
+      assert_include(@completor.retrieve_completion_data("public_hoge", bind: bind, doc_namespace: true), "public_hoge")
 
-      assert_include(IRB::InputCompletor.retrieve_completion_data("private_hog", bind: bind), "private_hoge")
-      assert_include(IRB::InputCompletor.retrieve_completion_data("private_hoge", bind: bind, doc_namespace: true), "private_hoge")
+      assert_include(@completor.retrieve_completion_data("private_hog", bind: bind), "private_hoge")
+      assert_include(@completor.retrieve_completion_data("private_hoge", bind: bind, doc_namespace: true), "private_hoge")
     end
   end
 end

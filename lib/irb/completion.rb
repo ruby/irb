@@ -8,7 +8,7 @@
 require_relative 'ruby-lex'
 
 module IRB
-  module InputCompletor # :nodoc:
+  class RegexpCompletor # :nodoc:
     using Module.new {
       refine ::Binding do
         def eval_methods
@@ -71,43 +71,13 @@ module IRB
         []
       end.freeze
 
-    def self.retrieve_gem_and_system_load_path
-      candidates = (GEM_PATHS | $LOAD_PATH)
-      candidates.map do |p|
-        if p.respond_to?(:to_path)
-          p.to_path
-        else
-          String(p) rescue nil
-        end
-      end.compact.sort
+    attr_reader :rdoc_driver
+
+    def initialize(rdoc_driver)
+      @rdoc_driver = rdoc_driver
     end
 
-    def self.retrieve_files_to_require_from_load_path
-      @@files_from_load_path ||=
-        (
-          shortest = []
-          rest = retrieve_gem_and_system_load_path.each_with_object([]) { |path, result|
-            begin
-              names = Dir.glob("**/*.{rb,#{RbConfig::CONFIG['DLEXT']}}", base: path)
-            rescue Errno::ENOENT
-              nil
-            end
-            next if names.empty?
-            names.map! { |n| n.sub(/\.(rb|#{RbConfig::CONFIG['DLEXT']})\z/, '') }.sort!
-            shortest << names.shift
-            result.concat(names)
-          }
-          shortest.sort! | rest
-        )
-    end
-
-    def self.retrieve_files_to_require_relative_from_current_dir
-      @@files_from_current_dir ||= Dir.glob("**/*.{rb,#{RbConfig::CONFIG['DLEXT']}}", base: '.').map { |path|
-        path.sub(/\.(rb|#{RbConfig::CONFIG['DLEXT']})\z/, '')
-      }
-    end
-
-    def self.complete_require(target, preposing = nil, postposing = nil)
+    def complete_require(target, preposing = nil, postposing = nil)
       if target =~ /\A(['"])([^'"]+)\Z/
         quote = $1
         actual_target = $2
@@ -142,7 +112,7 @@ module IRB
       result
     end
 
-    def self.complete(target, preposing = nil, postposing = nil)
+    def complete(target, preposing = nil, postposing = nil)
       if preposing && postposing
         result = complete_require(target, preposing, postposing)
         unless result
@@ -154,7 +124,7 @@ module IRB
       end
     end
 
-    def self.retrieve_completion_data(input, bind: IRB.conf[:MAIN_CONTEXT].workspace.binding, doc_namespace: false)
+    def retrieve_completion_data(input, bind: IRB.conf[:MAIN_CONTEXT].workspace.binding, doc_namespace: false)
       case input
       # this regexp only matches the closing character because of irb's Reline.completer_quote_characters setting
       # details are described in: https://github.com/ruby/irb/pull/523
@@ -392,7 +362,7 @@ module IRB
       end
     end
 
-    def self.display_doc(matched, bind: IRB.conf[:MAIN_CONTEXT].workspace.binding)
+    def display_doc(matched, bind: IRB.conf[:MAIN_CONTEXT].workspace.binding)
       return unless rdoc_driver
 
       if matched =~ /\A(?:::)?RubyVM/ and not ENV['RUBY_YES_I_AM_NOT_A_NORMAL_USER']
@@ -420,21 +390,12 @@ module IRB
       end
     end
 
-    def self.rdoc_driver
-      if defined?(@rdoc_driver)
-        @rdoc_driver
-      else
-        require 'rdoc'
-        @rdoc_driver = RDoc::RI::Driver.new
-      end
-    rescue LoadError
-      @rdoc_driver = nil
-    end
+    private
 
     # Set of available operators in Ruby
     Operators = %w[% & * ** + - / < << <= <=> == === =~ > >= >> [] []= ^ ! != !~]
 
-    def self.select_message(receiver, message, candidates, sep = ".")
+    def select_message(receiver, message, candidates, sep = ".")
       candidates.grep(/^#{Regexp.quote(message)}/).collect do |e|
         case e
         when /^[a-zA-Z_]/
@@ -445,5 +406,48 @@ module IRB
         end
       end
     end
+
+    def retrieve_gem_and_system_load_path
+      candidates = (GEM_PATHS | $LOAD_PATH)
+      candidates.map do |p|
+        if p.respond_to?(:to_path)
+          p.to_path
+        else
+          String(p) rescue nil
+        end
+      end.compact.sort
+    end
+
+    def retrieve_files_to_require_from_load_path
+      @files_from_load_path ||=
+        (
+          shortest = []
+          rest = retrieve_gem_and_system_load_path.each_with_object([]) { |path, result|
+            begin
+              names = Dir.glob("**/*.{rb,#{RbConfig::CONFIG['DLEXT']}}", base: path)
+            rescue Errno::ENOENT
+              nil
+            end
+            next if names.empty?
+            names.map! { |n| n.sub(/\.(rb|#{RbConfig::CONFIG['DLEXT']})\z/, '') }.sort!
+            shortest << names.shift
+            result.concat(names)
+          }
+          shortest.sort! | rest
+        )
+    end
+
+    def retrieve_files_to_require_relative_from_current_dir
+      @files_from_current_dir ||= Dir.glob("**/*.{rb,#{RbConfig::CONFIG['DLEXT']}}", base: '.').map { |path|
+        path.sub(/\.(rb|#{RbConfig::CONFIG['DLEXT']})\z/, '')
+      }
+    end
+  end
+
+  begin
+    require 'rdoc/ri/driver'
+    InputCompletor = RegexpCompletor.new(RDoc::RI::Driver.new)
+  rescue LoadError
+    InputCompletor = RegexpCompletor.new(nil)
   end
 end
