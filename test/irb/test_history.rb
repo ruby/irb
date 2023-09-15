@@ -18,7 +18,7 @@ module TestIRB
     end
 
     class TestInputMethodWithRelineHistory < TestInputMethod
-      # When IRB.conf[:USE_MULTILINE] is true, IRB::ReidlineInputMethod uses Reline::History
+      # When IRB.conf[:USE_MULTILINE] is true, IRB::RelineInputMethod uses Reline::History
       HISTORY = Reline::History.new(Reline.core.config)
 
       include IRB::HistorySavingAbility
