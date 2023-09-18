@@ -349,14 +349,14 @@ module IRB
         end
       end
 
-      PerfectMatchedProc = ->(matched, bind:) {
+      def self.display_perfect_matched_document(matched, bind:)
         begin
           require 'rdoc'
         rescue LoadError
           return
         end
 
-        RDocRIDriver ||= RDoc::RI::Driver.new
+        @rdoc_ri_driver ||= RDoc::RI::Driver.new
 
         if matched =~ /\A(?:::)?RubyVM/ and not ENV['RUBY_YES_I_AM_NOT_A_NORMAL_USER']
           IRB.__send__(:easter_egg)
@@ -370,18 +370,18 @@ module IRB
           out = RDoc::Markup::Document.new
           namespace.each do |m|
             begin
-              RDocRIDriver.add_method(out, m)
+              @rdoc_ri_driver.add_method(out, m)
             rescue RDoc::RI::Driver::NotFoundError
             end
           end
-          RDocRIDriver.display(out)
+          @rdoc_ri_driver.display(out)
         else
           begin
-            RDocRIDriver.display_names([namespace])
+            @rdoc_ri_driver.display_names([namespace])
           rescue RDoc::RI::Driver::NotFoundError
           end
         end
-      }
+      end
 
       # Set of available operators in Ruby
       Operators = %w[% & * ** + - / < << <= <=> == === =~ > >= >> [] []= ^ ! != !~]

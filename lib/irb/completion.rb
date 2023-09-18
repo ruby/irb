@@ -68,22 +68,14 @@ module IRB
       RegexpCompletor
     end
 
-    CompletionProc = lambda { |target, preposing = nil, postposing = nil|
-      bind = IRB.conf[:MAIN_CONTEXT].workspace.binding
+    def self.retrieve_completion_candidates(target, preposing, postposing, bind:)
       @completor = completor_class.new(target, preposing, postposing, bind: bind)
       @completor.completion_candidates
-    }
-
-    def self.retrieve_completion_doc_namespace(target)
-      # This method is always called after CompletionProc is called
-      @completor.doc_namespace(target)
     end
 
-    # Press TAB two times in noautocomplete mode
-    PerfectMatchedProc = ->(matched, bind: IRB.conf[:MAIN_CONTEXT].workspace.binding) {
-      # Always use RegexpCompletor because preposing is not available here
-      require_relative 'completion/regexp_completor'
-      RegexpCompletor::PerfectMatchedProc.(matched, bind: bind)
-    }
+    def self.retrieve_completion_doc_namespace(target)
+      # This method is always called after retrieve_completion_candidates is called.
+      @completor.doc_namespace(target)
+    end
   end
 end
