@@ -26,11 +26,6 @@ module TestIRB
       completor.doc_namespace(target)
     end
 
-    def display_document(target, bind)
-      IRB::InputCompletor.retrieve_completion_candidates(target, '', '', bind: bind)
-      IRB::InputCompletor.display_perfect_matched_document(target)
-    end
-
     class MethodCompletionTest < CompletionTest
       def test_complete_string
         assert_include(completion_candidates("'foo'.up", binding), "'foo'.upcase")
@@ -220,17 +215,17 @@ module TestIRB
 
     class PerfectMatchingTest < CompletionTest
       def setup
-        # trigger InputCompletor.display_perfect_matched_document to set up RDoc::RI::Driver.new
-        display_document('foo', binding)
-        @rdoc_ri_driver = IRB::InputCompletor.instance_variable_get('@rdoc_ri_driver')
-
-        @original_use_stdout = @rdoc_ri_driver.use_stdout
-        # force the driver to use stdout so it doesn't start a pager and interrupt tests
-        @rdoc_ri_driver.use_stdout = true
+        save_encodings
       end
 
       def teardown
-        @rdoc_ri_driver.use_stdout = @original_use_stdout
+        restore_encodings
+      end
+
+      def display_document(target, bind)
+        IRB::InputCompletor.retrieve_completion_candidates(target, '', '', bind: bind)
+        driver = RDoc::RI::Driver.new(use_stdout: true)
+        IRB::RelineInputMethod.new.display_document(target, driver: driver)
       end
 
       def test_perfectly_matched_namespace_triggers_document_display

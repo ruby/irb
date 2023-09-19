@@ -253,9 +253,7 @@ module IRB
             Reline::Unicode.escape_for_print(output)
           end
         end
-      Reline.dig_perfect_match_proc = ->(matched) {
-        InputCompletor.display_perfect_matched_document(matched)
-      }
+      Reline.dig_perfect_match_proc = ->(matched) { display_document(matched) }
       Reline.autocompletion = IRB.conf[:USE_AUTOCOMPLETE]
 
       if IRB.conf[:USE_AUTOCOMPLETE]
@@ -373,6 +371,39 @@ module IRB
       y = cursor_pos_to_render.y
       Reline::DialogRenderInfo.new(pos: Reline::CursorPos.new(x, y), contents: contents, width: width, bg_color: '49')
     }
+
+    def display_document(matched, driver: nil)
+      begin
+        require 'rdoc'
+      rescue LoadError
+        return
+      end
+
+      if matched =~ /\A(?:::)?RubyVM/ and not ENV['RUBY_YES_I_AM_NOT_A_NORMAL_USER']
+        IRB.__send__(:easter_egg)
+        return
+      end
+
+      namespace = IRB::InputCompletor.retrieve_completion_doc_namespace(matched)
+      return unless namespace
+
+      driver ||= RDoc::RI::Driver.new
+      if namespace.is_a?(Array)
+        out = RDoc::Markup::Document.new
+        namespace.each do |m|
+          begin
+            driver.add_method(out, m)
+          rescue RDoc::RI::Driver::NotFoundError
+          end
+        end
+        driver.display(out)
+      else
+        begin
+          driver.display_names([namespace])
+        rescue RDoc::RI::Driver::NotFoundError
+        end
+      end
+    end
 
     # Reads the next line from this input method.
     #
