@@ -69,13 +69,49 @@ module IRB
     end
 
     def self.retrieve_completion_candidates(target, preposing, postposing, bind:)
+      # This method is always called before retrieve_completion_doc_namespace and display_perfect_matched_document.
+      # To use preposing, postposing and binding information in those methods,
+      # We need to store them as an instance of completor_class into @completor.
       @completor = completor_class.new(target, preposing, postposing, bind: bind)
       @completor.completion_candidates
     end
 
     def self.retrieve_completion_doc_namespace(target)
-      # This method is always called after retrieve_completion_candidates is called.
       @completor.doc_namespace(target)
+    end
+
+    def self.display_perfect_matched_document(matched)
+      begin
+        require 'rdoc'
+      rescue LoadError
+        return
+      end
+
+      if matched =~ /\A(?:::)?RubyVM/ and not ENV['RUBY_YES_I_AM_NOT_A_NORMAL_USER']
+        IRB.__send__(:easter_egg)
+        return
+      end
+
+      @rdoc_ri_driver ||= RDoc::RI::Driver.new
+
+      namespace = @completor.doc_namespace(matched)
+      return unless namespace
+
+      if namespace.is_a?(Array)
+        out = RDoc::Markup::Document.new
+        namespace.each do |m|
+          begin
+            @rdoc_ri_driver.add_method(out, m)
+          rescue RDoc::RI::Driver::NotFoundError
+          end
+        end
+        @rdoc_ri_driver.display(out)
+      else
+        begin
+          @rdoc_ri_driver.display_names([namespace])
+        rescue RDoc::RI::Driver::NotFoundError
+        end
+      end
     end
   end
 end

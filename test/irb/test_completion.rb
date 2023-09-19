@@ -26,6 +26,11 @@ module TestIRB
       completor.doc_namespace(target)
     end
 
+    def display_document(target, bind)
+      IRB::InputCompletor.retrieve_completion_candidates(target, '', '', bind: bind)
+      IRB::InputCompletor.display_perfect_matched_document(target)
+    end
+
     class MethodCompletionTest < CompletionTest
       def test_complete_string
         assert_include(completion_candidates("'foo'.up", binding), "'foo'.upcase")
@@ -215,9 +220,9 @@ module TestIRB
 
     class PerfectMatchingTest < CompletionTest
       def setup
-        # trigger display_perfect_matched_document to set up RDoc::RI::Driver.new
-        IRB::InputCompletor::RegexpCompletor.display_perfect_matched_document("foo", bind: binding)
-        @rdoc_ri_driver = IRB::InputCompletor::RegexpCompletor.instance_variable_get('@rdoc_ri_driver')
+        # trigger InputCompletor.display_perfect_matched_document to set up RDoc::RI::Driver.new
+        display_document('foo', binding)
+        @rdoc_ri_driver = IRB::InputCompletor.instance_variable_get('@rdoc_ri_driver')
 
         @original_use_stdout = @rdoc_ri_driver.use_stdout
         # force the driver to use stdout so it doesn't start a pager and interrupt tests
@@ -232,7 +237,7 @@ module TestIRB
         omit unless has_rdoc_content?
 
         out, err = capture_output do
-          IRB::InputCompletor::RegexpCompletor.display_perfect_matched_document("String", bind: binding)
+          display_document("String", binding)
         end
 
         assert_empty(err)
@@ -243,7 +248,7 @@ module TestIRB
       def test_perfectly_matched_multiple_namespaces_triggers_document_display
         result = nil
         out, err = capture_output do
-          result = IRB::InputCompletor::RegexpCompletor.display_perfect_matched_document("{}.nil?", bind: binding)
+          result = display_document("{}.nil?", binding)
         end
 
         assert_empty(err)
@@ -265,7 +270,7 @@ module TestIRB
       def test_not_matched_namespace_triggers_nothing
         result = nil
         out, err = capture_output do
-          result = IRB::InputCompletor::RegexpCompletor.display_perfect_matched_document("Stri", bind: binding)
+          result = display_document("Stri", binding)
         end
 
         assert_empty(err)
@@ -278,7 +283,7 @@ module TestIRB
 
         out, err = capture_output do
           without_rdoc do
-            result = IRB::InputCompletor::RegexpCompletor.display_perfect_matched_document("String", bind: binding)
+            result = display_document("String", binding)
           end
         end
 
@@ -290,7 +295,7 @@ module TestIRB
       def test_perfect_matching_handles_nil_namespace
         out, err = capture_output do
           # symbol literal has `nil` doc namespace so it's a good test subject
-          assert_nil(IRB::InputCompletor::RegexpCompletor.display_perfect_matched_document(":aiueo", bind: binding))
+          assert_nil(display_document(":aiueo", binding))
         end
 
         assert_empty(err)

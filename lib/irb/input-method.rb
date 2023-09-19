@@ -254,11 +254,7 @@ module IRB
           end
         end
       Reline.dig_perfect_match_proc = ->(matched) {
-        # Called when TAB key pressed is two times in noautocomplete mode.
-        # preposing and postposing is not available here.
-        require_relative 'completion/regexp_completor'
-        bind = IRB.conf[:MAIN_CONTEXT].workspace.binding
-        InputCompletor::RegexpCompletor.display_perfect_matched_document(matched, bind: bind)
+        InputCompletor.display_perfect_matched_document(matched)
       }
       Reline.autocompletion = IRB.conf[:USE_AUTOCOMPLETE]
 

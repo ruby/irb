@@ -104,14 +104,14 @@ module IRB
           result = complete_require_path(@target, @preposing, @postposing)
           return result if result
         end
-        RegexpCompletor.retrieve_completion_data(@target, bind: @binding, doc_namespace: false).compact.map{ |i| i.encode(Encoding.default_external) }
+        retrieve_completion_data(@target, bind: @binding, doc_namespace: false).compact.map{ |i| i.encode(Encoding.default_external) }
       end
 
       def doc_namespace(target)
-        RegexpCompletor.retrieve_completion_data(target, bind: @binding, doc_namespace: true)
+        retrieve_completion_data(target, bind: @binding, doc_namespace: true)
       end
 
-      def self.retrieve_completion_data(input, bind:, doc_namespace:)
+      def retrieve_completion_data(input, bind:, doc_namespace:)
         case input
         # this regexp only matches the closing character because of irb's Reline.completer_quote_characters setting
         # details are described in: https://github.com/ruby/irb/pull/523
@@ -349,44 +349,10 @@ module IRB
         end
       end
 
-      def self.display_perfect_matched_document(matched, bind:)
-        begin
-          require 'rdoc'
-        rescue LoadError
-          return
-        end
-
-        @rdoc_ri_driver ||= RDoc::RI::Driver.new
-
-        if matched =~ /\A(?:::)?RubyVM/ and not ENV['RUBY_YES_I_AM_NOT_A_NORMAL_USER']
-          IRB.__send__(:easter_egg)
-          return
-        end
-
-        namespace = retrieve_completion_data(matched, bind: bind, doc_namespace: true)
-        return unless namespace
-
-        if namespace.is_a?(Array)
-          out = RDoc::Markup::Document.new
-          namespace.each do |m|
-            begin
-              @rdoc_ri_driver.add_method(out, m)
-            rescue RDoc::RI::Driver::NotFoundError
-            end
-          end
-          @rdoc_ri_driver.display(out)
-        else
-          begin
-            @rdoc_ri_driver.display_names([namespace])
-          rescue RDoc::RI::Driver::NotFoundError
-          end
-        end
-      end
-
       # Set of available operators in Ruby
       Operators = %w[% & * ** + - / < << <= <=> == === =~ > >= >> [] []= ^ ! != !~]
 
-      def self.select_message(receiver, message, candidates, sep = ".")
+      def select_message(receiver, message, candidates, sep = ".")
         candidates.grep(/^#{Regexp.quote(message)}/).collect do |e|
           case e
           when /^[a-zA-Z_]/
