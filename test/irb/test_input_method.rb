@@ -26,7 +26,7 @@ module TestIRB
 
       assert_nil Reline.completion_append_character
       assert_equal '', Reline.completer_quote_characters
-      assert_equal IRB::InputCompletor::BASIC_WORD_BREAK_CHARACTERS, Reline.basic_word_break_characters
+      assert_equal IRB::InputMethod::BASIC_WORD_BREAK_CHARACTERS, Reline.basic_word_break_characters
       assert_not_nil Reline.completion_proc
       assert_not_nil Reline.dig_perfect_match_proc
     end
@@ -56,7 +56,7 @@ module TestIRB
       IRB::RelineInputMethod.new
 
       assert Reline.autocompletion
-      assert_equal IRB::RelineInputMethod::SHOW_DOC_DIALOG, Reline.dialog_proc(:show_doc).dialog_proc
+      assert_not_equal empty_proc, Reline.dialog_proc(:show_doc).dialog_proc
     ensure
       Reline.add_dialog_proc(:show_doc, original_show_doc_proc, Reline::DEFAULT_DIALOG_CONTEXT)
     end

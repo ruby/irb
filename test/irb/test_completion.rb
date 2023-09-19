@@ -17,12 +17,12 @@ module TestIRB
     end
 
     def completion_candidates(target, bind)
-      completor = IRB::InputCompletor::RegexpCompletor.new(target, '', '', bind: bind)
+      completor = IRB::RegexpCompletor.new(target, '', '', bind: bind)
       completor.completion_candidates
     end
 
     def doc_namespace(target, bind)
-      completor = IRB::InputCompletor::RegexpCompletor.new(target, '', '', bind: bind)
+      completor = IRB::RegexpCompletor.new(target, '', '', bind: bind)
       completor.doc_namespace(target)
     end
 
@@ -82,12 +82,12 @@ module TestIRB
 
     class RequireComepletionTest < CompletionTest
       def test_complete_require
-        candidates = IRB::InputCompletor.retrieve_completion_candidates("'irb", "require ", "", bind: binding)
+        candidates = IRB::RegexpCompletor.new("'irb", "require ", "", bind: binding).completion_candidates
         %w['irb/init 'irb/ruby-lex].each do |word|
           assert_include candidates, word
         end
         # Test cache
-        candidates = IRB::InputCompletor.retrieve_completion_candidates("'irb", "require ", "", bind: binding)
+        candidates = IRB::RegexpCompletor.new("'irb", "require ", "", bind: binding).completion_candidates
         %w['irb/init 'irb/ruby-lex].each do |word|
           assert_include candidates, word
         end
@@ -99,7 +99,7 @@ module TestIRB
         test_path = Pathname.new(temp_dir)
         $LOAD_PATH << test_path
 
-        candidates = IRB::InputCompletor.retrieve_completion_candidates("'foo", "require ", "", bind: binding)
+        candidates = IRB::RegexpCompletor.new("'foo", "require ", "", bind: binding).completion_candidates
         assert_include candidates, "'foo"
       ensure
         $LOAD_PATH.pop if test_path
@@ -113,7 +113,7 @@ module TestIRB
         object.define_singleton_method(:to_s) { temp_dir }
         $LOAD_PATH << object
 
-        candidates = IRB::InputCompletor.retrieve_completion_candidates("'foo", "require ", "", bind: binding)
+        candidates = IRB::RegexpCompletor.new("'foo", "require ", "", bind: binding).completion_candidates
         assert_include candidates, "'foo"
       ensure
         $LOAD_PATH.pop if object
@@ -126,27 +126,27 @@ module TestIRB
         $LOAD_PATH << object
 
         assert_nothing_raised do
-          IRB::InputCompletor.retrieve_completion_candidates("'foo", "require ", "", bind: binding)
+          IRB::RegexpCompletor.new("'foo", "require ", "", bind: binding).completion_candidates
         end
       ensure
         $LOAD_PATH.pop if object
       end
 
       def test_complete_require_library_name_first
-        candidates = IRB::InputCompletor.retrieve_completion_candidates("'csv", "require ", "", bind: binding)
+        candidates = IRB::RegexpCompletor.new("'csv", "require ", "", bind: binding).completion_candidates
         assert_equal "'csv", candidates.first
       end
 
       def test_complete_require_relative
         candidates = Dir.chdir(__dir__ + "/../..") do
-          IRB::InputCompletor.retrieve_completion_candidates("'lib/irb", "require_relative ", "", bind: binding)
+          IRB::RegexpCompletor.new("'lib/irb", "require_relative ", "", bind: binding).completion_candidates
         end
         %w['lib/irb/init 'lib/irb/ruby-lex].each do |word|
           assert_include candidates, word
         end
         # Test cache
         candidates = Dir.chdir(__dir__ + "/../..") do
-          IRB::InputCompletor.retrieve_completion_candidates("'lib/irb", "require_relative ", "", bind: binding)
+          IRB::RegexpCompletor.new("'lib/irb", "require_relative ", "", bind: binding).completion_candidates
         end
         %w['lib/irb/init 'lib/irb/ruby-lex].each do |word|
           assert_include candidates, word
@@ -223,9 +223,11 @@ module TestIRB
       end
 
       def display_document(target, bind)
-        IRB::InputCompletor.retrieve_completion_candidates(target, '', '', bind: bind)
+        completor = IRB::RegexpCompletor.new(target, '', '', bind: bind)
         driver = RDoc::RI::Driver.new(use_stdout: true)
-        IRB::RelineInputMethod.new.display_document(target, driver: driver)
+        input_method = IRB::RelineInputMethod.new
+        input_method.instance_variable_set(:@completor, completor)
+        input_method.display_document(target, driver: driver)
       end
 
       def test_perfectly_matched_namespace_triggers_document_display

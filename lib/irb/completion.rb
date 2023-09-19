@@ -10,8 +10,6 @@ require_relative 'ruby-lex'
 module IRB
   module InputCompletor # :nodoc:
 
-    BASIC_WORD_BREAK_CHARACTERS = " \t\n`><=;|&{("
-
     GEM_PATHS =
       if defined?(Gem::Specification)
         Gem::Specification.latest_specs(true).map { |s|
@@ -61,23 +59,6 @@ module IRB
       @@files_from_current_dir ||= Dir.glob("**/*.{rb,#{RbConfig::CONFIG['DLEXT']}}", base: '.').map { |path|
         path.sub(/\.(rb|#{RbConfig::CONFIG['DLEXT']})\z/, '')
       }
-    end
-
-    def self.completor_class
-      require_relative 'completion/regexp_completor'
-      RegexpCompletor
-    end
-
-    def self.retrieve_completion_candidates(target, preposing, postposing, bind:)
-      # This method is always called before retrieve_completion_doc_namespace.
-      # To use preposing, postposing and binding information in those methods,
-      # We need to store them as an instance of completor_class into @completor.
-      @completor = completor_class.new(target, preposing, postposing, bind: bind)
-      @completor.completion_candidates
-    end
-
-    def self.retrieve_completion_doc_namespace(target)
-      @completor.doc_namespace(target)
     end
   end
 end
