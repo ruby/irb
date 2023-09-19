@@ -443,11 +443,4 @@ module IRB
       }
     end
   end
-
-  begin
-    require 'rdoc/ri/driver'
-    InputCompletor = RegexpCompletor.new(RDoc::RI::Driver.new)
-  rescue LoadError
-    InputCompletor = RegexpCompletor.new(nil)
-  end
 end

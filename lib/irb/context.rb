@@ -79,6 +79,7 @@ module IRB
       end
       @irb_path = "(" + @irb_name + ")"
 
+      completor = initialize_completor
       case input_method
       when nil
         @io = nil
@@ -86,21 +87,21 @@ module IRB
         when nil
           if STDIN.tty? && IRB.conf[:PROMPT_MODE] != :INF_RUBY && !use_singleline?
             # Both of multiline mode and singleline mode aren't specified.
-            @io = RelineInputMethod.new
+            @io = RelineInputMethod.new(completor: completor)
           else
             @io = nil
           end
         when false
           @io = nil
         when true
-          @io = RelineInputMethod.new
+          @io = RelineInputMethod.new(completor: completor)
         end
         unless @io
           case use_singleline?
           when nil
             if (defined?(ReadlineInputMethod) && STDIN.tty? &&
                 IRB.conf[:PROMPT_MODE] != :INF_RUBY)
-              @io = ReadlineInputMethod.new
+              @io = ReadlineInputMethod.new(completor: completor)
             else
               @io = nil
             end
@@ -108,7 +109,7 @@ module IRB
             @io = nil
           when true
             if defined?(ReadlineInputMethod)
-              @io = ReadlineInputMethod.new
+              @io = ReadlineInputMethod.new(completor: completor)
             else
               @io = nil
             end
@@ -147,6 +148,13 @@ module IRB
       end
 
       @command_aliases = IRB.conf[:COMMAND_ALIASES]
+    end
+
+    def initialize_completor
+      require 'rdoc/ri/driver'
+      RegexpCompletor.new(RDoc::RI::Driver.new)
+    rescue LoadError
+      RegexpCompletor.new(nil)
     end
 
     def save_history=(val)

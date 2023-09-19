@@ -172,13 +172,13 @@ module IRB
     include HistorySavingAbility
 
     # Creates a new input method object using Readline
-    def initialize
+    def initialize(completor:)
       self.class.initialize_readline
       if Readline.respond_to?(:encoding_system_needs)
         IRB.__send__(:set_encoding, Readline.encoding_system_needs.name, override: false)
       end
 
-      super
+      super()
 
       @eof = false
 
@@ -186,7 +186,7 @@ module IRB
         Readline.basic_word_break_characters = BASIC_WORD_BREAK_CHARACTERS
       end
       Readline.completion_append_character = nil
-      Readline.completion_proc = IRB::InputCompletor.method(:complete)
+      Readline.completion_proc = completor.method(:complete)
     end
 
     # Reads the next line from this input method.
@@ -226,17 +226,18 @@ module IRB
     HISTORY = Reline::HISTORY
     include HistorySavingAbility
     # Creates a new input method object using Reline
-    def initialize
+    def initialize(completor:)
       IRB.__send__(:set_encoding, Reline.encoding_system_needs.name, override: false)
 
-      super
+      super()
 
       @eof = false
+      @completor = completor
 
       Reline.basic_word_break_characters = BASIC_WORD_BREAK_CHARACTERS
       Reline.completion_append_character = nil
       Reline.completer_quote_characters = ''
-      Reline.completion_proc = IRB::InputCompletor.method(:complete)
+      Reline.completion_proc = @completor.method(:complete)
       Reline.output_modifier_proc =
         if IRB.conf[:USE_COLORIZE]
           proc do |output, complete: |
@@ -249,13 +250,13 @@ module IRB
             Reline::Unicode.escape_for_print(output)
           end
         end
-      Reline.dig_perfect_match_proc = IRB::InputCompletor.method(:display_doc)
+      Reline.dig_perfect_match_proc = @completor.method(:display_doc)
       Reline.autocompletion = IRB.conf[:USE_AUTOCOMPLETE]
 
       if IRB.conf[:USE_AUTOCOMPLETE]
         begin
           require 'rdoc'
-          Reline.add_dialog_proc(:show_doc, SHOW_DOC_DIALOG, Reline::DEFAULT_DIALOG_CONTEXT)
+          Reline.add_dialog_proc(:show_doc, show_doc_proc, Reline::DEFAULT_DIALOG_CONTEXT)
         rescue LoadError
         end
       end
@@ -273,100 +274,104 @@ module IRB
       @auto_indent_proc = block
     end
 
-    SHOW_DOC_DIALOG = ->() {
-      dialog.trap_key = nil
-      alt_d = [
-        [Reline::Key.new(nil, 0xE4, true)], # Normal Alt+d.
-        [27, 100], # Normal Alt+d when convert-meta isn't used.
-        [195, 164], # The "ä" that appears when Alt+d is pressed on xterm.
-        [226, 136, 130] # The "∂" that appears when Alt+d in pressed on iTerm2.
-      ]
+    def show_doc_proc
+      completor = @completor
 
-      if just_cursor_moving and completion_journey_data.nil?
-        return nil
-      end
-      cursor_pos_to_render, result, pointer, autocomplete_dialog = context.pop(4)
-      return nil if result.nil? or pointer.nil? or pointer < 0
-      name = result[pointer]
-      name = IRB::InputCompletor.retrieve_completion_data(name, doc_namespace: true)
+      ->() {
+        dialog.trap_key = nil
+        alt_d = [
+          [Reline::Key.new(nil, 0xE4, true)], # Normal Alt+d.
+          [27, 100], # Normal Alt+d when convert-meta isn't used.
+          [195, 164], # The "ä" that appears when Alt+d is pressed on xterm.
+          [226, 136, 130] # The "∂" that appears when Alt+d in pressed on iTerm2.
+        ]
 
-      options = {}
-      options[:extra_doc_dirs] = IRB.conf[:EXTRA_DOC_DIRS] unless IRB.conf[:EXTRA_DOC_DIRS].empty?
-      driver = RDoc::RI::Driver.new(options)
-
-      if key.match?(dialog.name)
-        begin
-          driver.display_names([name])
-        rescue RDoc::RI::Driver::NotFoundError
+        if just_cursor_moving and completion_journey_data.nil?
+          return nil
         end
-      end
+        cursor_pos_to_render, result, pointer, autocomplete_dialog = context.pop(4)
+        return nil if result.nil? or pointer.nil? or pointer < 0
+        name = result[pointer]
+        name = completor.retrieve_completion_data(name, doc_namespace: true)
 
-      begin
-        name = driver.expand_name(name)
-      rescue RDoc::RI::Driver::NotFoundError
-        return nil
-      rescue
-        return nil # unknown error
-      end
-      doc = nil
-      used_for_class = false
-      if not name =~ /#|\./
-        found, klasses, includes, extends = driver.classes_and_includes_and_extends_for(name)
-        if not found.empty?
-          doc = driver.class_document(name, found, klasses, includes, extends)
-          used_for_class = true
+        options = {}
+        options[:extra_doc_dirs] = IRB.conf[:EXTRA_DOC_DIRS] unless IRB.conf[:EXTRA_DOC_DIRS].empty?
+        driver = RDoc::RI::Driver.new(options)
+
+        if key.match?(dialog.name)
+          begin
+            driver.display_names([name])
+          rescue RDoc::RI::Driver::NotFoundError
+          end
         end
-      end
-      unless used_for_class
-        doc = RDoc::Markup::Document.new
+
         begin
-          driver.add_method(doc, name)
+          name = driver.expand_name(name)
         rescue RDoc::RI::Driver::NotFoundError
-          doc = nil
+          return nil
         rescue
           return nil # unknown error
         end
-      end
-      return nil if doc.nil?
-      width = 40
+        doc = nil
+        used_for_class = false
+        if not name =~ /#|\./
+          found, klasses, includes, extends = driver.classes_and_includes_and_extends_for(name)
+          if not found.empty?
+            doc = driver.class_document(name, found, klasses, includes, extends)
+            used_for_class = true
+          end
+        end
+        unless used_for_class
+          doc = RDoc::Markup::Document.new
+          begin
+            driver.add_method(doc, name)
+          rescue RDoc::RI::Driver::NotFoundError
+            doc = nil
+          rescue
+            return nil # unknown error
+          end
+        end
+        return nil if doc.nil?
+        width = 40
 
-      right_x = cursor_pos_to_render.x + autocomplete_dialog.width
-      if right_x + width > screen_width
-        right_width = screen_width - (right_x + 1)
-        left_x = autocomplete_dialog.column - width
-        left_x = 0 if left_x < 0
-        left_width = width > autocomplete_dialog.column ? autocomplete_dialog.column : width
-        if right_width.positive? and left_width.positive?
-          if right_width >= left_width
+        right_x = cursor_pos_to_render.x + autocomplete_dialog.width
+        if right_x + width > screen_width
+          right_width = screen_width - (right_x + 1)
+          left_x = autocomplete_dialog.column - width
+          left_x = 0 if left_x < 0
+          left_width = width > autocomplete_dialog.column ? autocomplete_dialog.column : width
+          if right_width.positive? and left_width.positive?
+            if right_width >= left_width
+              width = right_width
+              x = right_x
+            else
+              width = left_width
+              x = left_x
+            end
+          elsif right_width.positive? and left_width <= 0
             width = right_width
             x = right_x
-          else
+          elsif right_width <= 0 and left_width.positive?
             width = left_width
             x = left_x
+          else # Both are negative width.
+            return nil
           end
-        elsif right_width.positive? and left_width <= 0
-          width = right_width
+        else
           x = right_x
-        elsif right_width <= 0 and left_width.positive?
-          width = left_width
-          x = left_x
-        else # Both are negative width.
-          return nil
         end
-      else
-        x = right_x
-      end
-      formatter = RDoc::Markup::ToAnsi.new
-      formatter.width = width
-      dialog.trap_key = alt_d
-      mod_key = RUBY_PLATFORM.match?(/darwin/) ? "Option" : "Alt"
-      message = "Press #{mod_key}+d to read the full document"
-      contents = [message] + doc.accept(formatter).split("\n")
-      contents = contents.take(preferred_dialog_height)
+        formatter = RDoc::Markup::ToAnsi.new
+        formatter.width = width
+        dialog.trap_key = alt_d
+        mod_key = RUBY_PLATFORM.match?(/darwin/) ? "Option" : "Alt"
+        message = "Press #{mod_key}+d to read the full document"
+        contents = [message] + doc.accept(formatter).split("\n")
+        contents = contents.take(preferred_dialog_height)
 
-      y = cursor_pos_to_render.y
-      Reline::DialogRenderInfo.new(pos: Reline::CursorPos.new(x, y), contents: contents, width: width, bg_color: '49')
-    }
+        y = cursor_pos_to_render.y
+        Reline::DialogRenderInfo.new(pos: Reline::CursorPos.new(x, y), contents: contents, width: width, bg_color: '49')
+      }
+    end
 
     # Reads the next line from this input method.
     #
