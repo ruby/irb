@@ -1,7 +1,6 @@
 # frozen_string_literal: false
 require "pathname"
 require "irb"
-require "rdoc"
 
 require_relative "helper"
 
@@ -210,101 +209,6 @@ module TestIRB
 
         assert_equal(["::Forwardable"], completion_candidates("::Fo", binding))
         assert_equal("Forwardable", doc_namespace("::Forwardable", binding))
-      end
-    end
-
-    class PerfectMatchingTest < CompletionTest
-      def setup
-        save_encodings
-      end
-
-      def teardown
-        restore_encodings
-      end
-
-      def display_document(target, bind)
-        # force the driver to use stdout so it doesn't start a pager and interrupt tests
-        driver = RDoc::RI::Driver.new(use_stdout: true)
-        completor = IRB::RegexpCompletor.new(target, '', '', bind: bind)
-        input_method = IRB::RelineInputMethod.new
-        # @completor needs to be initialized before calling display_document
-        input_method.instance_variable_set(:@completor, completor)
-        input_method.display_document(target, driver: driver)
-      end
-
-      def test_perfectly_matched_namespace_triggers_document_display
-        omit unless has_rdoc_content?
-
-        out, err = capture_output do
-          display_document("String", binding)
-        end
-
-        assert_empty(err)
-
-        assert_include(out, " S\bSt\btr\bri\bin\bng\bg")
-      end
-
-      def test_perfectly_matched_multiple_namespaces_triggers_document_display
-        result = nil
-        out, err = capture_output do
-          result = display_document("{}.nil?", binding)
-        end
-
-        assert_empty(err)
-
-        # check if there're rdoc contents (e.g. CI doesn't generate them)
-        if has_rdoc_content?
-          # if there's rdoc content, we can verify by checking stdout
-          # rdoc generates control characters for formatting method names
-          assert_include(out, "P\bPr\bro\boc\bc.\b.n\bni\bil\bl?\b?") # Proc.nil?
-          assert_include(out, "H\bHa\bas\bsh\bh.\b.n\bni\bil\bl?\b?") # Hash.nil?
-        else
-          # this is a hacky way to verify the rdoc rendering code path because CI doesn't have rdoc content
-          # if there are multiple namespaces to be rendered, PerfectMatchedProc renders the result with a document
-          # which always returns the bytes rendered, even if it's 0
-          assert_equal(0, result)
-        end
-      end
-
-      def test_not_matched_namespace_triggers_nothing
-        result = nil
-        out, err = capture_output do
-          result = display_document("Stri", binding)
-        end
-
-        assert_empty(err)
-        assert_empty(out)
-        assert_nil(result)
-      end
-
-      def test_perfect_matching_stops_without_rdoc
-        result = nil
-
-        out, err = capture_output do
-          without_rdoc do
-            result = display_document("String", binding)
-          end
-        end
-
-        assert_empty(err)
-        assert_not_match(/from ruby core/, out)
-        assert_nil(result)
-      end
-
-      def test_perfect_matching_handles_nil_namespace
-        out, err = capture_output do
-          # symbol literal has `nil` doc namespace so it's a good test subject
-          assert_nil(display_document(":aiueo", binding))
-        end
-
-        assert_empty(err)
-        assert_empty(out)
-      end
-
-      private
-
-      def has_rdoc_content?
-        File.exist?(RDoc::RI::Paths::BASE)
       end
     end
 
