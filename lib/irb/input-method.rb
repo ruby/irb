@@ -5,7 +5,6 @@
 #
 
 require_relative 'completion'
-require_relative 'completion/regexp_completor'
 require_relative "history"
 require 'io/console'
 require 'reline'

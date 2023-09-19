@@ -1,7 +1,7 @@
 # frozen_string_literal: false
 require "pathname"
 require "irb"
-require "irb/completion/regexp_completor"
+require "rdoc"
 
 require_relative "helper"
 
@@ -9,7 +9,7 @@ module TestIRB
   class CompletionTest < TestCase
     def setup
       # make sure require completion candidates are not cached
-      IRB::InputCompletor.class_variable_set(:@@files_from_load_path, nil)
+      IRB::BaseCompletor.class_variable_set(:@@files_from_load_path, nil)
     end
 
     def teardown
@@ -223,9 +223,11 @@ module TestIRB
       end
 
       def display_document(target, bind)
-        completor = IRB::RegexpCompletor.new(target, '', '', bind: bind)
+        # force the driver to use stdout so it doesn't start a pager and interrupt tests
         driver = RDoc::RI::Driver.new(use_stdout: true)
+        completor = IRB::RegexpCompletor.new(target, '', '', bind: bind)
         input_method = IRB::RelineInputMethod.new
+        # @completor needs to be initialized before calling display_document
         input_method.instance_variable_set(:@completor, completor)
         input_method.display_document(target, driver: driver)
       end
