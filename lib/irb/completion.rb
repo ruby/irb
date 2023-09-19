@@ -8,7 +8,21 @@
 require_relative 'ruby-lex'
 
 module IRB
-  class RegexpCompletor # :nodoc:
+  class BaseCompletor
+    def complete(target, preposing = nil, postposing = nil)
+      raise NotImplementedError
+    end
+
+    def display_doc(matched, bind: IRB.conf[:MAIN_CONTEXT].workspace.binding)
+      raise NotImplementedError
+    end
+
+    def retrieve_completion_data(input, bind: IRB.conf[:MAIN_CONTEXT].workspace.binding, doc_namespace: false)
+      raise NotImplementedError
+    end
+  end
+
+  class RegexpCompletor < BaseCompletor
     using Module.new {
       refine ::Binding do
         def eval_methods
@@ -33,83 +47,10 @@ module IRB
       end
     }
 
-    # Set of reserved words used by Ruby, you should not use these for
-    # constants or variables
-    ReservedWords = %w[
-      __ENCODING__ __LINE__ __FILE__
-      BEGIN END
-      alias and
-      begin break
-      case class
-      def defined? do
-      else elsif end ensure
-      false for
-      if in
-      module
-      next nil not
-      or
-      redo rescue retry return
-      self super
-      then true
-      undef unless until
-      when while
-      yield
-    ]
-
-    GEM_PATHS =
-      if defined?(Gem::Specification)
-        Gem::Specification.latest_specs(true).map { |s|
-          s.require_paths.map { |p|
-            if File.absolute_path?(p)
-              p
-            else
-              File.join(s.full_gem_path, p)
-            end
-          }
-        }.flatten
-      else
-        []
-      end.freeze
-
     attr_reader :rdoc_driver
 
     def initialize(rdoc_driver)
       @rdoc_driver = rdoc_driver
-    end
-
-    def complete_require(target, preposing = nil, postposing = nil)
-      if target =~ /\A(['"])([^'"]+)\Z/
-        quote = $1
-        actual_target = $2
-      else
-        return nil # It's not String literal
-      end
-      tokens = RubyLex.ripper_lex_without_warning(preposing.gsub(/\s*\z/, ''))
-      tok = nil
-      tokens.reverse_each do |t|
-        unless [:on_lparen, :on_sp, :on_ignored_sp, :on_nl, :on_ignored_nl, :on_comment].include?(t.event)
-          tok = t
-          break
-        end
-      end
-      result = []
-      if tok && tok.event == :on_ident && tok.state == Ripper::EXPR_CMDARG
-        case tok.tok
-        when 'require'
-          result = retrieve_files_to_require_from_load_path.select { |path|
-            path.start_with?(actual_target)
-          }.map { |path|
-            quote + path
-          }
-        when 'require_relative'
-          result = retrieve_files_to_require_relative_from_current_dir.select { |path|
-            path.start_with?(actual_target)
-          }.map { |path|
-            quote + path
-          }
-        end
-      end
-      result
     end
 
     def complete(target, preposing = nil, postposing = nil)
@@ -392,6 +333,44 @@ module IRB
 
     private
 
+    # Set of reserved words used by Ruby, you should not use these for
+    # constants or variables
+    ReservedWords = %w[
+      __ENCODING__ __LINE__ __FILE__
+      BEGIN END
+      alias and
+      begin break
+      case class
+      def defined? do
+      else elsif end ensure
+      false for
+      if in
+      module
+      next nil not
+      or
+      redo rescue retry return
+      self super
+      then true
+      undef unless until
+      when while
+      yield
+    ]
+
+    GEM_PATHS =
+      if defined?(Gem::Specification)
+        Gem::Specification.latest_specs(true).map { |s|
+          s.require_paths.map { |p|
+            if File.absolute_path?(p)
+              p
+            else
+              File.join(s.full_gem_path, p)
+            end
+          }
+        }.flatten
+      else
+        []
+      end.freeze
+
     # Set of available operators in Ruby
     Operators = %w[% & * ** + - / < << <= <=> == === =~ > >= >> [] []= ^ ! != !~]
 
@@ -405,6 +384,41 @@ module IRB
           #receiver + " " + e
         end
       end
+    end
+
+    def complete_require(target, preposing = nil, postposing = nil)
+      if target =~ /\A(['"])([^'"]+)\Z/
+        quote = $1
+        actual_target = $2
+      else
+        return nil # It's not String literal
+      end
+      tokens = RubyLex.ripper_lex_without_warning(preposing.gsub(/\s*\z/, ''))
+      tok = nil
+      tokens.reverse_each do |t|
+        unless [:on_lparen, :on_sp, :on_ignored_sp, :on_nl, :on_ignored_nl, :on_comment].include?(t.event)
+          tok = t
+          break
+        end
+      end
+      result = []
+      if tok && tok.event == :on_ident && tok.state == Ripper::EXPR_CMDARG
+        case tok.tok
+        when 'require'
+          result = retrieve_files_to_require_from_load_path.select { |path|
+            path.start_with?(actual_target)
+          }.map { |path|
+            quote + path
+          }
+        when 'require_relative'
+          result = retrieve_files_to_require_relative_from_current_dir.select { |path|
+            path.start_with?(actual_target)
+          }.map { |path|
+            quote + path
+          }
+        end
+      end
+      result
     end
 
     def retrieve_gem_and_system_load_path
