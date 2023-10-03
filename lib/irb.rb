@@ -127,6 +127,44 @@ require_relative "irb/debug"
 # If the search fails, there is no configuration file,
 # and \IRB begins with its default configuration settings.
 #
+# If command-line option <tt>-f</tt> is given,
+# no configuration file is looked for.
+#
+# === Auto Indentation
+#
+# An \IRB session has an auto-indentation setting.
+#
+#
+# The current setting is returned
+# by the configuration method <tt>conf.auto_indent_mode</tt>.
+#
+# The default initial setting is <tt>true</tt>:
+#
+#   irb(main):005:0> conf.auto_indent_mode
+#   => true
+#
+# You may change the initial setting in the
+# configuration file with:
+#
+#   IRB.conf[:AUTO_INDENT] = false
+#
+# With that done, the initial setting is changed:
+#
+#   irb(main):001:0> conf.auto_indent_mode
+#   => false
+#
+# You may change the current setting at any time
+# with configuration method <tt>conf.auto_indent_mode=</tt>:
+#
+#   irb(main):002:0> conf.auto_indent_mode = true
+#   => true
+#   irb(main):003:0> conf.auto_indent_mode
+#   => true
+#
+# Note that the _current_ setting <i>may not</i>
+# be changed by <tt>IRB.conf[:AUTO_INDENT] = '_value_'</tt>
+# in the \IRB session.
+#
 # === Application Name
 #
 # An \IRB session has an application name.
