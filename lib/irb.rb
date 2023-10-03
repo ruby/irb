@@ -21,6 +21,148 @@ require_relative "irb/version"
 require_relative "irb/easter-egg"
 require_relative "irb/debug"
 
+# \Module \IRB provides direct user interaction with Ruby.
+#
+# \IRB is an interactive programming environment that operates as a
+# <i>read-eval-print</i> ({REPL}[https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop]) loop;
+#
+# \IRB:
+#
+# - Reads the Ruby code you type.
+# - Evaluates the code.
+# - Prints the last returned value from the code.
+#
+# The typed input may also include
+# {\IRB-specific commands}[rdoc-ref:IRB@IRB-Specific+Commands].
+#
+# By default, \IRB includes line numbers in its prompts.
+#
+# Example:
+#
+#   $ irb
+#   irb(main):001:0> 2 + 2 # Add some integers.
+#   => 4
+#
+# \IRB evaluates when and only when it has read a syntactically complete passage;
+#
+#   irb(main):002:1* Dir.entries('.').select do |entry|
+#   irb(main):003:1*   entry.start_with?('R')
+#   irb(main):004:0> end
+#   => ["README.md", "Rakefile"]
+#
+# A trailing asterisk (<tt>'*'</tt>) in a prompt
+# indicates that \IRB has not yet read a syntactically complete passage.
+#
+# == Starting and Stopping \IRB
+#
+# As seen above, \IRB may be started by using the shell command +irb+;
+# you can stop it by typing +exit+:
+#
+#   irb(main):005:0> exit
+#   $
+#
+# == The \IRB Command Line
+#
+# The shell command +irb+ may be followed by:
+#
+# - {Command-Line Options}[rdoc-ref:IRB@Command-Line+Options].
+# - {Initialization Script Filepath}[rdoc-ref:IRB@Initialization+Script+Filepath].
+# - {Command-Line Arguments}[rdoc-ref:IRB@Command-Line+Arguments].
+#
+# === Command-Line Options
+#
+# A cursory list of the \IRB command-line options
+# may be seen in the {help message}[rdoc-ref:lib/irb/lc/help-message],
+# which is also displayed if you use command-line option <tt>--help</tt>.
+#
+# Details of the options are described in the relevant subsections
+# in {Configuration}[rdoc-ref:IRB@Configuration].
+#
+# === Initialization Script Filepath
+#
+# By default, the first command-line argument (after any options)
+# is the path to a Ruby initialization script,
+# which is a script to be executed as the \IRB process begins.
+#
+# The script may contain any Ruby code, and may usefully be
+# user code that:
+#
+# - Can then be debugged in \IRB.
+# - Configures \IRB itself.
+# - Requires or loads files.
+#
+# === Command-Line Arguments
+#
+# Command-line option <tt>--noscript</tt> causes the first command-line argument
+# to be treated as an ordinary argument (instead of an initialization script).
+#
+# Command-line arguments are passed to \IRB in array +ARGV+:
+#
+#   $ irb --noscript Foo Bar Baz
+#   ARGV
+#   # => ["Foo", "Bar", "Baz"]
+#
+# Command-line option <tt>--</tt> causes everything that follows
+# to be treated as arguments, even those that look like options:
+#
+#   $ irb --noscript -- --noscript -- Foo Bar Baz
+#   ARGV
+#   # => ["--noscript", "--", "Foo", "Bar", "Baz"]
+#
+# == Configuration
+#
+# \IRB reads and interprets a configuration file
+# if one is available.
+#
+# The path to the configuration file is the first found among:
+#
+# - The value of variable <tt>$IRBRC</tt>, if defined.
+# - The value of variable <tt>$XDG_CONFIG_HOME/irb/irbrc</tt>, if defined.
+# - File +.config/irb/irbrc+, if it exists.
+# - File +.irbrc+, if it exists.
+# - File +irb.rc+, if it exists.
+# - File +_irbrc+, if it exists.
+# - The value of variable <tt>$irbrc</tt>, if defined.
+#
+# If the search fails, there is no configuration file,
+# and \IRB begins with its default configuration settings.
+#
+# === Application Name
+#
+# An \IRB session has an application name.
+#
+# The current application name is returned
+# by the configuration method <tt>conf.ap_name</tt>.
+#
+# The default initial application name is <tt>'irb'</tt>:
+#
+#   irb(main):001:0> conf.ap_name
+#   => "irb"
+#
+# You may change the initial application name in the
+# configuration file with:
+#
+#   IRB.conf[:AP_NAME] = 'foo'
+#
+# With that done, the initial application name is changed:
+#
+#   irb(main):001:0> conf.ap_name
+#   => "foo"
+#
+# You may change the current application name at any time
+# with configuration method <tt>conf.ap_name=</tt>:
+#
+#   irb(main):002:0> conf.ap_name = 'bar'
+#   => "bar"
+#   irb(main):003:0> conf.ap_name
+#   => "bar"
+#
+# Note that the _current_ application name <i>may not</i>
+# be changed by <tt>IRB.conf[:AP_NAME] = '_value_'</tt>
+# in the \IRB session.
+#
+# == Old Doc
+#
 # IRB stands for "interactive Ruby" and is a tool to interactively execute Ruby
 # expressions read from the standard input.
 #
@@ -254,7 +396,7 @@ require_relative "irb/debug"
 # You can create new sessions with Irb.irb, and get a list of current sessions
 # with the +jobs+ command in the prompt.
 #
-# === Commands
+# === \IRB-Specific Commands
 #
 # JobManager provides commands to handle the current sessions:
 #

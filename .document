@@ -2,3 +2,4 @@ LICENSE.txt
 README.md
 doc
 lib/**/*.rb
+lib/irb/lc/help-message
