@@ -132,16 +132,21 @@ require_relative "irb/debug"
 #
 # === Auto Indentation
 #
-# An \IRB session has an auto-indentation setting.
-#
+# An \IRB configuration has a boolean auto-indentation setting,
+# which determines whether \IRB automatically indents lines to show structure;
+# see examples below.
 #
 # The current setting is returned
 # by the configuration method <tt>conf.auto_indent_mode</tt>.
 #
 # The default initial setting is <tt>true</tt>:
 #
-#   irb(main):005:0> conf.auto_indent_mode
+#   irb(main):001:0> conf.auto_indent_mode
 #   => true
+#   irb(main):002:1* Dir.entries('.').select do |entry|
+#   irb(main):003:1*   entry.start_with?('R')
+#   irb(main):004:0> end
+#   => ["README.md", "Rakefile"]
 #
 # You may change the initial setting in the
 # configuration file with:
@@ -152,6 +157,10 @@ require_relative "irb/debug"
 #
 #   irb(main):001:0> conf.auto_indent_mode
 #   => false
+#   irb(main):002:1* Dir.entries('.').select do |entry|
+#   irb(main):003:1* entry.start_with?('R')
+#   irb(main):004:0> end
+#   => ["README.md", "Rakefile"]
 #
 # You may change the current setting at any time
 # with configuration method <tt>conf.auto_indent_mode=</tt>:
@@ -165,29 +174,81 @@ require_relative "irb/debug"
 # be changed by <tt>IRB.conf[:AUTO_INDENT] = '_value_'</tt>
 # in the \IRB session.
 #
+# === Command Aliases
+#
+# An \IRB configuration has a hash of command aliases.
+#
+# The current aliases are returned
+# by the configuration method <tt>conf.command_aliases</tt>.
+#
+# The default initial aliases:
+#
+#   irb(main):001:0> conf.command_aliases
+#   => {:"$"=>:show_source, :"@"=>:whereami, :break=>:irb_break, :catch=>:irb_catch, :next=>:irb_next}
+#
+# You may change the initial aliases in the
+# configuration file with:
+#
+#   IRB.conf[:COMMAND_ALIASES] = {foo: :show_source, bar: :whereami}
+#
+# With that done, the initial aliases are changed:
+#
+#   irb(main):001:0> conf.command_aliases
+#   => {:foo=>:show_source, :bar=>:whereami}
+#
+# You may replace the current aliases at any time
+# with configuration method <tt>conf.command_aliases=</tt>:
+#
+#   irb(main):002:0> conf.command_aliases = {baz: :show_source}
+#   => {:baz=>:show_source}
+#   irb(main):003:0> conf.command_aliases
+#   => {:baz=>:show_source}
+#   irb(main):004:0> conf.command_aliases = {}
+#   => {}
+#   irb(main):005:0> conf.command_aliases
+#   => {}
+#
+# Because <tt>conf.command_aliases</tt> is a hash,
+# you can modify it:
+#
+#   irb(main):006:0> conf.command_aliases[:foo] = :show_source
+#   => :show_source
+#   irb(main):007:0> conf.command_aliases[:bar] = :whereami
+#   => :whereami
+#   irb(main):008:0> conf.command_aliases
+#   => {:foo=>:show_source, :bar=>:whereami}
+#   irb(main):009:0> conf.command_aliases.delete(:foo)
+#   => nil
+#   irb(main):010:0> conf.command_aliases
+#   => {:bar=>:whereami}
+#
+# Note that the _current_ aliases <i>may not</i>
+# be changed by <tt>IRB.conf[:COMMAND_ALIASES] = hash</tt>
+# in the \IRB session.
+#
 # === Application Name
 #
-# An \IRB session has an application name.
+# An \IRB configuration has a string application name.
 #
-# The current application name is returned
+# The current name is returned
 # by the configuration method <tt>conf.ap_name</tt>.
 #
-# The default initial application name is <tt>'irb'</tt>:
+# The default initial name is <tt>'irb'</tt>:
 #
 #   irb(main):001:0> conf.ap_name
 #   => "irb"
 #
-# You may change the initial application name in the
+# You may change the initial name in the
 # configuration file with:
 #
 #   IRB.conf[:AP_NAME] = 'foo'
 #
-# With that done, the initial application name is changed:
+# With that done, the initial name is changed:
 #
 #   irb(main):001:0> conf.ap_name
 #   => "foo"
 #
-# You may change the current application name at any time
+# You may change the current name at any time
 # with configuration method <tt>conf.ap_name=</tt>:
 #
 #   irb(main):002:0> conf.ap_name = 'bar'
@@ -195,8 +256,49 @@ require_relative "irb/debug"
 #   irb(main):003:0> conf.ap_name
 #   => "bar"
 #
-# Note that the _current_ application name <i>may not</i>
+# Note that the _current_ name <i>may not</i>
 # be changed by <tt>IRB.conf[:AP_NAME] = '_value_'</tt>
+# in the \IRB session.
+#
+# === Back Trace Limit
+#
+# An \IRB configuration has an integer back trace limit +n+,
+# which specifies that the backtrace for an exception
+# may contain no more than 2 * +n+ entries,
+# consisting at most of the first +n+ and last +n+ entries.
+#
+# The current limit is returned
+# by the configuration method <tt>conf.back_trace_limit</tt>.
+#
+# The default initial limit is <tt>'irb'</tt>:
+#
+#   irb(main):008:0> conf.back_trace_limit
+#   => 16
+#
+# You may change the initial limit with command-line option <tt>--back_trace_limit _value_</tt>:
+#
+#   irb --back_trace_limit 32
+#
+# If the option is not given, you may change the initial limit in the
+# configuration file with:
+#
+#   IRB.conf[:BACK_TRACE_LIMIT] = 32
+#
+# With either of these done, the initial limit is changed:
+#
+#   irb(main):001:0> conf.back_trace_limit
+#   => 32
+#
+# You may change the current limit at any time
+# with configuration method <tt>conf.back_trace_limit=</tt>:
+#
+#   irb(main):002:0> conf.back_trace_limit = 24
+#   => 24
+#   irb(main):003:0> conf.back_trace_limit
+#   => 24
+#
+# Note that the _current_ limit <i>may not</i>
+# be changed by <tt>IRB.conf[:BACK_TRACE_LIMIT] = '_value_'</tt>
 # in the \IRB session.
 #
 # == Old Doc
