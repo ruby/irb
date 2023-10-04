@@ -26,8 +26,9 @@ require_relative "irb/debug"
 # == The REPL Loop
 #
 # \IRB is an interactive programming environment that operates as a
-# <i>read-eval-print</i> ({REPL}[https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop]) loop;
-# \IRB:
+# <i>read-eval-print</i>
+# ({REPL}[https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop])
+# loop that:
 #
 # - Reads the Ruby code you type.
 # - Evaluates the code.
@@ -153,7 +154,7 @@ require_relative "irb/debug"
 # The configuration file is read as Ruby code,
 # and so may contain any Ruby programming you like.
 #
-# == \Hash <tt>IRB.conf</tt>
+# === \Hash <tt>IRB.conf</tt>
 #
 # Importantly, the configuration file may create, delete, or modify entries
 # in hash <tt>IRB.conf</tt>,
@@ -167,7 +168,75 @@ require_relative "irb/debug"
 #
 # You can see the hash by typing <tt>IRB.conf</tt>.
 #
-# === Auto Indentation
+# === Return-Value Printing (Echoing)
+#
+# An \IRB configuration has settings that determine
+# whether and how \IRB prints return values:
+#
+# - The value of <tt>conf.echo</tt> determines whether
+#   \IRB prints the return values.
+#
+#   The default initial setting is +true+:
+#
+#     irb(main):001:0> conf.echo
+#     => true
+#     irb(main):002:0> 1 + 1
+#     => 2
+#
+#   You may change the initial setting in the
+#   configuration file with:
+#
+#     IRB.conf[:ECHO] = false
+#
+#   With that done, the initial setting is changed:
+#
+#     $ irb
+#     irb(main):001:0> 1 + 1
+#
+#   Note that if <tt>IRB.conf[:ECHO] is +nil+ (its default value),
+#   the value of <tt>conf.echo</tt> will nevertheless be +true+.
+#
+#   You may change the current setting at any time
+#   with configuration method <tt>conf.echo=</tt>:
+#
+#     irb(main):002:0> conf.echo = false
+#     irb(main):003:0> 1 + 1
+#
+#   Note that the _current_ setting <i>may not</i>
+#   be changed by <tt>IRB.conf[:ECHO] = '_value_'</tt>
+#   in the \IRB session.
+#
+# - If the value of <tt>conf.echo</tt> is +false+,
+#   the value of <tt>conf.echo_on_assignment</tt> is ignored;
+#   otherwise, that value determines whether and how
+#   \IRB prints the return value for a non-assignment.
+#
+#   The default initial setting is +:truncate+,
+#   which means that the echoed return value will end with a 3-period ellipsis
+#   (<tt>...</tt>), and will fit on one line in your window:
+#
+#     irb(main):004:0> x = 'abc' * 100
+#     => "abcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcab...
+#
+#   You may change the initial setting in the
+#   configuration file with by assigning
+#   <tt>IRB.conf[:ECHO_ON_ASSIGNMENT]</tt> one of the following values:
+#
+#   - +false+: Assigned values is not printed.
+#   - +:truncate+ or +nil+: Assigned value is printed, possibly truncated.
+#   - Any other value: Assigned value is printed in full.
+#
+#   You may change the current setting at any time
+#   with configuration method <tt>conf.echo_on_assignment=</tt>:
+#
+#     irb(main):002:0> conf.echo = false
+#     irb(main):003:0> 1 + 1
+#
+#   Note that the _current_ setting <i>may not</i>
+#   be changed by <tt>IRB.conf[:ECHO_ON_ASSIGNMENT] = '_value_'</tt>
+#   in the \IRB session.
+#
+# === Automatic Indentation
 #
 # An \IRB configuration has a boolean auto-indentation setting,
 # which determines whether \IRB automatically indents lines to show structure;
@@ -176,7 +245,7 @@ require_relative "irb/debug"
 # The current setting is returned
 # by the configuration method <tt>conf.auto_indent_mode</tt>.
 #
-# The default initial setting is <tt>true</tt>:
+# The default initial setting is +true+:
 #
 #   irb(main):001:0> conf.auto_indent_mode
 #   => true
