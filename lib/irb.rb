@@ -21,11 +21,12 @@ require_relative "irb/version"
 require_relative "irb/easter-egg"
 require_relative "irb/debug"
 
-# \Module \IRB provides direct user interaction with Ruby.
+# \Module \IRB provides direct user interaction with the Ruby interpreter.
+#
+# == The REPL Loop
 #
 # \IRB is an interactive programming environment that operates as a
 # <i>read-eval-print</i> ({REPL}[https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop]) loop;
-#
 # \IRB:
 #
 # - Reads the Ruby code you type.
@@ -35,23 +36,40 @@ require_relative "irb/debug"
 # The typed input may also include
 # {\IRB-specific commands}[rdoc-ref:IRB@IRB-Specific+Commands].
 #
-# By default, \IRB includes line numbers in its prompts.
+# === Read
 #
-# Example:
+# \IRB reads each character as you type,
+# and may use highlighting to indicate errors
+# such as unbalanced parentheses.
+#
+# === Evaluate
+#
+# \IRB evaluates each time it has read a syntactically complete passage:
 #
 #   $ irb
-#   irb(main):001:0> 2 + 2 # Add some integers.
-#   => 4
-#
-# \IRB evaluates when and only when it has read a syntactically complete passage;
-#
-#   irb(main):002:1* Dir.entries('.').select do |entry|
-#   irb(main):003:1*   entry.start_with?('R')
-#   irb(main):004:0> end
+#   irb(main):001:0> File.basename(Dir.pwd)
+#   => "irb"
+#   irb(main):002:0> Dir.entries('.').size
+#   => 25
+#   irb(main):003:1* Dir.entries('.').select do |entry|
+#   irb(main):004:1*   entry.start_with?('R')
+#   irb(main):005:0> end
 #   => ["README.md", "Rakefile"]
 #
 # A trailing asterisk (<tt>'*'</tt>) in a prompt
 # indicates that \IRB has not yet read a syntactically complete passage.
+#
+# === Print
+#
+# By default, \IRB prints after evaluating;
+# you can change the configuration to affect
+# what gets printed.
+#
+# == Line Numbers
+#
+# By default, \IRB includes a line numbers in each prompt.
+# This can be especially useful because an \IRB error message
+# may cite a line number.
 #
 # == Starting and Stopping \IRB
 #
@@ -111,7 +129,12 @@ require_relative "irb/debug"
 #
 # == Configuration
 #
-# \IRB reads and interprets a configuration file
+# === Configuration File
+#
+# If command-line option <tt>-f</tt> is given,
+# no configuration file is looked for.
+#
+# Otherwise, \IRB reads and interprets a configuration file
 # if one is available.
 #
 # The path to the configuration file is the first found among:
@@ -127,8 +150,22 @@ require_relative "irb/debug"
 # If the search fails, there is no configuration file,
 # and \IRB begins with its default configuration settings.
 #
-# If command-line option <tt>-f</tt> is given,
-# no configuration file is looked for.
+# The configuration file is read as Ruby code,
+# and so may contain any Ruby programming you like.
+#
+# == \Hash <tt>IRB.conf</tt>
+#
+# Importantly, the configuration file may create, delete, or modify entries
+# in hash <tt>IRB.conf</tt>,
+# which affects the \IRB configuration.
+#
+# <b>Note well</b>:
+# hash <tt>IRB.conf</tt> affects the configuration only once,
+# immediately after the configuration file is interpreted;
+# any subsequent changes to it do not affect the configuration
+# and are therefore essentially useless.
+#
+# You can see the hash by typing <tt>IRB.conf</tt>.
 #
 # === Auto Indentation
 #
