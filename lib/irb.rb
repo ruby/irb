@@ -161,10 +161,12 @@ require_relative "irb/debug"
 # which affects the \IRB configuration.
 #
 # <b>Note well</b>:
-# hash <tt>IRB.conf</tt> affects the configuration only once,
-# immediately after the configuration file is interpreted;
-# any subsequent changes to it do not affect the configuration
-# and are therefore essentially useless.
+#
+# - \Hash <tt>IRB.conf</tt> affects the configuration only once,
+#   immediately after the configuration file is interpreted;
+#   any subsequent changes to it do not affect the configuration
+#   and are therefore essentially useless.
+# - Values in the hash override corresponding command-line options.
 #
 # You can see the hash by typing <tt>IRB.conf</tt>.
 #
@@ -183,28 +185,30 @@ require_relative "irb/debug"
 #     irb(main):002:0> 1 + 1
 #     => 2
 #
-#   You may change the initial setting in the
-#   configuration file with:
+# You can use command-line options to change the initial setting:
 #
-#     IRB.conf[:ECHO] = false
+# - <tt>--echo</tt>: sets <tt>conf.echo</tt> to +true+.
+# - <tt>--noecho</tt>: sets <tt>conf.echo</tt> to +false+.
 #
-#   With that done, the initial setting is changed:
+# You may also change the initial setting in the
+# configuration file with (which overrides the command-line settings above):
 #
-#     $ irb
-#     irb(main):001:0> 1 + 1
+#   IRB.conf[:ECHO] = false
 #
-#   Note that if <tt>IRB.conf[:ECHO] is +nil+ (its default value),
-#   the value of <tt>conf.echo</tt> will nevertheless be +true+.
+# Note that if <tt>IRB.conf[:ECHO] is +nil+ (its default value),
+# the value of <tt>conf.echo</tt> will nevertheless be +true+.
 #
-#   You may change the current setting at any time
-#   with configuration method <tt>conf.echo=</tt>:
+# You may change the current setting at any time
+# with configuration method <tt>conf.echo=</tt>:
 #
-#     irb(main):002:0> conf.echo = false
-#     irb(main):003:0> 1 + 1
+#   irb(main):001:0> conf.echo = false
+#   irb(main):002:0> 1 + 1
+#   irb(main):003:0> puts 1 + 1
+#   2
 #
-#   Note that the _current_ setting <i>may not</i>
-#   be changed by <tt>IRB.conf[:ECHO] = '_value_'</tt>
-#   in the \IRB session.
+# Note that the _current_ setting <i>may not</i>
+# be changed by <tt>IRB.conf[:ECHO] = '_value_'</tt>
+# in the \IRB session.
 #
 # - If the value of <tt>conf.echo</tt> is +false+,
 #   the value of <tt>conf.echo_on_assignment</tt> is ignored;
@@ -218,9 +222,18 @@ require_relative "irb/debug"
 #     irb(main):004:0> x = 'abc' * 100
 #     => "abcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcab...
 #
-#   You may change the initial setting in the
-#   configuration file with by assigning
-#   <tt>IRB.conf[:ECHO_ON_ASSIGNMENT]</tt> one of the following values:
+#   You can use command-line options to change the initial value:
+#
+#   - <tt>--echo-on-assignment</tt>:
+#     sets <tt>conf.echo_on_assignment</tt> to +true+.
+#   - <tt>--noecho-on-assignment</tt>:
+#     sets <tt>conf.echo_on_assignment</tt> to +false+.
+#   - <tt>--truncate-echo-on-assignment</tt>:
+#     sets <tt>conf.echo_on_assignment</tt> to +:truncate+.
+#
+#   You may change the initial value by assigning <tt>IRB.conf[:ECHO_ON_ASSIGNMENT]</tt>
+#   in the configuration file (which overrides the command-line options above);
+#   the assigned value should be one of the following:
 #
 #   - +false+: Assigned values is not printed.
 #   - +:truncate+ or +nil+: Assigned value is printed, possibly truncated.
@@ -259,26 +272,11 @@ require_relative "irb/debug"
 #
 #   IRB.conf[:AUTO_INDENT] = false
 #
-# With that done, the initial setting is changed:
-#
-#   irb(main):001:0> conf.auto_indent_mode
-#   => false
-#   irb(main):002:1* Dir.entries('.').select do |entry|
-#   irb(main):003:1* entry.start_with?('R')
-#   irb(main):004:0> end
-#   => ["README.md", "Rakefile"]
-#
-# You may change the current setting at any time
-# with configuration method <tt>conf.auto_indent_mode=</tt>:
-#
-#   irb(main):002:0> conf.auto_indent_mode = true
-#   => true
-#   irb(main):003:0> conf.auto_indent_mode
-#   => true
-#
 # Note that the _current_ setting <i>may not</i>
-# be changed by <tt>IRB.conf[:AUTO_INDENT] = '_value_'</tt>
-# in the \IRB session.
+# be changed in the \IRB session by either of:
+#
+# - <tt>IRB.conf[:AUTO_INDENT] = _value_</tt>.
+# - <tt>conf.auto_indent_mode = _value_</tt>.
 #
 # === Command Aliases
 #
@@ -296,11 +294,6 @@ require_relative "irb/debug"
 # configuration file with:
 #
 #   IRB.conf[:COMMAND_ALIASES] = {foo: :show_source, bar: :whereami}
-#
-# With that done, the initial aliases are changed:
-#
-#   irb(main):001:0> conf.command_aliases
-#   => {:foo=>:show_source, :bar=>:whereami}
 #
 # You may replace the current aliases at any time
 # with configuration method <tt>conf.command_aliases=</tt>:
@@ -349,11 +342,6 @@ require_relative "irb/debug"
 #
 #   IRB.conf[:AP_NAME] = 'foo'
 #
-# With that done, the initial name is changed:
-#
-#   irb(main):001:0> conf.ap_name
-#   => "foo"
-#
 # You may change the current name at any time
 # with configuration method <tt>conf.ap_name=</tt>:
 #
@@ -381,19 +369,15 @@ require_relative "irb/debug"
 #   irb(main):008:0> conf.back_trace_limit
 #   => 16
 #
-# You may change the initial limit with command-line option <tt>--back_trace_limit _value_</tt>:
+# You may change the initial limit with command-line option
+# <tt>--back_trace_limit _value_</tt>:
 #
 #   irb --back_trace_limit 32
 #
-# If the option is not given, you may change the initial limit in the
-# configuration file with:
+# You may also change the initial limit in the # configuration file
+# (which overrides the command-line option above):
 #
 #   IRB.conf[:BACK_TRACE_LIMIT] = 32
-#
-# With either of these done, the initial limit is changed:
-#
-#   irb(main):001:0> conf.back_trace_limit
-#   => 32
 #
 # You may change the current limit at any time
 # with configuration method <tt>conf.back_trace_limit=</tt>:
