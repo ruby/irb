@@ -249,6 +249,63 @@ require_relative "irb/debug"
 #   be changed by <tt>IRB.conf[:ECHO_ON_ASSIGNMENT] = '_value_'</tt>
 #   in the \IRB session.
 #
+# === History
+#
+# \IRB can store and display a history of the values it has returned;
+# by default, no history is stored.
+#
+# To initiate history storing, set the number of values to be stored;
+# if that number is zero, all history is stored.
+#
+# Here we set it to a small value, and also generate some returned values:
+#
+#   irb(main):001:0> conf.eval_history = 5
+#   => 5
+#   irb(main):002:0> :foo
+#   => :foo
+#   irb(main):003:0> :bar
+#   => :bar
+#   irb(main):004:0> :baz
+#   => :baz
+#   irb(main):005:0> :bat
+#   => :bat
+#   irb(main):006:0> :bam
+#   => :bam
+#
+# Now variable <tt>__</tt> contains the recent history:
+#
+#   irb(main):007:0> __
+#   =>
+#   3 :bar
+#   4 :baz
+#   5 :bat
+#   6 :bam
+#
+# Adding to the history:
+#
+#   irb(main):008:0> :bah
+#   => :bah
+#   irb(main):009:0> :bag
+#   => :bag
+#   irb(main):010:0> __
+#   =>
+#   6 :bam
+#   7 ...self-history...
+#   8 :bah
+#   9 :bag
+#
+# A multi-line return value (like the one returned by <tt>__</tt> in line 7)
+# is indicated differently.
+#
+# An individual entry from the history may be retrieved as follows:
+#
+#   irb(main):013:0> __[8]
+#   => :bah
+#
+# The size of the history is returned by method <tt>conf.eval_history</tt>,
+# but note that the method is undefined before the first call to
+# <tt>conf.eval_history=</tt>.
+#
 # === Automatic Indentation
 #
 # An \IRB configuration has a boolean auto-indentation setting,
