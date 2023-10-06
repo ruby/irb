@@ -185,35 +185,34 @@ require_relative "irb/debug"
 #     irb(main):002:0> 1 + 1
 #     => 2
 #
-# You can use command-line options to change the initial setting:
+#   You can use command-line options to change the initial setting:
 #
-# - <tt>--echo</tt>: sets <tt>conf.echo</tt> to +true+.
-# - <tt>--noecho</tt>: sets <tt>conf.echo</tt> to +false+.
+#   - <tt>--echo</tt>: sets <tt>conf.echo</tt> to +true+.
+#   - <tt>--noecho</tt>: sets <tt>conf.echo</tt> to +false+.
 #
-# You may also change the initial setting in the
-# configuration file with (which overrides the command-line settings above):
+#   You may also change the initial setting in the
+#   configuration file with (which overrides the command-line settings above):
 #
-#   IRB.conf[:ECHO] = false
+#     IRB.conf[:ECHO] = false
 #
-# Note that if <tt>IRB.conf[:ECHO] is +nil+ (its default value),
-# the value of <tt>conf.echo</tt> will nevertheless be +true+.
+#   Note that if <tt>IRB.conf[:ECHO] is +nil+ (its default value),
+#   the value of <tt>conf.echo</tt> will nevertheless be +true+.
 #
-# You may change the current setting at any time
-# with configuration method <tt>conf.echo=</tt>:
+#   You may change the current setting at any time
+#   with configuration method <tt>conf.echo=</tt>:
 #
-#   irb(main):001:0> conf.echo = false
-#   irb(main):002:0> 1 + 1
-#   irb(main):003:0> puts 1 + 1
-#   2
+#     irb(main):001:0> conf.echo = false
+#     irb(main):002:0> 1 + 1
+#     irb(main):003:0> puts 1 + 1
+#     2
 #
-# Note that the _current_ setting <i>may not</i>
-# be changed by <tt>IRB.conf[:ECHO] = '_value_'</tt>
-# in the \IRB session.
+#   Note that the _current_ setting <i>may not</i>
+#   be changed by <tt>IRB.conf[:ECHO] = '_value_'</tt>
+#   in the \IRB session.
 #
-# - If the value of <tt>conf.echo</tt> is +false+,
-#   the value of <tt>conf.echo_on_assignment</tt> is ignored;
-#   otherwise, that value determines whether and how
-#   \IRB prints the return value for a non-assignment.
+# - The value of <tt>conf.echo_on_assignment</tt> determines whether and how
+#   \IRB prints the return value for a non-assignment
+#   (but -- note well -- the value is ignored if <tt>conf.echo</tt> is +false+).
 #
 #   The default initial setting is +:truncate+,
 #   which means that the echoed return value will end with a 3-period ellipsis
@@ -235,9 +234,9 @@ require_relative "irb/debug"
 #   in the configuration file (which overrides the command-line options above);
 #   the assigned value should be one of the following:
 #
-#   - +false+: Assigned values is not printed.
-#   - +:truncate+ or +nil+: Assigned value is printed, possibly truncated.
-#   - Any other value: Assigned value is printed in full.
+#     - +false+: Assigned values is not printed.
+#     - +:truncate+ or +nil+: Assigned value is printed, possibly truncated.
+#     - Any other value: Assigned value is printed in full.
 #
 #   You may change the current setting at any time
 #   with configuration method <tt>conf.echo_on_assignment=</tt>:
@@ -249,13 +248,52 @@ require_relative "irb/debug"
 #   be changed by <tt>IRB.conf[:ECHO_ON_ASSIGNMENT] = '_value_'</tt>
 #   in the \IRB session.
 #
+# - \Method <tt>conf.inspect_mode</tt> returns +true+ if returned values
+#   are to be formatted using method +inspect+, +false+ otherwise;
+#   the initial default value is +true+.
+#
+#   You can change the initial default value in the configuration file:
+#
+#     IRB.conf[:INSPECT_MODE] = false
+#
+#   You can change the setting at any time using method <tt>conf.inspect_mode=</tt>.
+#
 # === Evaluation History
 #
-# \IRB can store and display a history of the values it has returned;
-# by default, no history is stored.
+# An \IRB configuration has settings that determine whether and how much
+# evaluation history is to be saved;
+# this is the history of values returned for typed commands.
 #
-# To initiate history storing, set the number of values to be stored;
-# if that number is zero, all history is stored.
+# By default:
+#
+# - No evaluation history is stored.
+# - \Method <tt>conf.eval_history</tt> is undefined.
+# - Variables <tt>_</tt> and <tt>__</tt> are undefined.
+#
+# You can set the maximum number of evaluations to be stored:
+#
+# - In the configuration file: <tt>IRB.conf[:EVAL_HISTORY] = _n_</tt>.
+# - In the session (at any time): <tt>conf.eval_historyh = _n_</tt>.
+#
+# If +n+ is zero, all evaluation history is stored.
+#
+# Doing either:
+#
+# - Sets the maximum size of the evaluation history.
+# - Defines method <tt>conf.eval_history</tt>
+#   which returns the maximum size +n+ of the evaluation history.
+# - Defines session variables:
+#
+#   - <tt>_</tt>, which returns the most recent evaluation,
+#     or +nil+ if none; same as method conf.last_value.
+#   - <tt>__</tt> unadorned: returns +n+ recent evaluations.
+#   - <tt>__[</tt>_m_<tt>]</tt>:
+#
+#     - Positive _m_:  returns the evaluation for the given line number,
+#       or +nil+ if that line number is not in the evaluation history.
+#     - Negative _m_: returns the +mth+-from-end evaluation,
+#       or +nil+ if that evaluation is not in the evaluation history.
+#     - Zero _m_: returns +nil+.
 #
 # Here we set it to a small value, and also generate some returned values:
 #
@@ -272,7 +310,7 @@ require_relative "irb/debug"
 #   irb(main):006:0> :bam
 #   => :bam
 #
-# Now variable <tt>__</tt> contains the recent history:
+# Now variable <tt>__</tt> contains the recent evaluation history:
 #
 #   irb(main):007:0> __
 #   =>
@@ -281,7 +319,7 @@ require_relative "irb/debug"
 #   5 :bat
 #   6 :bam
 #
-# Adding to the history:
+# Adding to the evaluation history:
 #
 #   irb(main):008:0> :bah
 #   => :bah
@@ -308,8 +346,11 @@ require_relative "irb/debug"
 #
 # === History File
 #
-# By default, \IRB maintains a history file that contains some or all
-# of the most recently typed commands.
+# An \IRB configuration has settings that determine whether and how much
+# command history is to be saved;
+# this is the history of typed commands.
+#
+# By default, 1000 commands are saved.
 #
 # A new \IRB session creates the file if it does not exist,
 # and appends to the file if it does exist.
@@ -522,6 +563,43 @@ require_relative "irb/debug"
 # Note that the _current_ limit <i>may not</i>
 # be changed by <tt>IRB.conf[:BACK_TRACE_LIMIT] = '_value_'</tt>
 # in the \IRB session.
+#
+# === \IO
+#
+# An \IRB configuration has an object that determines how command input
+# is to be read;
+# the initial value is an instance of IRB::RelineInputMethod.
+#
+# You can retrieve the current value using method <tt>conf.io</tt>.
+#
+# You can change the value using method <tt>conf.io=</tt>;
+# the new value should be an instance of one of these classes:
+#
+# - IRB::FileInputMethod.
+# - IRB::ReadlineInputMethod
+# - IRB::ReidlineInputMethod.
+# - IRB::RelineInputMethod.
+#
+# === Sessions
+#
+# An \IRB configuration has:
+#
+# - A _session_, which is an IRB::Irb object.
+#
+#   You can retrieve the session using method <tt>conf.irb</tt>.
+#
+# - A string _name_.
+#   The default initial name is <tt>'irb'</tt>.
+#
+#   You can change the default initial name in the configuration file
+#   with <tt>IRB.conf[:IRB_NAME] = '_name_'.
+#
+#   You can change the name at any time with method <tt>conf.irb_name=</tt>.
+#
+# - A string _path_.
+#   The default initial path is <tt>'(irb)'</tt>.
+#
+#   You can change the name at any time with method <tt>conf.irb_name=</tt>.
 #
 # == Old Doc
 #
