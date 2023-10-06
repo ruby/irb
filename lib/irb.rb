@@ -249,7 +249,7 @@ require_relative "irb/debug"
 #   be changed by <tt>IRB.conf[:ECHO_ON_ASSIGNMENT] = '_value_'</tt>
 #   in the \IRB session.
 #
-# === History
+# === Evaluation History
 #
 # \IRB can store and display a history of the values it has returned;
 # by default, no history is stored.
@@ -305,6 +305,33 @@ require_relative "irb/debug"
 # The size of the history is returned by method <tt>conf.eval_history</tt>,
 # but note that the method is undefined before the first call to
 # <tt>conf.eval_history=</tt>.
+#
+# === History File
+#
+# By default, \IRB maintains a history file that contains some or all
+# of the most recently typed commands.
+#
+# A new \IRB session creates the file if it does not exist,
+# and appends to the file if it does exist.
+#
+# The default filepath is <tt>./.irb_history</tt>
+# and the default number of commands stored is 1000.
+#
+# You can change the filepath by adding to your configuration file:
+# <tt>IRB.conf[:HISTORY_FILE] = _filepath_</tt>,
+# where _filepath_ is a string filepath;
+# the filepath may not be changed during the \IRB session.
+#
+# You can change the number of commands saved by adding to your configuration file:
+# <tt>IRB.conf[:SAVE_HISTORY] = _n_</tt>,
+# where _count_ is the integer _n_ is one of:
+#
+# - Positive integer: the number of commands to be saved,
+# - Zero: all commands are to be saved.
+# - +nil+: no commands are to be saved,.
+#
+# The count may be reset or retrieved at any time by (respectively)
+# methods <tt>conf.save_history</tt> or <tt>conf.save_history=</tt>.
 #
 # === Automatic Indentation
 #
@@ -381,6 +408,54 @@ require_relative "irb/debug"
 # Note that the _current_ aliases <i>may not</i>
 # be changed by <tt>IRB.conf[:COMMAND_ALIASES] = hash</tt>
 # in the \IRB session.
+#
+# === End-of-File
+#
+# An \IRB configuration has a boolean setting that controls whether \IRB
+# ignores the end-of-file character <tt>Ctrl-D</tt>;
+# method <tt>conf.ignore_eof?</tt> returns the setting.
+#
+# The default initial setting is +false+, which means that \IRB does not
+# ignore the character, but instead exits immediately.
+#
+# You can change the default initial setting in the configuration file:
+#
+#   IRB.conf[:IGNORE_EOF] = true # Do not exit on Ctrl-D.
+#
+# You can change the setting at any time using method <tt>conf.ignore_eof?</tt>
+#
+# === Sigint
+#
+# An \IRB configuration has a boolean setting that controls whether \IRB
+# ignores the interrupt character <tt>Ctrl-C</tt>;
+# method <tt>conf.ignore_sigint?</tt> returns the setting.
+#
+# The default initial setting is +true+, which means that \IRB
+# ignores the character, and does not exit.
+#
+# You can change the default initial setting in the configuration file:
+#
+#   IRB.conf[:IGNORE_SIGINT] = false # Exit on Ctrl-C.
+#
+# You can change the setting at any time using method <tt>conf.ignore_sigint?</tt>
+#
+# === RI Documentation Directories
+#
+# An \IRB configuration has an array of directory paths
+# pointing to extra documentation for RI.
+#
+# The default initial value is an empty array.
+#
+# You can change the default initial value in the configuration file
+# by adding <tt>IRB.conf[:EXTRA_DOC_DIRS] = _array_of_dirs_</tt>,
+# where _array_of_dirs_ is the new default.
+#
+# You can retrieve the current value with method <tt>conf.extra_doc_dirs</tt>;
+# because the returned value is an array,
+# you can modify it in place.
+#
+# You can replace the value at any time
+# with method <tt>conf.extra_doc_dirs = _array_of_dirs_</tt>.
 #
 # === Application Name
 #
