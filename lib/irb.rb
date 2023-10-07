@@ -267,82 +267,91 @@ require_relative "irb/debug"
 # By default:
 #
 # - No evaluation history is stored.
-# - \Method <tt>conf.eval_history</tt> is undefined.
-# - Variables <tt>_</tt> and <tt>__</tt> are undefined.
+# - Methods <tt>conf.eval_history</tt>, <tt>_</tt>, and <tt>__</tt> are undefined.
 #
 # You can set the maximum number of evaluations to be stored:
 #
-# - In the configuration file: <tt>IRB.conf[:EVAL_HISTORY] = _n_</tt>.
+# - In the configuration file: add <tt>IRB.conf[:EVAL_HISTORY] = _n_</tt>.
+#   (Examples below assume that we've added <tt>IRB.conf[:EVAL_HISTORY] = 5</tt>.)
 # - In the session (at any time): <tt>conf.eval_historyh = _n_</tt>.
 #
 # If +n+ is zero, all evaluation history is stored.
 #
-# Doing either:
+# Doing either of the above:
 #
-# - Sets the maximum size of the evaluation history.
-# - Defines method <tt>conf.eval_history</tt>
-#   which returns the maximum size +n+ of the evaluation history.
-# - Defines session variables:
+# - Sets the maximum size of the evaluation history;
+#   defines method <tt>conf.eval_history</tt>,
+#   which returns the maximum size +n+ of the evaluation history:
 #
-#   - <tt>_</tt>, which returns the most recent evaluation,
-#     or +nil+ if none; same as method conf.last_value.
-#   - <tt>__</tt> unadorned: returns +n+ recent evaluations.
+#     irb(main):001:0> conf.eval_history
+#     => 5
+#
+# - Defines variable <tt>_</tt>, which contains the most recent evaluation,
+#   or +nil+ if none; same as method <tt>conf.last_value</tt>:
+#
+#     irb(main):001:0> _
+#     => nil
+#     irb(main):002:0> :foo
+#     => :foo
+#     irb(main):003:0> :bar
+#     => :bar
+#     irb(main):004:0> _
+#     => :bar
+#     irb(main):005:0> _
+#     => :bar
+#
+# - Defines variable <tt>__</tt>:
+#
+#   - <tt>__</tt> unadorned: contains all evaluation history:
+#
+#       irb(main):001:0> :foo
+#       => :foo
+#       irb(main):002:0> :bar
+#       => :bar
+#       irb(main):003:0> :baz
+#       => :baz
+#       irb(main):004:0> :bat
+#       => :bat
+#       irb(main):005:0> :bam
+#       => :bam
+#       irb(main):006:0> __
+#       =>
+#       2 :bar
+#       3 :baz
+#       4 :bat
+#       5 :bam
+#       irb(main):007:0> __
+#       =>
+#       3 :baz
+#       4 :bat
+#       5 :bam
+#       6 ...self-history...
+#       irb(main):008:0>
+#
+#     Note that when the evaluation is multiline, it is displayed differently.
+#
 #   - <tt>__[</tt>_m_<tt>]</tt>:
 #
-#     - Positive _m_:  returns the evaluation for the given line number,
-#       or +nil+ if that line number is not in the evaluation history.
-#     - Negative _m_: returns the +mth+-from-end evaluation,
-#       or +nil+ if that evaluation is not in the evaluation history.
-#     - Zero _m_: returns +nil+.
+#     - Positive _m_:  contains the evaluation for the given line number,
+#       or +nil+ if that line number is not in the evaluation history:
 #
-# Here we set it to a small value, and also generate some returned values:
+#         irb(main):008:0> __[4]
+#         => :bat
+#         irb(main):009:0> __[5]
+#         => :bam
 #
-#   irb(main):001:0> conf.eval_history = 5
-#   => 5
-#   irb(main):002:0> :foo
-#   => :foo
-#   irb(main):003:0> :bar
-#   => :bar
-#   irb(main):004:0> :baz
-#   => :baz
-#   irb(main):005:0> :bat
-#   => :bat
-#   irb(main):006:0> :bam
-#   => :bam
+#     - Negative _m_: contains the +mth+-from-end evaluation,
+#       or +nil+ if that evaluation is not in the evaluation history:
 #
-# Now variable <tt>__</tt> contains the recent evaluation history:
+#         irb(main):010:0> __[-2]
+#         => :bat
+#         irb(main):011:0> __[-2]
+#         => :bam
 #
-#   irb(main):007:0> __
-#   =>
-#   3 :bar
-#   4 :baz
-#   5 :bat
-#   6 :bam
+#     - Zero _m_: contains +nil+:
 #
-# Adding to the evaluation history:
-#
-#   irb(main):008:0> :bah
-#   => :bah
-#   irb(main):009:0> :bag
-#   => :bag
-#   irb(main):010:0> __
-#   =>
-#   6 :bam
-#   7 ...self-history...
-#   8 :bah
-#   9 :bag
-#
-# A multi-line return value (like the one returned by <tt>__</tt> in line 7)
-# is indicated differently.
-#
-# An individual entry from the history may be retrieved as follows:
-#
-#   irb(main):013:0> __[8]
-#   => :bah
-#
-# The size of the history is returned by method <tt>conf.eval_history</tt>,
-# but note that the method is undefined before the first call to
-# <tt>conf.eval_history=</tt>.
+#         irb(main):012:0> __[0]
+#         => nil
 #
 # === History File
 #
