@@ -66,12 +66,6 @@ require_relative "irb/debug"
 # you can change the configuration to affect
 # what gets printed.
 #
-# == Line Numbers
-#
-# By default, \IRB includes a line numbers in each prompt.
-# This can be especially useful because an \IRB error message
-# may cite a line number.
-#
 # == Starting and Stopping \IRB
 #
 # As seen above, \IRB may be started by using the shell command +irb+;
@@ -79,54 +73,6 @@ require_relative "irb/debug"
 #
 #   irb(main):005:0> exit
 #   $
-#
-# == The \IRB Command Line
-#
-# The shell command +irb+ may be followed by:
-#
-# - {Command-Line Options}[rdoc-ref:IRB@Command-Line+Options].
-# - {Initialization Script Filepath}[rdoc-ref:IRB@Initialization+Script+Filepath].
-# - {Command-Line Arguments}[rdoc-ref:IRB@Command-Line+Arguments].
-#
-# === Command-Line Options
-#
-# A cursory list of the \IRB command-line options
-# may be seen in the {help message}[rdoc-ref:lib/irb/lc/help-message],
-# which is also displayed if you use command-line option <tt>--help</tt>.
-#
-# Details of the options are described in the relevant subsections
-# in {Configuration}[rdoc-ref:IRB@Configuration].
-#
-# === Initialization Script Filepath
-#
-# By default, the first command-line argument (after any options)
-# is the path to a Ruby initialization script,
-# which is a script to be executed as the \IRB process begins.
-#
-# The script may contain any Ruby code, and may usefully be
-# user code that:
-#
-# - Can then be debugged in \IRB.
-# - Configures \IRB itself.
-# - Requires or loads files.
-#
-# === Command-Line Arguments
-#
-# Command-line option <tt>--noscript</tt> causes the first command-line argument
-# to be treated as an ordinary argument (instead of an initialization script).
-#
-# Command-line arguments are passed to \IRB in array +ARGV+:
-#
-#   $ irb --noscript Foo Bar Baz
-#   ARGV
-#   # => ["Foo", "Bar", "Baz"]
-#
-# Command-line option <tt>--</tt> causes everything that follows
-# to be treated as arguments, even those that look like options:
-#
-#   $ irb --noscript -- --noscript -- Foo Bar Baz
-#   ARGV
-#   # => ["--noscript", "--", "Foo", "Bar", "Baz"]
 #
 # == Configuration
 #
@@ -169,6 +115,272 @@ require_relative "irb/debug"
 # - Values in the hash override corresponding command-line options.
 #
 # You can see the hash by typing <tt>IRB.conf</tt>.
+#
+# == Startup
+#
+# === Command-Line Options
+#
+# A cursory list of the \IRB command-line options
+# may be seen in the {help message}[rdoc-ref:lib/irb/lc/help-message],
+# which is also displayed if you use command-line option <tt>--help</tt>.
+#
+# Details of the options are described in the relevant subsections below.
+#
+# === Command-Line Arguments
+#
+# Command-line option <tt>--noscript</tt> causes the first command-line argument
+# to be treated as an ordinary argument (instead of an initialization script).
+#
+# Command-line arguments are passed to \IRB in array +ARGV+:
+#
+#   $ irb --noscript Foo Bar Baz
+#   ARGV
+#   # => ["Foo", "Bar", "Baz"]
+#
+# Command-line option <tt>--</tt> causes everything that follows
+# to be treated as arguments, even those that look like options:
+#
+#   $ irb --noscript -- --noscript -- Foo Bar Baz
+#   ARGV
+#   # => ["--noscript", "--", "Foo", "Bar", "Baz"]
+#
+# === Initialization Script Filepath
+#
+# By default, the first command-line argument (after any options)
+# is the path to a Ruby initialization script,
+# which is a script to be executed as the \IRB process begins.
+#
+# The script may contain any Ruby code, and may usefully be
+# user code that:
+#
+# - Can then be debugged in \IRB.
+# - Configures \IRB itself.
+# - Requires or loads files.
+#
+# === Load Modules
+#
+# An \IRB configuration has an array, each of whose elements
+# is the string name of a module to be required before the session begins.
+# The array is used only during session startup,
+# so the initial value is the only one that counts.
+#
+# The default initial value is <tt>[]</tt>:
+#
+#   irb(main):001:0> conf.load_modules
+#   => []
+#
+# The default initial value can be set in the configuration file:
+#
+#   IRB.conf[:LOAD_MODULES] = %w[csv, json]
+#
+# === RI Documentation Directories
+#
+# An \IRB configuration has an array of directory paths
+# pointing to extra documentation for RI.
+#
+# The default initial value is an empty array.
+#
+# You can change the default initial value in the configuration file
+# by adding <tt>IRB.conf[:EXTRA_DOC_DIRS] = _array_of_dirs_</tt>,
+# where _array_of_dirs_ is the new default.
+#
+# You can retrieve the current value with method <tt>conf.extra_doc_dirs</tt>;
+# because the returned value is an array,
+# you can modify it in place.
+#
+# You can replace the value at any time
+# with method <tt>conf.extra_doc_dirs = _array_of_dirs_</tt>.
+#
+# === Application Name
+#
+# An \IRB configuration has a string application name.
+#
+# The current name is returned
+# by the configuration method <tt>conf.ap_name</tt>.
+#
+# The default initial name is <tt>'irb'</tt>:
+#
+#   irb(main):001:0> conf.ap_name
+#   => "irb"
+#
+# You may change the initial name in the
+# configuration file with:
+#
+#   IRB.conf[:AP_NAME] = 'foo'
+#
+# You may change the current name at any time
+# with configuration method <tt>conf.ap_name=</tt>:
+#
+#   irb(main):002:0> conf.ap_name = 'bar'
+#   => "bar"
+#   irb(main):003:0> conf.ap_name
+#   => "bar"
+#
+# Note that the _current_ name <i>may not</i>
+# be changed by <tt>IRB.conf[:AP_NAME] = '_value_'</tt>
+# in the \IRB session.
+#
+# == Input
+#
+# === \IO
+#
+# An \IRB configuration has an object that determines how command input
+# is to be read;
+# the initial value is an instance of IRB::RelineInputMethod.
+#
+# You can retrieve the current value using method <tt>conf.io</tt>.
+#
+# You can change the value using method <tt>conf.io=</tt>;
+# the new value should be an instance of one of these classes:
+#
+# - IRB::FileInputMethod.
+# - IRB::ReadlineInputMethod
+# - IRB::ReidlineInputMethod.
+# - IRB::RelineInputMethod.
+#
+# === History File
+#
+# An \IRB configuration has settings that determine whether and how much
+# command history is to be saved;
+# this is the history of typed commands.
+#
+# By default, 1000 commands are saved.
+#
+# A new \IRB session creates the file if it does not exist,
+# and appends to the file if it does exist.
+#
+# The default filepath is <tt>./.irb_history</tt>
+# and the default number of commands stored is 1000.
+#
+# You can change the filepath by adding to your configuration file:
+# <tt>IRB.conf[:HISTORY_FILE] = _filepath_</tt>,
+# where _filepath_ is a string filepath;
+# the filepath may not be changed during the \IRB session.
+#
+# You can change the number of commands saved by adding to your configuration file:
+# <tt>IRB.conf[:SAVE_HISTORY] = _n_</tt>,
+# where _count_ is the integer _n_ is one of:
+#
+# - Positive integer: the number of commands to be saved,
+# - Zero: all commands are to be saved.
+# - +nil+: no commands are to be saved,.
+#
+# The count may be reset or retrieved at any time by (respectively)
+# methods <tt>conf.save_history</tt> or <tt>conf.save_history=</tt>.
+#
+# === Command Aliases
+#
+# An \IRB configuration has a hash of command aliases.
+#
+# The current aliases are returned
+# by the configuration method <tt>conf.command_aliases</tt>.
+#
+# The default initial aliases:
+#
+#   irb(main):001:0> conf.command_aliases
+#   => {:"$"=>:show_source, :"@"=>:whereami, :break=>:irb_break, :catch=>:irb_catch, :next=>:irb_next}
+#
+# You may change the initial aliases in the
+# configuration file with:
+#
+#   IRB.conf[:COMMAND_ALIASES] = {foo: :show_source, bar: :whereami}
+#
+# You may replace the current aliases at any time
+# with configuration method <tt>conf.command_aliases=</tt>:
+#
+#   irb(main):002:0> conf.command_aliases = {baz: :show_source}
+#   => {:baz=>:show_source}
+#   irb(main):003:0> conf.command_aliases
+#   => {:baz=>:show_source}
+#   irb(main):004:0> conf.command_aliases = {}
+#   => {}
+#   irb(main):005:0> conf.command_aliases
+#   => {}
+#
+# Because <tt>conf.command_aliases</tt> is a hash,
+# you can modify it:
+#
+#   irb(main):006:0> conf.command_aliases[:foo] = :show_source
+#   => :show_source
+#   irb(main):007:0> conf.command_aliases[:bar] = :whereami
+#   => :whereami
+#   irb(main):008:0> conf.command_aliases
+#   => {:foo=>:show_source, :bar=>:whereami}
+#   irb(main):009:0> conf.command_aliases.delete(:foo)
+#   => nil
+#   irb(main):010:0> conf.command_aliases
+#   => {:bar=>:whereami}
+#
+# Note that the _current_ aliases <i>may not</i>
+# be changed by <tt>IRB.conf[:COMMAND_ALIASES] = hash</tt>
+# in the \IRB session.
+#
+# === End-of-File
+#
+# An \IRB configuration has a boolean setting that controls whether \IRB
+# ignores the end-of-file character <tt>Ctrl-D</tt>;
+# method <tt>conf.ignore_eof?</tt> returns the setting.
+#
+# The default initial setting is +false+, which means that \IRB does not
+# ignore the character, but instead exits immediately.
+#
+# You can change the default initial setting in the configuration file:
+#
+#   IRB.conf[:IGNORE_EOF] = true # Do not exit on Ctrl-D.
+#
+# You can change the setting at any time using method <tt>conf.ignore_eof?</tt>
+#
+# === Sigint
+#
+# An \IRB configuration has a boolean setting that controls whether \IRB
+# ignores the interrupt character <tt>Ctrl-C</tt>;
+# method <tt>conf.ignore_sigint?</tt> returns the setting.
+#
+# The default initial setting is +true+, which means that \IRB
+# ignores the character, and does not exit.
+#
+# You can change the default initial setting in the configuration file:
+#
+#   IRB.conf[:IGNORE_SIGINT] = false # Exit on Ctrl-C.
+#
+# You can change the setting at any time using method <tt>conf.ignore_sigint?</tt>
+#
+# == Output
+#
+# === Line Numbers
+#
+# By default, \IRB includes a line numbers in each prompt.
+# This can be especially useful because an \IRB error message
+# may cite a line number.
+#
+# === Automatic Indentation
+#
+# An \IRB configuration has a boolean auto-indentation setting,
+# which determines whether \IRB automatically indents lines to show structure;
+# see examples below.
+#
+# The current setting is returned
+# by the configuration method <tt>conf.auto_indent_mode</tt>.
+#
+# The default initial setting is +true+:
+#
+#   irb(main):001:0> conf.auto_indent_mode
+#   => true
+#   irb(main):002:1* Dir.entries('.').select do |entry|
+#   irb(main):003:1*   entry.start_with?('R')
+#   irb(main):004:0> end
+#   => ["README.md", "Rakefile"]
+#
+# You may change the initial setting in the
+# configuration file with:
+#
+#   IRB.conf[:AUTO_INDENT] = false
+#
+# Note that the _current_ setting <i>may not</i>
+# be changed in the \IRB session by either of:
+#
+# - <tt>IRB.conf[:AUTO_INDENT] = _value_</tt>.
+# - <tt>conf.auto_indent_mode = _value_</tt>.
 #
 # === Return-Value Printing (Echoing)
 #
@@ -353,208 +565,9 @@ require_relative "irb/debug"
 #         irb(main):012:0> __[0]
 #         => nil
 #
-# === History File
+# === Backtrace Limit
 #
-# An \IRB configuration has settings that determine whether and how much
-# command history is to be saved;
-# this is the history of typed commands.
-#
-# By default, 1000 commands are saved.
-#
-# A new \IRB session creates the file if it does not exist,
-# and appends to the file if it does exist.
-#
-# The default filepath is <tt>./.irb_history</tt>
-# and the default number of commands stored is 1000.
-#
-# You can change the filepath by adding to your configuration file:
-# <tt>IRB.conf[:HISTORY_FILE] = _filepath_</tt>,
-# where _filepath_ is a string filepath;
-# the filepath may not be changed during the \IRB session.
-#
-# You can change the number of commands saved by adding to your configuration file:
-# <tt>IRB.conf[:SAVE_HISTORY] = _n_</tt>,
-# where _count_ is the integer _n_ is one of:
-#
-# - Positive integer: the number of commands to be saved,
-# - Zero: all commands are to be saved.
-# - +nil+: no commands are to be saved,.
-#
-# The count may be reset or retrieved at any time by (respectively)
-# methods <tt>conf.save_history</tt> or <tt>conf.save_history=</tt>.
-#
-# === Load Modules
-#
-# An \IRB configuration has an array, each of whose elements
-# is the string name of a module to be required before the session begins.
-# The array is used only during session startup,
-# so the initial value is the only one that counts.
-#
-# The default initial value is <tt>[]</tt>:
-#
-#   irb(main):001:0> conf.load_modules
-#   => []
-#
-# The default initial value can be set in the configuration file:
-#
-#   IRB.conf[:LOAD_MODULES] = %w[csv, json]
-#
-# === Automatic Indentation
-#
-# An \IRB configuration has a boolean auto-indentation setting,
-# which determines whether \IRB automatically indents lines to show structure;
-# see examples below.
-#
-# The current setting is returned
-# by the configuration method <tt>conf.auto_indent_mode</tt>.
-#
-# The default initial setting is +true+:
-#
-#   irb(main):001:0> conf.auto_indent_mode
-#   => true
-#   irb(main):002:1* Dir.entries('.').select do |entry|
-#   irb(main):003:1*   entry.start_with?('R')
-#   irb(main):004:0> end
-#   => ["README.md", "Rakefile"]
-#
-# You may change the initial setting in the
-# configuration file with:
-#
-#   IRB.conf[:AUTO_INDENT] = false
-#
-# Note that the _current_ setting <i>may not</i>
-# be changed in the \IRB session by either of:
-#
-# - <tt>IRB.conf[:AUTO_INDENT] = _value_</tt>.
-# - <tt>conf.auto_indent_mode = _value_</tt>.
-#
-# === Command Aliases
-#
-# An \IRB configuration has a hash of command aliases.
-#
-# The current aliases are returned
-# by the configuration method <tt>conf.command_aliases</tt>.
-#
-# The default initial aliases:
-#
-#   irb(main):001:0> conf.command_aliases
-#   => {:"$"=>:show_source, :"@"=>:whereami, :break=>:irb_break, :catch=>:irb_catch, :next=>:irb_next}
-#
-# You may change the initial aliases in the
-# configuration file with:
-#
-#   IRB.conf[:COMMAND_ALIASES] = {foo: :show_source, bar: :whereami}
-#
-# You may replace the current aliases at any time
-# with configuration method <tt>conf.command_aliases=</tt>:
-#
-#   irb(main):002:0> conf.command_aliases = {baz: :show_source}
-#   => {:baz=>:show_source}
-#   irb(main):003:0> conf.command_aliases
-#   => {:baz=>:show_source}
-#   irb(main):004:0> conf.command_aliases = {}
-#   => {}
-#   irb(main):005:0> conf.command_aliases
-#   => {}
-#
-# Because <tt>conf.command_aliases</tt> is a hash,
-# you can modify it:
-#
-#   irb(main):006:0> conf.command_aliases[:foo] = :show_source
-#   => :show_source
-#   irb(main):007:0> conf.command_aliases[:bar] = :whereami
-#   => :whereami
-#   irb(main):008:0> conf.command_aliases
-#   => {:foo=>:show_source, :bar=>:whereami}
-#   irb(main):009:0> conf.command_aliases.delete(:foo)
-#   => nil
-#   irb(main):010:0> conf.command_aliases
-#   => {:bar=>:whereami}
-#
-# Note that the _current_ aliases <i>may not</i>
-# be changed by <tt>IRB.conf[:COMMAND_ALIASES] = hash</tt>
-# in the \IRB session.
-#
-# === End-of-File
-#
-# An \IRB configuration has a boolean setting that controls whether \IRB
-# ignores the end-of-file character <tt>Ctrl-D</tt>;
-# method <tt>conf.ignore_eof?</tt> returns the setting.
-#
-# The default initial setting is +false+, which means that \IRB does not
-# ignore the character, but instead exits immediately.
-#
-# You can change the default initial setting in the configuration file:
-#
-#   IRB.conf[:IGNORE_EOF] = true # Do not exit on Ctrl-D.
-#
-# You can change the setting at any time using method <tt>conf.ignore_eof?</tt>
-#
-# === Sigint
-#
-# An \IRB configuration has a boolean setting that controls whether \IRB
-# ignores the interrupt character <tt>Ctrl-C</tt>;
-# method <tt>conf.ignore_sigint?</tt> returns the setting.
-#
-# The default initial setting is +true+, which means that \IRB
-# ignores the character, and does not exit.
-#
-# You can change the default initial setting in the configuration file:
-#
-#   IRB.conf[:IGNORE_SIGINT] = false # Exit on Ctrl-C.
-#
-# You can change the setting at any time using method <tt>conf.ignore_sigint?</tt>
-#
-# === RI Documentation Directories
-#
-# An \IRB configuration has an array of directory paths
-# pointing to extra documentation for RI.
-#
-# The default initial value is an empty array.
-#
-# You can change the default initial value in the configuration file
-# by adding <tt>IRB.conf[:EXTRA_DOC_DIRS] = _array_of_dirs_</tt>,
-# where _array_of_dirs_ is the new default.
-#
-# You can retrieve the current value with method <tt>conf.extra_doc_dirs</tt>;
-# because the returned value is an array,
-# you can modify it in place.
-#
-# You can replace the value at any time
-# with method <tt>conf.extra_doc_dirs = _array_of_dirs_</tt>.
-#
-# === Application Name
-#
-# An \IRB configuration has a string application name.
-#
-# The current name is returned
-# by the configuration method <tt>conf.ap_name</tt>.
-#
-# The default initial name is <tt>'irb'</tt>:
-#
-#   irb(main):001:0> conf.ap_name
-#   => "irb"
-#
-# You may change the initial name in the
-# configuration file with:
-#
-#   IRB.conf[:AP_NAME] = 'foo'
-#
-# You may change the current name at any time
-# with configuration method <tt>conf.ap_name=</tt>:
-#
-#   irb(main):002:0> conf.ap_name = 'bar'
-#   => "bar"
-#   irb(main):003:0> conf.ap_name
-#   => "bar"
-#
-# Note that the _current_ name <i>may not</i>
-# be changed by <tt>IRB.conf[:AP_NAME] = '_value_'</tt>
-# in the \IRB session.
-#
-# === Back Trace Limit
-#
-# An \IRB configuration has an integer back trace limit +n+,
+# An \IRB configuration has an integer backtrace limit +n+,
 # which specifies that the backtrace for an exception
 # may contain no more than 2 * +n+ entries,
 # consisting at most of the first +n+ and last +n+ entries.
@@ -589,23 +602,7 @@ require_relative "irb/debug"
 # be changed by <tt>IRB.conf[:BACK_TRACE_LIMIT] = '_value_'</tt>
 # in the \IRB session.
 #
-# === \IO
-#
-# An \IRB configuration has an object that determines how command input
-# is to be read;
-# the initial value is an instance of IRB::RelineInputMethod.
-#
-# You can retrieve the current value using method <tt>conf.io</tt>.
-#
-# You can change the value using method <tt>conf.io=</tt>;
-# the new value should be an instance of one of these classes:
-#
-# - IRB::FileInputMethod.
-# - IRB::ReadlineInputMethod
-# - IRB::ReidlineInputMethod.
-# - IRB::RelineInputMethod.
-#
-# === Sessions
+# == Sessions
 #
 # An \IRB configuration has:
 #
