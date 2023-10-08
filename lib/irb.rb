@@ -21,7 +21,7 @@ require_relative "irb/version"
 require_relative "irb/easter-egg"
 require_relative "irb/debug"
 
-# \Module \IRB provides direct user interaction with the Ruby interpreter.
+# \Module \IRB provides user interaction with the Ruby interpreter.
 #
 # == The REPL Loop
 #
@@ -40,8 +40,11 @@ require_relative "irb/debug"
 # === Read
 #
 # \IRB reads each character as you type,
-# and may use highlighting to indicate errors
-# such as unbalanced parentheses.
+# and may use highlighting to indicate syntax,
+# as well as errors such as unbalanced parentheses.
+#
+# You can change the current configuration to affect the way input works.
+# See {Input}[rdoc-ref:IRB@Input].
 #
 # === Evaluate
 #
@@ -57,14 +60,14 @@ require_relative "irb/debug"
 #   irb(main):005:0> end
 #   => ["README.md", "Rakefile"]
 #
-# A trailing asterisk (<tt>'*'</tt>) in a prompt
-# indicates that \IRB has not yet read a syntactically complete passage.
-#
 # === Print
 #
 # By default, \IRB prints after evaluating;
 # you can change the configuration to affect
 # what gets printed.
+#
+# You can change the current configuration to affect the way printing works.
+# See {Output}[rdoc-ref:IRB@Output].
 #
 # == Starting and Stopping \IRB
 #
@@ -75,6 +78,21 @@ require_relative "irb/debug"
 #   $
 #
 # == Configuration
+#
+# A running \IRB session has a <i>current configuration</tt>
+# that is an IRB::Context object;
+# the object is created  at session startup.
+#
+# Its initial content is determined by entries in hash <tt>IRB.conf</tt>,
+# which in turn are determined by:
+#
+# - Certain \IRB command-line options.
+# - The contents of the configuration file.
+# - Default values.
+#
+# Values in the current configuration may be retrieved
+# via methods and attributes in the configuration object;
+# much of the content may be modified by other methods and attributes.
 #
 # === Configuration File
 #
@@ -128,6 +146,17 @@ require_relative "irb/debug"
 #
 # === Command-Line Arguments
 #
+# By default, the first command-line argument (after any options)
+# is the path to a Ruby initialization script,
+# which is a script to be executed as the \IRB process begins.
+#
+# The script may contain any Ruby code, and may usefully be
+# user code that:
+#
+# - Can then be debugged in \IRB.
+# - Configures \IRB itself.
+# - Requires or loads files.
+#
 # Command-line option <tt>--noscript</tt> causes the first command-line argument
 # to be treated as an ordinary argument (instead of an initialization script).
 #
@@ -144,52 +173,63 @@ require_relative "irb/debug"
 #   ARGV
 #   # => ["--noscript", "--", "Foo", "Bar", "Baz"]
 #
-# === Initialization Script Filepath
-#
-# By default, the first command-line argument (after any options)
-# is the path to a Ruby initialization script,
-# which is a script to be executed as the \IRB process begins.
-#
-# The script may contain any Ruby code, and may usefully be
-# user code that:
-#
-# - Can then be debugged in \IRB.
-# - Configures \IRB itself.
-# - Requires or loads files.
-#
 # === Load Modules
 #
-# An \IRB configuration has an array, each of whose elements
-# is the string name of a module to be required before the session begins.
+# You can specify the names of modules that are to be required at startup.
+#
+# \Array <tt>conf.load_modules</tt> determines the modules (if any)
+# that are to be required during session startup.
 # The array is used only during session startup,
 # so the initial value is the only one that counts.
 #
-# The default initial value is <tt>[]</tt>:
+# The default initial value is <tt>[]</tt> (load no modules):
 #
 #   irb(main):001:0> conf.load_modules
 #   => []
 #
-# The default initial value can be set in the configuration file:
+# You can set the default initial value via:
 #
-#   IRB.conf[:LOAD_MODULES] = %w[csv, json]
+# - Command-line option <tt>-r</tt>
+#
+#     $ irb -r csv -r json
+#     irb(main):001:0> conf.load_modules
+#     => ["csv", "json"]
+#
+# - \Hash entry <tt>IRB.conf[:LOAD_MODULES] = _array_</tt>:
+#
+#     IRB.conf[:LOAD_MODULES] = %w[csv, json]
+#
+# Note that the configuration file entry overrides the command-line options.
 #
 # === RI Documentation Directories
 #
-# An \IRB configuration has an array of directory paths
-# pointing to extra documentation for RI.
+# You can specify the paths to RI documentation directories
+# that are to be loaded at startup;
+# see details about RI by typing <tt>ri --help</tt>.
 #
-# The default initial value is an empty array.
+# \Array <tt>conf.extra_doc_dirs</tt> determines the directories (if any)
+# that are to be loaded during session startup.
+# The array is used only during session startup,
+# so the initial value is the only one that counts.
 #
-# You can change the default initial value in the configuration file
-# by adding <tt>IRB.conf[:EXTRA_DOC_DIRS] = _array_of_dirs_</tt>,
-# where _array_of_dirs_ is the new default.
+# The default initial value is <tt>[]</tt> (load no extra documentation):
 #
-# You can retrieve the current value with method <tt>conf.extra_doc_dirs</tt>;
-# because the returned value is an array,
-# you can modify it in place.
+#   irb(main):001:0> conf.extra_doc_dirs
+#   => []
 #
-# You can replace the value at any time
-# with method <tt>conf.extra_doc_dirs = _array_of_dirs_</tt>.
+# You can set the default initial value via:
+#
+# - Command-line option <tt>--extra_doc_dir</tt>
+#
+#     $ irb --extra-doc-dir your_doc_dir --extra-doc-dir my_doc_dir
+#     irb(main):001:0> conf.extra_doc_dirs
+#     => ["your_doc_dir", "my_doc_dir"]
+#
+# - \Hash entry <tt>IRB.conf[:EXTRA_DOC_DIRS] = _array_</tt>:
+#
+#     IRB.conf[:EXTRA_DOC_DIRS] = %w[your_doc_dir my_doc_dir]
+#
+# Note that the configuration file entry overrides the command-line options.
 #
 # === Application Name
 #
