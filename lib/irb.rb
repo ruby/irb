@@ -383,6 +383,22 @@ require_relative "irb/debug"
 # The count may be reset or retrieved at any time by (respectively)
 # methods <tt>conf.save_history</tt> or <tt>conf.save_history=</tt>.
 #
+# === Load Modules
+#
+# An \IRB configuration has an array, each of whose elements
+# is the string name of a module to be required before the session begins.
+# The array is used only during session startup,
+# so the initial value is the only one that counts.
+#
+# The default initial value is <tt>[]</tt>:
+#
+#   irb(main):001:0> conf.load_modules
+#   => []
+#
+# The default initial value can be set in the configuration file:
+#
+#   IRB.conf[:LOAD_MODULES] = %w[csv, json]
+#
 # === Automatic Indentation
 #
 # An \IRB configuration has a boolean auto-indentation setting,
