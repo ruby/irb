@@ -204,7 +204,7 @@ require_relative "irb/debug"
 # === RI Documentation Directories
 #
 # You can specify the paths to RI documentation directories
-# that are to be loaded at startup;
+# that are to be loaded (in addition to the default directories) at startup;
 # see details about RI by typing <tt>ri --help</tt>.
 #
 # \Array <tt>conf.extra_doc_dirs</tt> determines the directories (if any)
@@ -233,32 +233,17 @@ require_relative "irb/debug"
 #
 # === Application Name
 #
-# An \IRB configuration has a string application name.
+# You can specify an application name for the \IRB session.
 #
-# The current name is returned
-# by the configuration method <tt>conf.ap_name</tt>.
-#
-# The default initial name is <tt>'irb'</tt>:
+# The default initial value is +irb+:
 #
 #   irb(main):001:0> conf.ap_name
 #   => "irb"
 #
-# You may change the initial name in the
-# configuration file with:
+# You can set the default initial value
+# via hash entry <tt>IRB.conf[:AP_NAME] = _string_</tt>:
 #
-#   IRB.conf[:AP_NAME] = 'foo'
-#
-# You may change the current name at any time
-# with configuration method <tt>conf.ap_name=</tt>:
-#
-#   irb(main):002:0> conf.ap_name = 'bar'
-#   => "bar"
-#   irb(main):003:0> conf.ap_name
-#   => "bar"
-#
-# Note that the _current_ name <i>may not</i>
-# be changed by <tt>IRB.conf[:AP_NAME] = '_value_'</tt>
-# in the \IRB session.
+#   IRB.conf[:AP_NAME] = 'my_ap_name'
 #
 # == Input
 #
