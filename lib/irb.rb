@@ -470,6 +470,37 @@ require_relative "irb/debug"
 #
 #   You can change the setting at any time using method <tt>conf.inspect_mode=</tt>.
 #
+# === Multiline Output
+#
+# By default, \IRB prints the first line of a multiline response
+# on a new line (by prefixing a newline):
+#
+#   irb(main):002:0> conf.inspect_mode = false
+#   => false
+#   irb(main):003:0> "foo\nbar"
+#   =>
+#   foo
+#   bar
+#
+# This behavior is controlled by the value of
+# <tt>conf.newline_before_multiline_output</tt>,
+# whose initilal default value is +true+.
+#
+# You can change the initial default value by adding to the configuation file:
+#
+#   IRB.conf[:NEWLINE_BEFORE_MULTILINE_OUTPUT] = false
+#
+# This initializes the value as +false+:
+#
+#   irb(main):005:0> conf.newline_before_multiline_output
+#   => false
+#   irb(main):006:0> "foo\nbar"
+#   => foo
+#   bar
+#
+# You can change the value at any time using
+# method <tt>conf.newline_before_multiline_output=</tt>.
+#
 # === Evaluation History
 #
 # An \IRB configuration has settings that determine whether and how much
