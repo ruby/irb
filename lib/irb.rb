@@ -71,7 +71,7 @@ require_relative "irb/debug"
 #
 # == Starting and Stopping \IRB
 #
-# As seen above, \IRB may be started by using the shell command +irb+;
+# As seen above, you can start \IRB by using the shell command +irb+;
 # you can stop it by typing +exit+:
 #
 #   irb(main):005:0> exit
@@ -90,9 +90,9 @@ require_relative "irb/debug"
 # - The contents of the configuration file.
 # - Default values.
 #
-# Values in the current configuration may be retrieved
+# Values in the current configuration can be retrieved
 # via methods and attributes in the configuration object;
-# much of the content may be modified by other methods and attributes.
+# much of the content can be modified by other methods and attributes.
 #
 # === Configuration File
 #
@@ -116,11 +116,11 @@ require_relative "irb/debug"
 # and \IRB begins with its default configuration settings.
 #
 # The configuration file is read as Ruby code,
-# and so may contain any Ruby programming you like.
+# and so can contain any Ruby programming you like.
 #
 # === \Hash <tt>IRB.conf</tt>
 #
-# Importantly, the configuration file may create, delete, or modify entries
+# Importantly, the configuration file can create, delete, or modify entries
 # in hash <tt>IRB.conf</tt>,
 # which affects the \IRB configuration.
 #
@@ -150,7 +150,7 @@ require_relative "irb/debug"
 # is the path to a Ruby initialization script,
 # which is a script to be executed as the \IRB process begins.
 #
-# The script may contain any Ruby code, and may usefully be
+# The script can contain any Ruby code, and can usefully be
 # user code that:
 #
 # - Can then be debugged in \IRB.
@@ -247,13 +247,15 @@ require_relative "irb/debug"
 #
 # == Input
 #
-# === \IO
+# === Input \Method
 #
-# An \IRB configuration has an object that determines how command input
-# is to be read;
+# You can specify an input method that determines how command input is to be read;
 # the initial value is an instance of IRB::RelineInputMethod.
 #
-# You can retrieve the current value using method <tt>conf.io</tt>.
+# You can retrieve the current value using method <tt>conf.io</tt>:
+#
+#   irb(main):001:0> conf.io
+#   => RelineInputMethod with Reline 0.3.2
 #
 # You can change the value using method <tt>conf.io=</tt>;
 # the new value should be an instance of one of these classes:
@@ -263,24 +265,20 @@ require_relative "irb/debug"
 # - IRB::ReidlineInputMethod.
 # - IRB::RelineInputMethod.
 #
-# === History File
+# === Command History
 #
-# An \IRB configuration has settings that determine whether and how much
-# command history is to be saved;
-# this is the history of typed commands.
+# You can specify whether and where a history of input commands is to be stored.
 #
-# By default, 1000 commands are saved.
+# The default filepath for the history file is <tt>./.irb_history</tt>
+# and the default number of commands stored is 1000.
 #
 # A new \IRB session creates the file if it does not exist,
 # and appends to the file if it does exist.
 #
-# The default filepath is <tt>./.irb_history</tt>
-# and the default number of commands stored is 1000.
-#
-# You can change the filepath by adding to your configuration file:
+# You can change the initial filepath by adding to your configuration file:
 # <tt>IRB.conf[:HISTORY_FILE] = _filepath_</tt>,
 # where _filepath_ is a string filepath;
-# the filepath may not be changed during the \IRB session.
+# the filepath cannot be changed during the \IRB session.
 #
 # You can change the number of commands saved by adding to your configuration file:
 # <tt>IRB.conf[:SAVE_HISTORY] = _n_</tt>,
@@ -290,27 +288,24 @@ require_relative "irb/debug"
 # - Zero: all commands are to be saved.
 # - +nil+: no commands are to be saved,.
 #
-# The count may be reset or retrieved at any time by (respectively)
+# The count can be reset or retrieved at any time by (respectively)
 # methods <tt>conf.save_history</tt> or <tt>conf.save_history=</tt>.
 #
 # === Command Aliases
 #
-# An \IRB configuration has a hash of command aliases.
+# You can specify aliases for \IRB commands.
 #
-# The current aliases are returned
-# by the configuration method <tt>conf.command_aliases</tt>.
-#
+# The current aliases are returned by method <tt>conf.command_aliases</tt>.
 # The default initial aliases:
 #
 #   irb(main):001:0> conf.command_aliases
 #   => {:"$"=>:show_source, :"@"=>:whereami, :break=>:irb_break, :catch=>:irb_catch, :next=>:irb_next}
 #
-# You may change the initial aliases in the
-# configuration file with:
+# You can change the initial aliases in the configuration file with:
 #
 #   IRB.conf[:COMMAND_ALIASES] = {foo: :show_source, bar: :whereami}
 #
-# You may replace the current aliases at any time
+# You can replace the current aliases at any time
 # with configuration method <tt>conf.command_aliases=</tt>:
 #
 #   irb(main):002:0> conf.command_aliases = {baz: :show_source}
@@ -342,47 +337,37 @@ require_relative "irb/debug"
 #
 # === End-of-File
 #
-# An \IRB configuration has a boolean setting that controls whether \IRB
-# ignores the end-of-file character <tt>Ctrl-D</tt>;
-# method <tt>conf.ignore_eof?</tt> returns the setting.
+# You can specify how \IRB responds to the end-of-file character <tt>Ctrl-D</tt>;
+# method <tt>conf.ignore_eof</tt> returns the boolean setting.
 #
-# The default initial setting is +false+, which means that \IRB does not
-# ignore the character, but instead exits immediately.
+# The default initial setting is +false+, which means that \IRB exits immediately.
 #
-# You can change the default initial setting in the configuration file:
+# You can change the initial setting in the configuration file:
 #
 #   IRB.conf[:IGNORE_EOF] = true # Do not exit on Ctrl-D.
 #
-# You can change the setting at any time using method <tt>conf.ignore_eof?</tt>
+# You can change the setting at any time using method <tt>conf.ignore_eof=</tt>
 #
 # === Sigint
 #
-# An \IRB configuration has a boolean setting that controls whether \IRB
-# ignores the interrupt character <tt>Ctrl-C</tt>;
-# method <tt>conf.ignore_sigint?</tt> returns the setting.
+# You can specify how \IRB responds to the interrupt character <tt>Ctrl-C</tt>
+# method <tt>conf.ignore_sigint</tt> returns the setting.
 #
 # The default initial setting is +true+, which means that \IRB
 # ignores the character, and does not exit.
 #
-# You can change the default initial setting in the configuration file:
+# You can change the initial setting in the configuration file:
 #
 #   IRB.conf[:IGNORE_SIGINT] = false # Exit on Ctrl-C.
 #
-# You can change the setting at any time using method <tt>conf.ignore_sigint?</tt>
+# You can change the setting at any time using method <tt>conf.ignore_sigint=</tt>
 #
 # == Output
 #
-# === Line Numbers
-#
-# By default, \IRB includes a line numbers in each prompt.
-# This can be especially useful because an \IRB error message
-# may cite a line number.
-#
 # === Automatic Indentation
 #
-# An \IRB configuration has a boolean auto-indentation setting,
-# which determines whether \IRB automatically indents lines to show structure;
-# see examples below.
+# You can specify whether \IRB is to automatically indent input lines
+# to show structure (e.g., indent the contents of a block).
 #
 # The current setting is returned
 # by the configuration method <tt>conf.auto_indent_mode</tt>.
@@ -396,21 +381,16 @@ require_relative "irb/debug"
 #   irb(main):004:0> end
 #   => ["README.md", "Rakefile"]
 #
-# You may change the initial setting in the
+# You can change the initial setting in the
 # configuration file with:
 #
 #   IRB.conf[:AUTO_INDENT] = false
 #
-# Note that the _current_ setting <i>may not</i>
-# be changed in the \IRB session by either of:
-#
-# - <tt>IRB.conf[:AUTO_INDENT] = _value_</tt>.
-# - <tt>conf.auto_indent_mode = _value_</tt>.
+# Note that the _current_ setting <i>may not</i> be changed in the \IRB session.
 #
 # === Return-Value Printing (Echoing)
 #
-# An \IRB configuration has settings that determine
-# whether and how \IRB prints return values:
+# You can specify whether and how \IRB prints return values.
 #
 # - The value of <tt>conf.echo</tt> determines whether
 #   \IRB prints the return values.
@@ -427,7 +407,7 @@ require_relative "irb/debug"
 #   - <tt>--echo</tt>: sets <tt>conf.echo</tt> to +true+.
 #   - <tt>--noecho</tt>: sets <tt>conf.echo</tt> to +false+.
 #
-#   You may also change the initial setting in the
+#   You can also change the initial setting in the
 #   configuration file with (which overrides the command-line settings above):
 #
 #     IRB.conf[:ECHO] = false
@@ -435,7 +415,7 @@ require_relative "irb/debug"
 #   Note that if <tt>IRB.conf[:ECHO] is +nil+ (its default value),
 #   the value of <tt>conf.echo</tt> will nevertheless be +true+.
 #
-#   You may change the current setting at any time
+#   You can change the current setting at any time
 #   with configuration method <tt>conf.echo=</tt>:
 #
 #     irb(main):001:0> conf.echo = false
@@ -467,7 +447,7 @@ require_relative "irb/debug"
 #   - <tt>--truncate-echo-on-assignment</tt>:
 #     sets <tt>conf.echo_on_assignment</tt> to +:truncate+.
 #
-#   You may change the initial value by assigning <tt>IRB.conf[:ECHO_ON_ASSIGNMENT]</tt>
+#   You can change the initial value by assigning <tt>IRB.conf[:ECHO_ON_ASSIGNMENT]</tt>
 #   in the configuration file (which overrides the command-line options above);
 #   the assigned value should be one of the following:
 #
@@ -475,7 +455,7 @@ require_relative "irb/debug"
 #     - +:truncate+ or +nil+: Assigned value is printed, possibly truncated.
 #     - Any other value: Assigned value is printed in full.
 #
-#   You may change the current setting at any time
+#   You can change the current setting at any time
 #   with configuration method <tt>conf.echo_on_assignment=</tt>:
 #
 #     irb(main):002:0> conf.echo = false
@@ -497,39 +477,36 @@ require_relative "irb/debug"
 #
 # === Multiline Output
 #
-# By default, \IRB prints the first line of a multiline response
-# on a new line (by prefixing a newline):
+# You can specify whether \IRB is to prefix a newline to a multiline response;
+# method <tt>conf.newline_before_multiline_output</tt> returns a boolean:
 #
-#   irb(main):002:0> conf.inspect_mode = false
-#   => false
-#   irb(main):003:0> "foo\nbar"
-#   =>
-#   foo
-#   bar
-#
-# This behavior is controlled by the value of
-# <tt>conf.newline_before_multiline_output</tt>,
-# whose initilal default value is +true+.
+# - +true+ (the default) if a newline is to be prefixed.
+# - +false+ if not.
 #
 # You can change the initial default value by adding to the configuation file:
 #
 #   IRB.conf[:NEWLINE_BEFORE_MULTILINE_OUTPUT] = false
 #
-# This initializes the value as +false+:
-#
-#   irb(main):005:0> conf.newline_before_multiline_output
-#   => false
-#   irb(main):006:0> "foo\nbar"
-#   => foo
-#   bar
-#
 # You can change the value at any time using
 # method <tt>conf.newline_before_multiline_output=</tt>.
 #
+# Examples:
+#
+#   rb(main):001:0> conf.inspect_mode = false
+#   => false
+#   irb(main):002:0> "foo\nbar"
+#   =>
+#   foo
+#   bar
+#   irb(main):003:0> conf.newline_before_multiline_output = false
+#   => false
+#   irb(main):004:0> "foo\nbar"
+#   => foo
+#   bat  r
+#
 # === Evaluation History
 #
-# An \IRB configuration has settings that determine whether and how much
-# evaluation history is to be saved;
+# You can specify whether and how much evaluation history is to be saved;
 # this is the history of values returned for typed commands.
 #
 # By default:
@@ -621,38 +598,46 @@ require_relative "irb/debug"
 #         irb(main):012:0> __[0]
 #         => nil
 #
+# === \IRB Prompt and Return Formats
+#
+# You can specify what the prompt and return values are to look like.
+#
+# The default prompt and return values looks like this:
+#
+#   irb(main):001:0> :foo
+#   => :foo
+#   irb(main):002:0> 1 + 1
+#   => 2
+#   irb(main):003:0> 2 + 2
+#   => 4
+#
 # === Backtrace Limit
 #
-# An \IRB configuration has an integer backtrace limit +n+,
+# You can specify a backtrace limit, +n+,
 # which specifies that the backtrace for an exception
-# may contain no more than 2 * +n+ entries,
+# can contain no more than 2 * +n+ entries,
 # consisting at most of the first +n+ and last +n+ entries.
 #
 # The current limit is returned
 # by the configuration method <tt>conf.back_trace_limit</tt>.
 #
-# The default initial limit is <tt>'irb'</tt>:
+# The default initial limit is 16:
 #
 #   irb(main):008:0> conf.back_trace_limit
 #   => 16
 #
-# You may change the initial limit with command-line option
+# You can change the initial limit with command-line option
 # <tt>--back_trace_limit _value_</tt>:
 #
 #   irb --back_trace_limit 32
 #
-# You may also change the initial limit in the # configuration file
+# You can also change the initial limit in the configuration file
 # (which overrides the command-line option above):
 #
-#   IRB.conf[:BACK_TRACE_LIMIT] = 32
+#   IRB.conf[:BACK_TRACE_LIMIT] = 24
 #
-# You may change the current limit at any time
-# with configuration method <tt>conf.back_trace_limit=</tt>:
-#
-#   irb(main):002:0> conf.back_trace_limit = 24
-#   => 24
-#   irb(main):003:0> conf.back_trace_limit
-#   => 24
+# You can change the current limit at any time
+# with configuration method <tt>conf.back_trace_limit=</tt>.
 #
 # Note that the _current_ limit <i>may not</i>
 # be changed by <tt>IRB.conf[:BACK_TRACE_LIMIT] = '_value_'</tt>
@@ -669,7 +654,7 @@ require_relative "irb/debug"
 # - A string _name_.
 #   The default initial name is <tt>'irb'</tt>.
 #
-#   You can change the default initial name in the configuration file
+#   You can change the initial name in the configuration file
 #   with <tt>IRB.conf[:IRB_NAME] = '_name_'.
 #
 #   You can change the name at any time with method <tt>conf.irb_name=</tt>.
