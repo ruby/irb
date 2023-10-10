@@ -9,15 +9,11 @@ require_relative 'ruby-lex'
 
 module IRB
   class BaseCompletor # :nodoc:
-    def initialize(target, preposing = nil, postposing = nil)
+    def completion_candidates(preposing, target, postposing, bind:)
       raise NotImplementedError
     end
 
-    def completion_candidates
-      raise NotImplementedError
-    end
-
-    def doc_namespace(matched)
+    def doc_namespace(preposing, matched, postposing, bind:)
       raise NotImplementedError
     end
 
@@ -36,7 +32,7 @@ module IRB
         []
       end.freeze
 
-    def self.retrieve_gem_and_system_load_path
+    def retrieve_gem_and_system_load_path
       candidates = (GEM_PATHS | $LOAD_PATH)
       candidates.map do |p|
         if p.respond_to?(:to_path)
@@ -47,8 +43,8 @@ module IRB
       end.compact.sort
     end
 
-    def self.retrieve_files_to_require_from_load_path
-      @@files_from_load_path ||=
+    def retrieve_files_to_require_from_load_path
+      @files_from_load_path ||=
         (
           shortest = []
           rest = retrieve_gem_and_system_load_path.each_with_object([]) { |path, result|
@@ -66,8 +62,8 @@ module IRB
         )
     end
 
-    def self.retrieve_files_to_require_relative_from_current_dir
-      @@files_from_current_dir ||= Dir.glob("**/*.{rb,#{RbConfig::CONFIG['DLEXT']}}", base: '.').map { |path|
+    def retrieve_files_to_require_relative_from_current_dir
+      @files_from_current_dir ||= Dir.glob("**/*.{rb,#{RbConfig::CONFIG['DLEXT']}}", base: '.').map { |path|
         path.sub(/\.(rb|#{RbConfig::CONFIG['DLEXT']})\z/, '')
       }
     end
@@ -140,13 +136,13 @@ module IRB
       if tok && tok.event == :on_ident && tok.state == Ripper::EXPR_CMDARG
         case tok.tok
         when 'require'
-          result = BaseCompletor.retrieve_files_to_require_from_load_path.select { |path|
+          result = retrieve_files_to_require_from_load_path.select { |path|
             path.start_with?(actual_target)
           }.map { |path|
             quote + path
           }
         when 'require_relative'
-          result = BaseCompletor.retrieve_files_to_require_relative_from_current_dir.select { |path|
+          result = retrieve_files_to_require_relative_from_current_dir.select { |path|
             path.start_with?(actual_target)
           }.map { |path|
             quote + path
@@ -156,23 +152,16 @@ module IRB
       result
     end
 
-    def initialize(target, preposing, postposing, bind:)
-      @target = target
-      @preposing = preposing
-      @postposing = postposing
-      @binding = bind
-    end
-
-    def completion_candidates
-      if @preposing && @postposing
-        result = complete_require_path(@target, @preposing, @postposing)
+    def completion_candidates(preposing, target, postposing, bind:)
+      if preposing && postposing
+        result = complete_require_path(target, preposing, postposing)
         return result if result
       end
-      retrieve_completion_data(@target, bind: @binding, doc_namespace: false).compact.map{ |i| i.encode(Encoding.default_external) }
+      retrieve_completion_data(target, bind: bind, doc_namespace: false).compact.map{ |i| i.encode(Encoding.default_external) }
     end
 
-    def doc_namespace(target)
-      retrieve_completion_data(target, bind: @binding, doc_namespace: true)
+    def doc_namespace(_preposing, matched, _postposing, bind:)
+      retrieve_completion_data(matched, bind: bind, doc_namespace: true)
     end
 
     def retrieve_completion_data(input, bind:, doc_namespace:)

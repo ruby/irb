@@ -188,7 +188,7 @@ module IRB
       Readline.completion_append_character = nil
       Readline.completion_proc = ->(target) {
         bind = IRB.conf[:MAIN_CONTEXT].workspace.binding
-        RegexpCompletor.new(target, '', '', bind: bind).completion_candidates
+        RegexpCompletor.new.completion_candidates('', target, '', bind: bind)
       }
     end
 
@@ -235,14 +235,15 @@ module IRB
       super
 
       @eof = false
+      @completor = RegexpCompletor.new
 
       Reline.basic_word_break_characters = BASIC_WORD_BREAK_CHARACTERS
       Reline.completion_append_character = nil
       Reline.completer_quote_characters = ''
       Reline.completion_proc = ->(target, preposing, postposing) {
         bind = IRB.conf[:MAIN_CONTEXT].workspace.binding
-        @completor = RegexpCompletor.new(target, preposing, postposing, bind: bind)
-        @completor.completion_candidates
+        @completion_params = [preposing, target, postposing, bind]
+        @completor.completion_candidates(preposing, target, postposing, bind: bind)
       }
       Reline.output_modifier_proc =
         if IRB.conf[:USE_COLORIZE]
@@ -281,7 +282,10 @@ module IRB
     end
 
     def show_doc_dialog_proc
-      get_current_completor = -> { @completor }
+      doc_namespace = ->(matched) {
+        preposing, _target, postposing, bind = @completion_params
+        @completor.doc_namespace(preposing, matched, postposing, bind: bind)
+      }
       ->() {
         dialog.trap_key = nil
         alt_d = [
@@ -297,8 +301,7 @@ module IRB
         cursor_pos_to_render, result, pointer, autocomplete_dialog = context.pop(4)
         return nil if result.nil? or pointer.nil? or pointer < 0
 
-        completor = get_current_completor.call
-        name = completor.doc_namespace(result[pointer])
+        name = doc_namespace.call(result[pointer])
 
         options = {}
         options[:extra_doc_dirs] = IRB.conf[:EXTRA_DOC_DIRS] unless IRB.conf[:EXTRA_DOC_DIRS].empty?
@@ -391,7 +394,8 @@ module IRB
         return
       end
 
-      namespace = @completor.doc_namespace(matched)
+      _target, preposing, postposing, bind = @completion_params
+      namespace = @completor.doc_namespace(preposing, matched, postposing, bind: bind)
       return unless namespace
 
       driver ||= RDoc::RI::Driver.new

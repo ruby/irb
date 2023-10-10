@@ -89,10 +89,8 @@ module TestIRB
     end
 
     def display_document(target, bind)
-      completor = IRB::RegexpCompletor.new(target, '', '', bind: bind)
       input_method = IRB::RelineInputMethod.new
-      # @completor needs to be initialized before calling display_document
-      input_method.instance_variable_set(:@completor, completor)
+      input_method.instance_variable_set(:@completion_params, [target, '', '', bind])
       input_method.display_document(target, driver: @driver)
     end
 

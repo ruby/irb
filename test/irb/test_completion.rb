@@ -16,13 +16,11 @@ module TestIRB
     end
 
     def completion_candidates(target, bind)
-      completor = IRB::RegexpCompletor.new(target, '', '', bind: bind)
-      completor.completion_candidates
+      IRB::RegexpCompletor.new.completion_candidates('', target, '', bind: bind)
     end
 
     def doc_namespace(target, bind)
-      completor = IRB::RegexpCompletor.new(target, '', '', bind: bind)
-      completor.doc_namespace(target)
+      IRB::RegexpCompletor.new.doc_namespace('', target, '', bind: bind)
     end
 
     class MethodCompletionTest < CompletionTest
@@ -81,12 +79,12 @@ module TestIRB
 
     class RequireComepletionTest < CompletionTest
       def test_complete_require
-        candidates = IRB::RegexpCompletor.new("'irb", "require ", "", bind: binding).completion_candidates
+        candidates = IRB::RegexpCompletor.new.completion_candidates("require ", "'irb", "", bind: binding)
         %w['irb/init 'irb/ruby-lex].each do |word|
           assert_include candidates, word
         end
         # Test cache
-        candidates = IRB::RegexpCompletor.new("'irb", "require ", "", bind: binding).completion_candidates
+        candidates = IRB::RegexpCompletor.new.completion_candidates("require ", "'irb", "", bind: binding)
         %w['irb/init 'irb/ruby-lex].each do |word|
           assert_include candidates, word
         end
@@ -98,7 +96,7 @@ module TestIRB
         test_path = Pathname.new(temp_dir)
         $LOAD_PATH << test_path
 
-        candidates = IRB::RegexpCompletor.new("'foo", "require ", "", bind: binding).completion_candidates
+        candidates = IRB::RegexpCompletor.new.completion_candidates("require ", "'foo", "", bind: binding)
         assert_include candidates, "'foo"
       ensure
         $LOAD_PATH.pop if test_path
@@ -112,7 +110,7 @@ module TestIRB
         object.define_singleton_method(:to_s) { temp_dir }
         $LOAD_PATH << object
 
-        candidates = IRB::RegexpCompletor.new("'foo", "require ", "", bind: binding).completion_candidates
+        candidates = IRB::RegexpCompletor.new.completion_candidates("require ", "'foo", "", bind: binding)
         assert_include candidates, "'foo"
       ensure
         $LOAD_PATH.pop if object
@@ -125,27 +123,27 @@ module TestIRB
         $LOAD_PATH << object
 
         assert_nothing_raised do
-          IRB::RegexpCompletor.new("'foo", "require ", "", bind: binding).completion_candidates
+          IRB::RegexpCompletor.new.completion_candidates("require ", "'foo", "", bind: binding)
         end
       ensure
         $LOAD_PATH.pop if object
       end
 
       def test_complete_require_library_name_first
-        candidates = IRB::RegexpCompletor.new("'csv", "require ", "", bind: binding).completion_candidates
+        candidates = IRB::RegexpCompletor.new.completion_candidates("require ", "'csv", "", bind: binding)
         assert_equal "'csv", candidates.first
       end
 
       def test_complete_require_relative
         candidates = Dir.chdir(__dir__ + "/../..") do
-          IRB::RegexpCompletor.new("'lib/irb", "require_relative ", "", bind: binding).completion_candidates
+          IRB::RegexpCompletor.new.completion_candidates("require_relative ", "'lib/irb", "", bind: binding)
         end
         %w['lib/irb/init 'lib/irb/ruby-lex].each do |word|
           assert_include candidates, word
         end
         # Test cache
         candidates = Dir.chdir(__dir__ + "/../..") do
-          IRB::RegexpCompletor.new("'lib/irb", "require_relative ", "", bind: binding).completion_candidates
+          IRB::RegexpCompletor.new.completion_candidates("require_relative ", "'lib/irb", "", bind: binding)
         end
         %w['lib/irb/init 'lib/irb/ruby-lex].each do |word|
           assert_include candidates, word
