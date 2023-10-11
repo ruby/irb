@@ -181,6 +181,7 @@ module IRB
       super
 
       @eof = false
+      @completor = RegexpCompletor.new
 
       if Readline.respond_to?("basic_word_break_characters=")
         Readline.basic_word_break_characters = BASIC_WORD_BREAK_CHARACTERS
@@ -188,7 +189,7 @@ module IRB
       Readline.completion_append_character = nil
       Readline.completion_proc = ->(target) {
         bind = IRB.conf[:MAIN_CONTEXT].workspace.binding
-        RegexpCompletor.new.completion_candidates('', target, '', bind: bind)
+        @completor.completion_candidates('', target, '', bind: bind)
       }
     end
 
