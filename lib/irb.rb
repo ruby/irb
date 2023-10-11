@@ -602,6 +602,44 @@ require_relative "irb/debug"
 #
 # You can specify what the prompts and return values are to look like.
 #
+# ==== The Default Prompt and Return Format
+#
+# By default, the prompt and return values look like this:
+#
+#   irb(main):001> 1 + 1
+#   => 2
+#   irb(main):002> 2 + 2
+#   => 4
+#
+# The prompt includes:
+#
+# - The name of the running program (<tt>irb</tt>);
+#   see {IRB Name}[rdoc-ref:IRB@IRB+Name].
+# - The name of the current session (<tt>main</tt>);
+#   See {Sessions}[rdoc-ref:IRB@Sessions].
+# - A 3-digit line number (1-based).
+#
+# The default prompt actually defines three formats:
+#
+# - One for most situations (as above):
+#
+#     irb(main):003> Dir
+#
+# - One for when the typed command is a statement continuation (adds trailing asterisk):
+#
+#     irb(main):003* Dir.
+#
+# - One for when the typed command is a string continuation (adds trailing single-quote):
+#
+#     irb(main):003' Dir.entries('.
+#
+# You can see the prompt change as you type the characters in the following:
+#
+#     irb(main):003* Dir.entries('.').select do |entry|
+#     irb(main):004*   entry.start_with?('R')
+#     irb(main):005> end
+#     => ["Rakefile", "README.md"]
+#
 # ==== Pre-Defined Prompts
 #
 # \IRB has several pre-defined prompts, stored in hash <tt>IRB.conf[:PROMPT]</tt>:
@@ -611,27 +649,67 @@ require_relative "irb/debug"
 #
 # To see the full data for these, type <tt>IRB.conf[:PROMPT]</tt>.
 #
-# The current prompt and return format are determined by <tt>IRB.conf[:PROMPT_MODE]</tt>,
-# which has the initial default value <tt>:DEFAULT</tt>
-# (meaning the default prompts and return format):
+# Most of these prompt definitions include specifiers that represent
+# values like the \IRB name, session name, and line number;
+# see {Prompt Specifiers}[rdoc-ref:IRB@Prompt+Specifiers].
+#
+# The initial prompt and return format are determined by <tt>IRB.conf[:PROMPT_MODE]</tt>,
+# which has the initial default value <tt>:DEFAULT</tt>.
 #
 #   rb(main):002:0> IRB.conf[:PROMPT_MODE]
 #   => :DEFAULT
 #
-# If you're interested in prompts and return formats other than the default,
-# you might experiment by changing to one of the others;
-# for example, you might add to the configuration file:
+# You can change the initial prompt and return format in the configuration file:
 #
-#   IRB.conf[:PROMPT_MODE] = :SIMPLE
+#   IRB.conf[:PROMPT = :CLASSIC
+#
+# You can change the prompt and return format using method <tt>conf.prompt_mode=</tt>;
+# in this example, the prompt has been changed to <tt>>></tt>:
+#
+#   irb(main):001> conf.prompt_mode
+#   => :DEFAULT
+#   irb(main):002> conf.prompt_mode = :SIMPLE
+#   => :SIMPLE
+#   >>
+#
+# If you're interested in prompts and return formats other than the defaults,
+# you might experiment by trying some of the others.
 #
 # ==== Custom Prompts
 #
-# You can also create custom prompt data.
+# You can also define custom prompts and return formats,
+# which may be done either in an \IRB session or in the configuration file.
 #
-# A simple custom prompt:
+# A prompt in \IRB actually defines three prompts, as seen above.
+# For simple custom data, we'll make all three the same:
 #
+#   irb(main):001* IRB.conf[:PROMPT][:MY_PROMPT] = {
+#   irb(main):002*   PROMPT_I: ': ',
+#   irb(main):003*   PROMPT_C: ': ',
+#   irb(main):004*   PROMPT_S: ': ',
+#   irb(main):005*   RETURN: '=> '
+#   irb(main):006> }
+#   => {:PROMPT_I=>": ", :PROMPT_C=>": ", :PROMPT_S=>": ", :RETURN=>"=> "}
 #
+# If you define the custom prompt in the configuration file,
+# you can also make it the current prompt by adding:
 #
+#   IRB.conf[:PROMPT_MODE] = :MY_PROMPT
+#
+# Regardless of where it's defined, you can make it the current prompt in a session:
+#
+#   conf.prompt_mode = :MY_PROMPT
+#
+# ==== Prompt Specifiers
+#
+# A prompt's definition can include certain specifiers for which values are substituted:
+#
+# - <tt>%N</tt>: the name of the running program.
+# - <tt>%m</tt>: the value of <tt>self.to_s</tt>.
+# - <tt>%M</tt>: the value of <tt>self.inspect</tt>.
+# - <tt>%l</tt>: an indication of the type of string;
+#   one of <tt>"</tt>, <tt>'</tt>, <tt>/</tt>, <tt>]</tt>.
+# 
 # === Backtrace Limit
 #
 # You can specify a backtrace limit, +n+,
