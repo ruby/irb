@@ -709,7 +709,7 @@ module TestIRB
 
       def assert_dynamic_prompt(input_with_prompt)
         expected_prompt_list, lines = input_with_prompt.transpose
-        def @irb.prompt(opens, continue, line_offset)
+        def @irb.generate_prompt(opens, continue, line_offset)
           ltype = @scanner.ltype_from_open_tokens(opens)
           indent = @scanner.calc_indent_level(opens)
           continue = opens.any? || continue

@@ -514,7 +514,7 @@ module IRB
     # The lexer used by this irb session
     attr_accessor :scanner
 
-    def prompt(opens, continue, line_offset)
+    private def generate_prompt(opens, continue, line_offset)
       ltype = @scanner.ltype_from_open_tokens(opens)
       indent = @scanner.calc_indent_level(opens)
       continue = opens.any? || continue
@@ -577,9 +577,9 @@ module IRB
       end
     end
 
-    def read_input(prompt_string)
+    def read_input(prompt)
       signal_status(:IN_INPUT) do
-        @context.io.prompt = prompt_string
+        @context.io.prompt = prompt
         if l = @context.io.gets
           print l if @context.verbose?
         else
@@ -597,16 +597,16 @@ module IRB
     end
 
     def readmultiline
-      prompt_string = prompt([], false, 0)
+      prompt = generate_prompt([], false, 0)
 
       # multiline
-      return read_input(prompt_string) if @context.io.respond_to?(:check_termination)
+      return read_input(prompt) if @context.io.respond_to?(:check_termination)
 
       # nomultiline
       code = ''
       line_offset = 0
       loop do
-        line = read_input(prompt_string)
+        line = read_input(prompt)
         unless line
           return code.empty? ? nil : code
         end
@@ -621,7 +621,7 @@ module IRB
 
         line_offset += 1
         continue = @scanner.should_continue?(tokens)
-        prompt_string = prompt(opens, continue, line_offset)
+        prompt = generate_prompt(opens, continue, line_offset)
       end
     end
 
@@ -694,7 +694,7 @@ module IRB
               tokens_until_line << token if token != tokens_until_line.last
             end
             continue = @scanner.should_continue?(tokens_until_line)
-            prompt(next_opens, continue, line_num_offset)
+            generate_prompt(next_opens, continue, line_num_offset)
           end
         end
       end
@@ -880,7 +880,7 @@ module IRB
       end
     end
 
-    def truncate_prompt_main(str) # :nodoc:
+    private def truncate_prompt_main(str) # :nodoc:
       str = str.tr(CONTROL_CHARACTERS_PATTERN, ' ')
       if str.size <= PROMPT_MAIN_TRUNCATE_LENGTH
         str
@@ -889,7 +889,7 @@ module IRB
       end
     end
 
-    def format_prompt(format, ltype, indent, line_no) # :nodoc:
+    private def format_prompt(format, ltype, indent, line_no) # :nodoc:
       format.gsub(/%([0-9]+)?([a-zA-Z])/) do
         case $2
         when "N"
