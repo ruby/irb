@@ -600,16 +600,37 @@ require_relative "irb/debug"
 #
 # === \IRB Prompt and Return Formats
 #
-# You can specify what the prompt and return values are to look like.
+# You can specify what the prompts and return values are to look like.
 #
-# The default prompt and return values looks like this:
+# ==== Pre-Defined Prompts
 #
-#   irb(main):001:0> :foo
-#   => :foo
-#   irb(main):002:0> 1 + 1
-#   => 2
-#   irb(main):003:0> 2 + 2
-#   => 4
+# \IRB has several pre-defined prompts, stored in hash <tt>IRB.conf[:PROMPT]</tt>:
+#
+#   irb(main):001:0> IRB.conf[:PROMPT].keys
+#   => [:NULL, :DEFAULT, :CLASSIC, :SIMPLE, :INF_RUBY, :XMP]
+#
+# To see the full data for these, type <tt>IRB.conf[:PROMPT]</tt>.
+#
+# The current prompt and return format are determined by <tt>IRB.conf[:PROMPT_MODE]</tt>,
+# which has the initial default value <tt>:DEFAULT</tt>
+# (meaning the default prompts and return format):
+#
+#   rb(main):002:0> IRB.conf[:PROMPT_MODE]
+#   => :DEFAULT
+#
+# If you're interested in prompts and return formats other than the default,
+# you might experiment by changing to one of the others;
+# for example, you might add to the configuration file:
+#
+#   IRB.conf[:PROMPT_MODE] = :SIMPLE
+#
+# ==== Custom Prompts
+#
+# You can also create custom prompt data.
+#
+# A simple custom prompt:
+#
+#
 #
 # === Backtrace Limit
 #
