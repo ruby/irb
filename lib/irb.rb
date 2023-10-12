@@ -700,6 +700,13 @@ require_relative "irb/debug"
 #
 #   conf.prompt_mode = :MY_PROMPT
 #
+# You can view or modify the current prompt with various configuration methods:
+#
+# - <tt>conf.prompt_mode</tt>, <tt>conf.prompt_mode=</tt>.
+# - <tt>conf.prompt_c</tt>, <tt>conf.c=</tt>.
+# - <tt>conf.prompt_i</tt>, <tt>conf.i=</tt>.
+# - <tt>conf.prompt_s</tt>, <tt>conf.s=</tt>.
+#
 # ==== Prompt Specifiers
 #
 # A prompt's definition can include specifiers for which certain values are substituted:
