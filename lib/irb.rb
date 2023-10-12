@@ -22,6 +22,14 @@ require_relative "irb/easter-egg"
 require_relative "irb/debug"
 
 # \Module \IRB provides user interaction with the Ruby interpreter.
+# Ruby code typed into \IRB behaves the same as Ruby code in a file, except that:
+#
+# - Because \IRB evaluates input immediately after it is syntactically complete,
+#   some results may be slightly different.
+# - Forking may not be well behaved.
+# - Variable +conf+ is defined, and contains an \IRB::Context object
+#   that contains much information about the state of the \IRB session,
+#   and allows you to make changes to that state.
 #
 # == The REPL Loop
 #
