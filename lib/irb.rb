@@ -702,14 +702,17 @@ require_relative "irb/debug"
 #
 # ==== Prompt Specifiers
 #
-# A prompt's definition can include certain specifiers for which values are substituted:
+# A prompt's definition can include specifiers for which certain values are substituted:
 #
 # - <tt>%N</tt>: the name of the running program.
 # - <tt>%m</tt>: the value of <tt>self.to_s</tt>.
 # - <tt>%M</tt>: the value of <tt>self.inspect</tt>.
 # - <tt>%l</tt>: an indication of the type of string;
 #   one of <tt>"</tt>, <tt>'</tt>, <tt>/</tt>, <tt>]</tt>.
-# 
+# - <tt><i>NN</i>i</tt>: Indentation level.
+# - <tt><i>NN</i>n</tt>: Line number.
+# - <tt>%%</tt>: Literal <tt>%</tt>.
+#
 # === Backtrace Limit
 #
 # You can specify a backtrace limit, +n+,
