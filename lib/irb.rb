@@ -118,6 +118,9 @@ require_relative "irb/debug"
 # The configuration file is read as Ruby code,
 # and so can contain any Ruby programming you like.
 #
+# \Method <tt>conf.rc?</tt> returns +true+ if a configuration file was read,
+# +false+ otherwise.
+#
 # === \Hash <tt>IRB.conf</tt>
 #
 # Importantly, the configuration file can create, delete, or modify entries
@@ -700,12 +703,13 @@ require_relative "irb/debug"
 #
 #   conf.prompt_mode = :MY_PROMPT
 #
-# You can view or modify the current prompt with various configuration methods:
+# You can view or modify the current prompt data with various configuration methods:
 #
 # - <tt>conf.prompt_mode</tt>, <tt>conf.prompt_mode=</tt>.
 # - <tt>conf.prompt_c</tt>, <tt>conf.c=</tt>.
 # - <tt>conf.prompt_i</tt>, <tt>conf.i=</tt>.
 # - <tt>conf.prompt_s</tt>, <tt>conf.s=</tt>.
+# - <tt>conf.return_format</tt>, <tt>return_format=</tt>.
 #
 # ==== Prompt Specifiers
 #
