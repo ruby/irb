@@ -357,14 +357,17 @@ require_relative "irb/debug"
 #
 # === Auto-Completion
 #
-# By default, \IRB enables auto-completion.
-# You can disable it by adding to the configuration file:
+# By default, \IRB enables auto-completion:
+#
+#   irb(main):001> IRB.conf[:USE_AUTOCOMPLETE]
+#   => true
+#
+# You can disable it in the configuration file:
 #
 #   IRB.conf[:USE_AUTOCOMPLETE] = false
 #
 # \Method <tt>conf.use_autocomplete?</tt> returns +true+
 # if auto-completion is enabled, +false+ otherwise.
-#
 #
 # === Input \Method
 #
