@@ -385,12 +385,14 @@ require_relative "irb/debug"
 # using command-line option <tt>--singleline</tt> (or <tt>--nomultiline</tt>).
 #
 # \Method <tt>conf.use_multiline?</tt> returns:
+# and its synonym <tt>conf.use_reline</tt> return:
 #
 # - +true+ if option <tt>--multiline</tt> was given.
 # - +false+ if option <tt>--nomultiline</tt> was given.
 # - +nil+ if neither was given.
 #
-# \Method <tt>conf.use_singleline?</tt> returns:
+# \Method <tt>conf.use_singleline?</tt>
+# and its synonym <tt>conf.use_readline</tt> return:
 #
 # - +true+ if option <tt>--singleline</tt> was given.
 # - +false+ if option <tt>--nosingleline</tt> was given.
