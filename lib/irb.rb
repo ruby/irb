@@ -258,24 +258,6 @@ require_relative "irb/debug"
 #
 # == Input
 #
-# === Input \Method
-#
-# You can specify an input method that determines how command input is to be read;
-# the initial value is an instance of IRB::RelineInputMethod.
-#
-# You can retrieve the current value using method <tt>conf.io</tt>:
-#
-#   irb(main):001:0> conf.io
-#   => RelineInputMethod with Reline 0.3.2
-#
-# You can change the value using method <tt>conf.io=</tt>;
-# the new value should be an instance of one of these classes:
-#
-# - IRB::FileInputMethod.
-# - IRB::ReadlineInputMethod
-# - IRB::ReidlineInputMethod.
-# - IRB::RelineInputMethod.
-#
 # === Command History
 #
 # You can specify whether and where a history of input commands is to be stored.
@@ -371,7 +353,32 @@ require_relative "irb/debug"
 #
 #   IRB.conf[:IGNORE_SIGINT] = false # Exit on Ctrl-C.
 #
-# You can change the setting at any time using method <tt>conf.ignore_sigint=</tt>
+# You can change the setting at any time using method <tt>conf.ignore_sigint=</tt>.
+#
+# === Auto-Completion
+#
+# By default, \IRB enables auto-completion.
+# You can disable it by adding to the configuration file:
+#
+#   IRB.conf[:USE_AUTOCOMPLETE] = false
+#
+# === Input \Method
+#
+# You can specify an input method that determines how command input is to be read;
+# the initial value is an instance of IRB::RelineInputMethod.
+#
+# You can retrieve the current value using method <tt>conf.io</tt>:
+#
+#   irb(main):001:0> conf.io
+#   => RelineInputMethod with Reline 0.3.2
+#
+# You can change the value using method <tt>conf.io=</tt>;
+# the new value should be an instance of one of these classes:
+#
+# - IRB::FileInputMethod.
+# - IRB::ReadlineInputMethod
+# - IRB::ReidlineInputMethod.
+# - IRB::RelineInputMethod.
 #
 # == Output
 #
@@ -769,12 +776,10 @@ require_relative "irb/debug"
 # An \IRB configuration has:
 #
 # - A _session_, which is an IRB::Irb object.
-#
 #   You can retrieve the session using method <tt>conf.irb</tt>.
 #
 # - A string _name_.
 #   The default initial name is <tt>'irb'</tt>.
-#
 #   You can change the initial name in the configuration file
 #   with <tt>IRB.conf[:IRB_NAME] = '_name_'.
 #
@@ -784,6 +789,8 @@ require_relative "irb/debug"
 #   The default initial path is <tt>'(irb)'</tt>.
 #
 #   You can change the name at any time with method <tt>conf.irb_name=</tt>.
+#
+# You can retrieve the thread for a session with method <tt>conf.thread</tt>.
 #
 # == Old Doc
 #
