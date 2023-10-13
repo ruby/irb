@@ -86,14 +86,14 @@ module IRB
         when nil
           if STDIN.tty? && IRB.conf[:PROMPT_MODE] != :INF_RUBY && !use_singleline?
             # Both of multiline mode and singleline mode aren't specified.
-            @io = RelineInputMethod.new
+            @io = RelineInputMethod.new(build_completor)
           else
             @io = nil
           end
         when false
           @io = nil
         when true
-          @io = RelineInputMethod.new
+          @io = RelineInputMethod.new(build_completor)
         end
         unless @io
           case use_singleline?
@@ -147,6 +147,21 @@ module IRB
       end
 
       @command_aliases = IRB.conf[:COMMAND_ALIASES]
+    end
+
+    private def build_completor
+      # Valid values are :regexp and :type
+      if IRB.conf[:COMPLETOR] == :type && RUBY_VERSION >= '3.0.0'
+        begin
+          require 'prism'
+          require 'irb/type_completion/completor'
+          TypeCompletion::Types.preload_in_thread
+          return TypeCompletion::Completor.new
+        rescue LoadError
+        end
+      end
+      # Fallback to RegexpCompletor
+      RegexpCompletor.new
     end
 
     def save_history=(val)

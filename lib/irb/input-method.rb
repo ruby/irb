@@ -230,13 +230,13 @@ module IRB
     HISTORY = Reline::HISTORY
     include HistorySavingAbility
     # Creates a new input method object using Reline
-    def initialize
+    def initialize(completor)
       IRB.__send__(:set_encoding, Reline.encoding_system_needs.name, override: false)
 
-      super
+      super()
 
       @eof = false
-      @completor = RegexpCompletor.new
+      @completor = completor
 
       Reline.basic_word_break_characters = BASIC_WORD_BREAK_CHARACTERS
       Reline.completion_append_character = nil
