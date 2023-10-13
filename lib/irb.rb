@@ -376,10 +376,32 @@ require_relative "irb/debug"
 #
 # You can retrieve the current value using method <tt>conf.io</tt>:
 #
-#   irb(main):001:0> conf.io
-#   => RelineInputMethod with Reline 0.3.2
+#   irb(main):001> conf.io
+#   => RelineInputMethod with Reline 0.3.9
+#   irb(main):002> conf.io.class
+#   => IRB::RelineInputMethod
 #
-# You can change the value using method <tt>conf.io=</tt>;
+# You can set the value to IRB::ReadlineInputMethod
+# using command-line option <tt>--singleline</tt> (or <tt>--nomultiline</tt>).
+#
+# \Method <tt>conf.use_multiline?</tt> returns:
+#
+# - +true+ if option <tt>--multiline</tt> was given.
+# - +false+ if option <tt>--nomultiline</tt> was given.
+# - +nil+ if neither was given.
+#
+# \Method <tt>conf.use_singleline?</tt> returns:
+#
+# - +true+ if option <tt>--singleline</tt> was given.
+# - +false+ if option <tt>--nosingleline</tt> was given.
+# - +nil+ if neither was given.
+#
+# You can set the value of <tt>conf.io</tt> in the configuration file
+# by defining <tt>IRB.conf[:USE_SINGLELINE]</tt>
+# or <tt>IRB.conf[:USE_MULTILINE]</tt> as +true+ or +false+;
+# these override the command-line options mentioned above.
+#
+# You can change the value at any time using method <tt>conf.io=</tt>;
 # the new value should be an instance of one of these classes:
 #
 # - IRB::FileInputMethod.
