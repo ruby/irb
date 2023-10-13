@@ -362,6 +362,10 @@ require_relative "irb/debug"
 #
 #   IRB.conf[:USE_AUTOCOMPLETE] = false
 #
+# \Method <tt>conf.use_autocomplete?</tt> returns +true+
+# if auto-completion is enabled, +false+ otherwise.
+#
+#
 # === Input \Method
 #
 # You can specify an input method that determines how command input is to be read;
