@@ -242,6 +242,8 @@ require_relative "irb/debug"
 #
 # Note that the configuration file entry overrides the command-line options.
 #
+# === \Color Highlighting
+#
 # === Application Name
 #
 # You can specify an application name for the \IRB session.
@@ -410,6 +412,8 @@ require_relative "irb/debug"
 # - IRB::ReadlineInputMethod
 # - IRB::ReidlineInputMethod.
 # - IRB::RelineInputMethod.
+#
+# === Encodings
 #
 # == Output
 #
@@ -785,6 +789,12 @@ require_relative "irb/debug"
 #
 # If you do both, the configuration file overrides the command-line option.
 #
+# === Tracer
+#
+# === Debug
+#
+# === Warnings
+#
 # === Backtrace Limit
 #
 # You can specify a backtrace limit, +n+,
@@ -817,6 +827,10 @@ require_relative "irb/debug"
 # be changed by <tt>IRB.conf[:BACK_TRACE_LIMIT] = '_value_'</tt>
 # in the \IRB session.
 #
+# === Version
+#
+# === Help
+# 
 # == Sessions
 #
 # An \IRB configuration has:
@@ -837,6 +851,8 @@ require_relative "irb/debug"
 #   You can change the name at any time with method <tt>conf.irb_name=</tt>.
 #
 # You can retrieve the thread for a session with method <tt>conf.thread</tt>.
+#
+# == Workspaces
 #
 # == Old Doc
 #
