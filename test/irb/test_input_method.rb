@@ -89,9 +89,9 @@ module TestIRB
     end
 
     def display_document(target, bind)
-      input_method = IRB::RelineInputMethod.new
+      input_method = IRB::RelineInputMethod.new(rdoc_driver: @driver)
       input_method.instance_variable_set(:@completion_params, [target, '', '', bind])
-      input_method.display_document(target, driver: @driver)
+      input_method.display_document(target)
     end
 
     def test_perfectly_matched_namespace_triggers_document_display
@@ -170,4 +170,3 @@ module TestIRB
     end
   end
 end
-

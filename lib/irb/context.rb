@@ -3,6 +3,7 @@
 #   irb/context.rb - irb context
 #   	by Keiju ISHITSUKA(keiju@ruby-lang.org)
 #
+require "rdoc/ri/driver"
 
 require_relative "workspace"
 require_relative "inspector"
@@ -79,6 +80,10 @@ module IRB
       end
       @irb_path = "(" + @irb_name + ")"
 
+      rdoc_options = {}
+      rdoc_options[:extra_doc_dirs] = IRB.conf[:EXTRA_DOC_DIRS] unless IRB.conf[:EXTRA_DOC_DIRS].empty?
+      @rdoc_driver = RDoc::RI::Driver.new(rdoc_options)
+
       case input_method
       when nil
         @io = nil
@@ -86,14 +91,14 @@ module IRB
         when nil
           if STDIN.tty? && IRB.conf[:PROMPT_MODE] != :INF_RUBY && !use_singleline?
             # Both of multiline mode and singleline mode aren't specified.
-            @io = RelineInputMethod.new
+            @io = RelineInputMethod.new(rdoc_driver: @rdoc_driver)
           else
             @io = nil
           end
         when false
           @io = nil
         when true
-          @io = RelineInputMethod.new
+          @io = RelineInputMethod.new(rdoc_driver: @rdoc_driver)
         end
         unless @io
           case use_singleline?
@@ -199,6 +204,8 @@ module IRB
     # Can be either the #irb_name surrounded by parenthesis, or the
     # +input_method+ passed to Context.new
     attr_accessor :irb_path
+
+    attr_reader :rdoc_driver
 
     # Whether multiline editor mode is enabled or not.
     #

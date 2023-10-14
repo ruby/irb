@@ -46,6 +46,7 @@ module TestIRB
       irb = IRB::Irb.new(IRB::WorkSpace.new(main), input)
       irb.context.return_format = "=> %s\n"
       irb.context.irb_path = irb_path if irb_path
+      irb.context.instance_variable_set(:@rdoc_driver, RDoc::RI::Driver.new(use_stdout: true))
       IRB.conf[:MAIN_CONTEXT] = irb.context
       capture_output do
         irb.eval_input

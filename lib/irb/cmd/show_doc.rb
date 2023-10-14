@@ -20,19 +20,14 @@ module IRB
       description "Enter the mode to look up RI documents."
 
       def execute(*names)
-        require 'rdoc/ri/driver'
-
-        unless ShowDoc.const_defined?(:Ri)
-          opts = RDoc::RI::Driver.process_args([])
-          ShowDoc.const_set(:Ri, RDoc::RI::Driver.new(opts))
-        end
+        rdoc_driver = irb_context.rdoc_driver
 
         if names.empty?
-          Ri.interactive
+          rdoc_driver.interactive
         else
           names.each do |name|
             begin
-              Ri.display_name(name.to_s)
+              rdoc_driver.display_name(name.to_s)
             rescue RDoc::RI::Error
               puts $!.message
             end

@@ -230,10 +230,11 @@ module IRB
     HISTORY = Reline::HISTORY
     include HistorySavingAbility
     # Creates a new input method object using Reline
-    def initialize
+    def initialize(rdoc_driver: nil)
+      @rdoc_driver = rdoc_driver
       IRB.__send__(:set_encoding, Reline.encoding_system_needs.name, override: false)
 
-      super
+      super()
 
       @eof = false
       @completor = RegexpCompletor.new
@@ -287,7 +288,11 @@ module IRB
         preposing, _target, postposing, bind = @completion_params
         @completor.doc_namespace(preposing, matched, postposing, bind: bind)
       }
+      rdoc_driver = @rdoc_driver
+
       ->() {
+        return unless rdoc_driver
+
         dialog.trap_key = nil
         alt_d = [
           [Reline::Key.new(nil, 0xE4, true)], # Normal Alt+d.
@@ -304,19 +309,15 @@ module IRB
 
         name = doc_namespace.call(result[pointer])
 
-        options = {}
-        options[:extra_doc_dirs] = IRB.conf[:EXTRA_DOC_DIRS] unless IRB.conf[:EXTRA_DOC_DIRS].empty?
-        driver = RDoc::RI::Driver.new(options)
-
         if key.match?(dialog.name)
           begin
-            driver.display_names([name])
+            rdoc_driver.display_names([name])
           rescue RDoc::RI::Driver::NotFoundError
           end
         end
 
         begin
-          name = driver.expand_name(name)
+          name = rdoc_driver.expand_name(name)
         rescue RDoc::RI::Driver::NotFoundError
           return nil
         rescue
@@ -325,16 +326,16 @@ module IRB
         doc = nil
         used_for_class = false
         if not name =~ /#|\./
-          found, klasses, includes, extends = driver.classes_and_includes_and_extends_for(name)
+          found, klasses, includes, extends = rdoc_driver.classes_and_includes_and_extends_for(name)
           if not found.empty?
-            doc = driver.class_document(name, found, klasses, includes, extends)
+            doc = rdoc_driver.class_document(name, found, klasses, includes, extends)
             used_for_class = true
           end
         end
         unless used_for_class
           doc = RDoc::Markup::Document.new
           begin
-            driver.add_method(doc, name)
+            rdoc_driver.add_method(doc, name)
           rescue RDoc::RI::Driver::NotFoundError
             doc = nil
           rescue
@@ -383,7 +384,7 @@ module IRB
       }
     end
 
-    def display_document(matched, driver: nil)
+    def display_document(matched)
       begin
         require 'rdoc'
       rescue LoadError
@@ -399,19 +400,18 @@ module IRB
       namespace = @completor.doc_namespace(preposing, matched, postposing, bind: bind)
       return unless namespace
 
-      driver ||= RDoc::RI::Driver.new
       if namespace.is_a?(Array)
         out = RDoc::Markup::Document.new
         namespace.each do |m|
           begin
-            driver.add_method(out, m)
+            @rdoc_driver.add_method(out, m)
           rescue RDoc::RI::Driver::NotFoundError
           end
         end
-        driver.display(out)
+        @rdoc_driver.display(out)
       else
         begin
-          driver.display_names([namespace])
+          @rdoc_driver.display_names([namespace])
         rescue RDoc::RI::Driver::NotFoundError
         end
       end
