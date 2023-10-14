@@ -258,7 +258,7 @@ require_relative "irb/debug"
 #
 # == Input
 #
-# === Command History
+# === Input Command History
 #
 # You can specify whether and where a history of input commands is to be stored.
 #
@@ -286,7 +286,7 @@ require_relative "irb/debug"
 #
 # === Command Aliases
 #
-# You can specify aliases for \IRB commands.
+# You can specify aliases for \IRB input commands.
 #
 # The current aliases are returned by method <tt>conf.command_aliases</tt>.
 # The default initial aliases:
@@ -556,7 +556,7 @@ require_relative "irb/debug"
 # === Evaluation History
 #
 # You can specify whether and how much evaluation history is to be saved;
-# this is the history of values returned for typed commands.
+# this is the history of values returned for input commands.
 #
 # By default:
 #
