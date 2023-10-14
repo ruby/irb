@@ -770,6 +770,21 @@ require_relative "irb/debug"
 # - <tt><i>NN</i>n</tt>: Line number.
 # - <tt>%%</tt>: Literal <tt>%</tt>.
 #
+# === Verbosity
+#
+# By default, \IRB verbosity is off:
+#
+#   irb(main):001> conf.verbose?
+#   => false
+#
+# You can control verbosity on with:
+#
+# - Command-line options <tt>--verbose</tt> and <tt>--noverbose</tt>.
+# - Configuration file <tt>IRB.conf[:VERBOSE] = _boolean_</tt>,
+#   where +boolean+ is +true+ or +false+.
+#
+# If you do both, the configuration file overrides the command-line option.
+#
 # === Backtrace Limit
 #
 # You can specify a backtrace limit, +n+,
