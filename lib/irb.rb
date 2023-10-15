@@ -356,7 +356,7 @@ require_relative "irb/debug"
 #
 # You can change the setting at any time using method <tt>conf.ignore_eof=</tt>
 #
-# === Sigint
+# === SIGINT
 #
 # You can specify how \IRB responds to the interrupt character <tt>Ctrl-C</tt>
 # method <tt>conf.ignore_sigint</tt> returns the setting.

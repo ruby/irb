@@ -112,9 +112,14 @@ for each entry that is pre-defined, the initial value is given:
   initial value: +nil+, which would set +conf.echo_on_assignment+ to +:truncate+.
 - <tt>:EVAL_HISTORY</tt>: How much {evaluation history}[rdoc-ref:IRB@Evaluation+History]
   is to be stored; initial value: +nil+.
-- <tt>:EXTRA_DOC_DIRS</tt>:
-- <tt>:IGNORE_EOF</tt>:
-- <tt>:IGNORE_SIGINT</tt>:
+- <tt>:EXTRA_DOC_DIRS</tt>: \Array of
+  {RI documentation directories}[rdoc-ref:IRB@RI+Documentation+Directories]
+  to be parsed for the documentation dialog;
+  initial value: <tt>[]</tt>.
+- <tt>:IGNORE_EOF</tt>: Whether to ignore {end-of-file}[rdoc-ref:IRB@End-of-File];
+  initial value: +false+.
+- <tt>:IGNORE_SIGINT</tt>: Whether to ignore {SIGINT}[rdoc-ref:IRB@SIGINT];
+  initial value: +true+.
 - <tt>:INSPECT_MODE</tt>:
 - <tt>:IRB_LIB_PATH</tt>:
 - <tt>:IRB_NAME</tt>:
