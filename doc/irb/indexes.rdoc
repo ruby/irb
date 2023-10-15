@@ -110,7 +110,8 @@ for each entry that is pre-defined, the initial value is given:
 - <tt>:ECHO_ON_ASSIGNMENT</tt>: Whether to print ({echo}[rdoc-ref:IRB@Return-Value+Printing+-28Echoing-29])
   return values on assignment;
   initial value: +nil+, which would set +conf.echo_on_assignment+ to +:truncate+.
-- <tt>:EVAL_HISTORY</tt>:
+- <tt>:EVAL_HISTORY</tt>: How much {evaluation history}[rdoc-ref:IRB@Evaluation+History]
+  is to be stored; initial value: +nil+.
 - <tt>:EXTRA_DOC_DIRS</tt>:
 - <tt>:IGNORE_EOF</tt>:
 - <tt>:IGNORE_SIGINT</tt>:
