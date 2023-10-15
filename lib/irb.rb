@@ -271,6 +271,8 @@ require_relative "irb/debug"
 #
 #   IRB.conf[:AP_NAME] = 'my_ap_name'
 #
+# === \IRB Library Directory
+# 
 # == Input
 #
 # === Input Command History

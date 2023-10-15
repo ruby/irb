@@ -120,8 +120,17 @@ for each entry that is pre-defined, the initial value is given:
   initial value: +false+.
 - <tt>:IGNORE_SIGINT</tt>: Whether to ignore {SIGINT}[rdoc-ref:IRB@SIGINT];
   initial value: +true+.
-- <tt>:INSPECT_MODE</tt>:
-- <tt>:IRB_LIB_PATH</tt>:
+- <tt>:INSPECT_MODE</tt>: Whether to use method +inspect+ for printing
+  ({echoing}[rdoc-ref:IRB@Return-Value+Printing+-28Echoing-29]) return values;
+  initial value: +true+.
+- <tt>:IRB_LIB_PATH</tt>: The path to the {IRB library directory}[rdoc-ref:IRB@IRB+Library+Directory]; initial value:
+  <tt>"<i>RUBY_DIR</i>/lib/ruby/gems/<i>RUBY_VER_NUM</i>/gems/irb-<i>IRB_VER_NUM</i>/lib/irb"</tt>,
+  where:
+
+  - <i>RUBY_DIR_NUM</i> is the Ruby installation dirpath.
+  - <i>RUBY_VER_NUM</i> is the Ruby version number.
+  - <i>IRB_VER</i> is the \IRB version number.
+
 - <tt>:IRB_NAME</tt>:
 - <tt>:IRB_RC</tt>:
 - <tt>:LC_MESSAGES</tt>:
