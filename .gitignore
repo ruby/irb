@@ -2,6 +2,7 @@
 /.yardoc
 /_yardoc/
 /coverage/
+/doc/irb/*.ja
 /pkg/
 /spec/reports/
 /tmp/
