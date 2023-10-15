@@ -77,13 +77,22 @@ require_relative "irb/debug"
 # You can change the current configuration to affect the way printing works.
 # See {Output}[rdoc-ref:IRB@Output].
 #
-# == Starting and Stopping \IRB
+# == Starting \IRB
 #
 # As seen above, you can start \IRB by using the shell command +irb+;
-# you can stop it by typing +exit+:
+# at startup, \IRB reads and interprets the
+# {configuration file}[rdoc-ref:IRB@Configuration+File] (if any),
+# and accordingly sets values in the
+# {configuration object +conf+}[rdoc-ref:irb@Configuration].
+#
+# == Stopping \IRB
+#
+# You can stop an \IRB session by typing command +exit+:
 #
 #   irb(main):005:0> exit
-#   $
+#
+# At that point, \IRB calls any hooks found in array <tt>IRB.conf[:AT_EXIT]</tt>,
+# then exits.
 #
 # == Configuration
 #
@@ -248,7 +257,7 @@ require_relative "irb/debug"
 #
 # You can specify an application name for the \IRB session.
 #
-# The default initial value is +irb+:
+# The default initial value is <tt>'irb'</tt>:
 #
 #   irb(main):001:0> conf.ap_name
 #   => "irb"
@@ -830,7 +839,7 @@ require_relative "irb/debug"
 # === Version
 #
 # === Help
-# 
+#
 # == Sessions
 #
 # An \IRB configuration has:
