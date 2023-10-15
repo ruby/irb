@@ -253,6 +253,10 @@ require_relative "irb/debug"
 #
 # === \Color Highlighting
 #
+# === \Context Mode
+#
+# [workspace.new]
+#
 # === Application Name
 #
 # You can specify an application name for the \IRB session.
@@ -804,17 +808,17 @@ require_relative "irb/debug"
 #
 # === Warnings
 #
-# === Backtrace Limit
+# === Back Trace Limit
 #
-# You can specify a backtrace limit, +n+,
-# which specifies that the backtrace for an exception
+# You can specify a back trace limit, +n+,
+# which specifies that the back trace for an exception
 # can contain no more than 2 * +n+ entries,
 # consisting at most of the first +n+ and last +n+ entries.
 #
 # The current limit is returned
 # by the configuration method <tt>conf.back_trace_limit</tt>.
 #
-# The default initial limit is 16:
+# The initial limit is 16:
 #
 #   irb(main):008:0> conf.back_trace_limit
 #   => 16
