@@ -28,6 +28,7 @@ module IRB # :nodoc:
     unless ap_path and @CONF[:AP_NAME]
       ap_path = File.join(File.dirname(File.dirname(__FILE__)), "irb.rb")
     end
+    @CONF[:VERSION] = version
     @CONF[:AP_NAME] = File::basename(ap_path, ".rb")
 
     @CONF[:IRB_NAME] = "irb"

@@ -380,9 +380,7 @@ module IRB
   # Returns the current version of IRB, including release version and last
   # updated date.
   def IRB.version
-    if v = @CONF[:VERSION] then return v end
-
-    @CONF[:VERSION] = format("irb %s (%s)", @RELEASE_VERSION, @LAST_UPDATE_DATE)
+    format("irb %s (%s)", @RELEASE_VERSION, @LAST_UPDATE_DATE)
   end
 
   # The current IRB::Context of the session, see IRB.conf
@@ -971,8 +969,6 @@ module IRB
   end
 
   def @CONF.inspect
-    IRB.version unless self[:VERSION]
-
     array = []
     for k, v in sort{|a1, a2| a1[0].id2name <=> a2[0].id2name}
       case k
