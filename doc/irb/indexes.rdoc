@@ -135,8 +135,9 @@ for each entry that is pre-defined, the initial value is given:
   initial value: <tt>'irb'</tt>.
 - <tt>:IRB_RC</tt>: {Configuration monitor}[rdoc-ref:IRB@Configuration+Monitor];
   initial value: +nil+.
-- <tt>:LC_MESSAGES</tt>:
-- <tt>:LOAD_MODULES</tt>:
+- <tt>:LC_MESSAGES</tt>: {Locale}[rdoc-ref:IRB@Locale];
+  initial value: IRB::Locale object.
+- <tt>:LOAD_MODULES</tt>: deprecated.
 - <tt>:MAIN_CONTEXT</tt>:
 - <tt>:MEASURE</tt>:
 - <tt>:MEASURE_CALLBACKS</tt>:

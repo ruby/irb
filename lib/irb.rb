@@ -287,7 +287,15 @@ require_relative "irb/debug"
 #
 # === \IRB Library Directory
 #
+# IRB.conf[:IRB_LIB_PATH]
+#
 # === Configuration Monitor
+#
+# IRB.conf[:IRB_RC]
+#
+# === Locale
+#
+# IRB.conf[:LC_MESSAGES]
 #
 # == Input
 #
