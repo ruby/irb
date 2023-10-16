@@ -193,6 +193,10 @@ module IRB
       }
     end
 
+    def completion_info
+      'RegexpCompletor'
+    end
+
     # Reads the next line from this input method.
     #
     # See IO#gets for more information.
@@ -268,6 +272,11 @@ module IRB
         rescue LoadError
         end
       end
+    end
+
+    def completion_info
+      autocomplete_message = IRB.conf[:USE_AUTOCOMPLETE] ? 'Autocomplete' : 'Tab Complete'
+      "#{autocomplete_message}, #{@completor.inspect}"
     end
 
     def check_termination(&block)

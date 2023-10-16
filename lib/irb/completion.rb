@@ -94,6 +94,10 @@ module IRB
       end
     }
 
+    def inspect
+      'RegexpCompletor'
+    end
+
     # Set of reserved words used by Ruby, you should not use these for
     # constants or variables
     ReservedWords = %w[
