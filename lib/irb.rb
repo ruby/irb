@@ -257,6 +257,20 @@ require_relative "irb/debug"
 #
 # [workspace.new]
 #
+# === \IRB Name
+#
+# You can specify a name for \IRB.
+#
+# The default initial value is <tt>'irb'</tt>:
+#
+#   irb(main):001:0> conf.irb_name
+#   => "irb"
+#
+# You can set the default initial value
+# via hash entry <tt>IRB.conf[:IRB_NAME] = _string_</tt>:
+#
+#   IRB.conf[:IRB_NAME] = 'foo'
+#
 # === Application Name
 #
 # You can specify an application name for the \IRB session.
@@ -272,6 +286,8 @@ require_relative "irb/debug"
 #   IRB.conf[:AP_NAME] = 'my_ap_name'
 #
 # === \IRB Library Directory
+#
+# === Configuration Monitor
 #
 # == Input
 #

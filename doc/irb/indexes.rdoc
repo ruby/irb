@@ -131,8 +131,10 @@ for each entry that is pre-defined, the initial value is given:
   - <i>RUBY_VER_NUM</i> is the Ruby version number.
   - <i>IRB_VER_NUM</i> is the \IRB version number.
 
-- <tt>:IRB_NAME</tt>:
-- <tt>:IRB_RC</tt>:
+- <tt>:IRB_NAME</tt>: {IRB name}[rdoc-ref:IRB@IRB+Name];
+  initial value: <tt>'irb'</tt>.
+- <tt>:IRB_RC</tt>: {Configuration monitor}[rdoc-ref:IRB@Configuration+Monitor];
+  initial value: +nil+.
 - <tt>:LC_MESSAGES</tt>:
 - <tt>:LOAD_MODULES</tt>:
 - <tt>:MAIN_CONTEXT</tt>:
