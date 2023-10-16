@@ -1083,11 +1083,21 @@ class Binding
       IRB::Debug.insert_debug_break
       debugger_irb.debug_break
     else
-      # If we're not in a debugger session, create a new IRB instance with the current workspace
-      binding_irb = IRB::Irb.new(workspace)
-      binding_irb.context.irb_path = irb_path
-      binding_irb.run(IRB.conf)
-      binding_irb.debug_break
+      if false
+        # If we're not in a debugger session, create a new IRB instance with the current workspace
+        binding_irb = IRB::Irb.new(workspace)
+        binding_irb.context.irb_path = irb_path
+        binding_irb.run(IRB.conf)
+        binding_irb.debug_break
+      else
+        binding_irb = IRB::Irb.new(workspace)
+        binding_irb.context.irb_path = irb_path
+        IRB.conf[:IRB_RC].call(binding_irb.context) if IRB.conf[:IRB_RC]
+        IRB.conf[:MAIN_CONTEXT] = binding_irb.context
+        IRB::Debug.setup(binding_irb)
+        IRB::Debug.insert_debug_break
+        binding_irb.debug_break
+      end
     end
   end
 end
