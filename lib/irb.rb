@@ -835,16 +835,6 @@ module IRB
       end
     end
 
-    # Evaluates the given block using the given +context+ as the Context.
-    def suspend_context(context)
-      @context, back_context = context, @context
-      begin
-        yield back_context
-      ensure
-        @context = back_context
-      end
-    end
-
     # Handler for the signal SIGINT, see Kernel#trap for more information.
     def signal_handle
       unless @context.ignore_sigint?
