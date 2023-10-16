@@ -512,36 +512,6 @@ module IRB
     # The lexer used by this irb session
     attr_accessor :scanner
 
-    private def generate_prompt(opens, continue, line_offset)
-      ltype = @scanner.ltype_from_open_tokens(opens)
-      indent = @scanner.calc_indent_level(opens)
-      continue = opens.any? || continue
-      line_no = @line_no + line_offset
-
-      if ltype
-        f = @context.prompt_s
-      elsif continue
-        f = @context.prompt_c
-      else
-        f = @context.prompt_i
-      end
-      f = "" unless f
-      if @context.prompting?
-        p = format_prompt(f, ltype, indent, line_no)
-      else
-        p = ""
-      end
-      if @context.auto_indent_mode and !@context.io.respond_to?(:auto_indent)
-        unless ltype
-          prompt_i = @context.prompt_i.nil? ? "" : @context.prompt_i
-          ind = format_prompt(prompt_i, ltype, indent, line_no)[/.*\z/].size +
-            indent * 2 - p.size
-          p += " " * ind if ind > 0
-        end
-      end
-      p
-    end
-
     # Evaluates input for this session.
     def eval_input
       configure_io
@@ -868,52 +838,6 @@ module IRB
       end
     end
 
-    private def truncate_prompt_main(str) # :nodoc:
-      str = str.tr(CONTROL_CHARACTERS_PATTERN, ' ')
-      if str.size <= PROMPT_MAIN_TRUNCATE_LENGTH
-        str
-      else
-        str[0, PROMPT_MAIN_TRUNCATE_LENGTH - PROMPT_MAIN_TRUNCATE_OMISSION.size] + PROMPT_MAIN_TRUNCATE_OMISSION
-      end
-    end
-
-    private def format_prompt(format, ltype, indent, line_no) # :nodoc:
-      format.gsub(/%([0-9]+)?([a-zA-Z])/) do
-        case $2
-        when "N"
-          @context.irb_name
-        when "m"
-          truncate_prompt_main(@context.main.to_s)
-        when "M"
-          truncate_prompt_main(@context.main.inspect)
-        when "l"
-          ltype
-        when "i"
-          if indent < 0
-            if $1
-              "-".rjust($1.to_i)
-            else
-              "-"
-            end
-          else
-            if $1
-              format("%" + $1 + "d", indent)
-            else
-              indent.to_s
-            end
-          end
-        when "n"
-          if $1
-            format("%" + $1 + "d", line_no)
-          else
-            line_no.to_s
-          end
-        when "%"
-          "%"
-        end
-      end
-    end
-
     def output_value(omit = false) # :nodoc:
       str = @context.inspect_last_value
       multiline_p = str.include?("\n")
@@ -965,6 +889,84 @@ module IRB
         end
       end
       format("#<%s: %s>", self.class, ary.join(", "))
+    end
+
+    private
+
+    def generate_prompt(opens, continue, line_offset)
+      ltype = @scanner.ltype_from_open_tokens(opens)
+      indent = @scanner.calc_indent_level(opens)
+      continue = opens.any? || continue
+      line_no = @line_no + line_offset
+
+      if ltype
+        f = @context.prompt_s
+      elsif continue
+        f = @context.prompt_c
+      else
+        f = @context.prompt_i
+      end
+      f = "" unless f
+      if @context.prompting?
+        p = format_prompt(f, ltype, indent, line_no)
+      else
+        p = ""
+      end
+      if @context.auto_indent_mode and !@context.io.respond_to?(:auto_indent)
+        unless ltype
+          prompt_i = @context.prompt_i.nil? ? "" : @context.prompt_i
+          ind = format_prompt(prompt_i, ltype, indent, line_no)[/.*\z/].size +
+            indent * 2 - p.size
+          p += " " * ind if ind > 0
+        end
+      end
+      p
+    end
+
+    def truncate_prompt_main(str) # :nodoc:
+      str = str.tr(CONTROL_CHARACTERS_PATTERN, ' ')
+      if str.size <= PROMPT_MAIN_TRUNCATE_LENGTH
+        str
+      else
+        str[0, PROMPT_MAIN_TRUNCATE_LENGTH - PROMPT_MAIN_TRUNCATE_OMISSION.size] + PROMPT_MAIN_TRUNCATE_OMISSION
+      end
+    end
+
+    def format_prompt(format, ltype, indent, line_no) # :nodoc:
+      format.gsub(/%([0-9]+)?([a-zA-Z])/) do
+        case $2
+        when "N"
+          @context.irb_name
+        when "m"
+          truncate_prompt_main(@context.main.to_s)
+        when "M"
+          truncate_prompt_main(@context.main.inspect)
+        when "l"
+          ltype
+        when "i"
+          if indent < 0
+            if $1
+              "-".rjust($1.to_i)
+            else
+              "-"
+            end
+          else
+            if $1
+              format("%" + $1 + "d", indent)
+            else
+              indent.to_s
+            end
+          end
+        when "n"
+          if $1
+            format("%" + $1 + "d", line_no)
+          else
+            line_no.to_s
+          end
+        when "%"
+          "%"
+        end
+      end
     end
   end
 
