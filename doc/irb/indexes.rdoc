@@ -138,7 +138,8 @@ for each entry that is pre-defined, the initial value is given:
 - <tt>:LC_MESSAGES</tt>: {Locale}[rdoc-ref:IRB@Locale];
   initial value: IRB::Locale object.
 - <tt>:LOAD_MODULES</tt>: deprecated.
-- <tt>:MAIN_CONTEXT</tt>:
+- <tt>:MAIN_CONTEXT</tt>: The {context}[rdoc-ref:IRB@Configuration] for the main \IRB session;
+  initial value: IRB::Context object.
 - <tt>:MEASURE</tt>:
 - <tt>:MEASURE_CALLBACKS</tt>:
 - <tt>:MEASURE_PROC</tt>:

@@ -51,7 +51,7 @@ require_relative "irb/debug"
 # and may use highlighting to indicate syntax,
 # as well as errors such as unbalanced parentheses.
 #
-# You can change the current configuration to affect the way input works.
+# You can change the current context to affect the way input works.
 # See {Input}[rdoc-ref:IRB@Input].
 #
 # === Evaluate
@@ -71,10 +71,10 @@ require_relative "irb/debug"
 # === Print
 #
 # By default, \IRB prints after evaluating;
-# you can change the configuration to affect
+# you can change the context to affect
 # what gets printed.
 #
-# You can change the current configuration to affect the way printing works.
+# You can change the current context to affect the way printing works.
 # See {Output}[rdoc-ref:IRB@Output].
 #
 # == Starting \IRB
@@ -94,20 +94,20 @@ require_relative "irb/debug"
 # At that point, \IRB calls any hooks found in array <tt>IRB.conf[:AT_EXIT]</tt>,
 # then exits.
 #
-# == Configuration
+# == Context
 #
-# A running \IRB session has a <i>current configuration</tt>
+# A running \IRB session has a <i>current context</i>
 # that is an IRB::Context object;
 # the object is created  at session startup.
 #
 # Its initial content is determined by entries in hash <tt>IRB.conf</tt>,
 # which in turn are determined by:
 #
-# - Certain \IRB command-line options.
-# - The contents of the configuration file.
+# - The configuration file.
+# - Command-line options.
 # - Default values.
 #
-# Values in the current configuration can be retrieved
+# Values in the current context can be retrieved
 # via methods and attributes in the configuration object;
 # much of the content can be modified by other methods and attributes.
 #
@@ -291,7 +291,13 @@ require_relative "irb/debug"
 #
 # === Configuration Monitor
 #
-# IRB.conf[:IRB_RC]
+# You can monitor changes to the configuration by assigning a proc
+# to <tt>IRB.conf[:IRB_RC]</tt> in the configuration file:
+#
+#   IRB.conf[:IRB_RC] = proc {|conf| puts conf.class }
+#
+# Each time the configuration is changed,
+# that proc is called with argument +conf+:
 #
 # === Locale
 #
