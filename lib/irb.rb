@@ -31,8 +31,8 @@ require_relative "irb/debug"
 # loop that:
 #
 # - Reads each character as you type,
-#   and may use color highlighting to indicate syntax,
-#   as well as errors such as unbalanced parentheses.
+#   and may use color highlighting to indicate syntax
+#   (and errors such as unbalanced parentheses).
 #
 #   You can modify the initial context or the current context
 #   to change the way input works.
