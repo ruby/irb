@@ -110,7 +110,7 @@ module IRB
             end
             (scope_constants.compact | type.constants.map(&:to_s)).sort
           else
-            scope.constants.sort
+            scope.constants.sort | ReservedWords
           end
         in [:ivar, name, scope]
           ivars = scope.instance_variables.sort
@@ -124,7 +124,7 @@ module IRB
         in [:call, type, name, self_call]
           (self_call ? type.all_methods : type.methods).map(&:to_s) - HIDDEN_METHODS
         in [:lvar_or_method, name, scope]
-          scope.self_type.all_methods.map(&:to_s) | scope.local_variables
+          scope.self_type.all_methods.map(&:to_s) | scope.local_variables | ReservedWords
         else
           []
         end

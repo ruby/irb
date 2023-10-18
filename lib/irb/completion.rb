@@ -9,6 +9,30 @@ require_relative 'ruby-lex'
 
 module IRB
   class BaseCompletor # :nodoc:
+
+    # Set of reserved words used by Ruby, you should not use these for
+    # constants or variables
+    ReservedWords = %w[
+      __ENCODING__ __LINE__ __FILE__
+      BEGIN END
+      alias and
+      begin break
+      case class
+      def defined? do
+      else elsif end ensure
+      false for
+      if in
+      module
+      next nil not
+      or
+      redo rescue retry return
+      self super
+      then true
+      undef unless until
+      when while
+      yield
+    ]
+
     def completion_candidates(preposing, target, postposing, bind:)
       raise NotImplementedError
     end
@@ -97,29 +121,6 @@ module IRB
     def inspect
       'RegexpCompletor'
     end
-
-    # Set of reserved words used by Ruby, you should not use these for
-    # constants or variables
-    ReservedWords = %w[
-      __ENCODING__ __LINE__ __FILE__
-      BEGIN END
-      alias and
-      begin break
-      case class
-      def defined? do
-      else elsif end ensure
-      false for
-      if in
-      module
-      next nil not
-      or
-      redo rescue retry return
-      self super
-      then true
-      undef unless until
-      when while
-      yield
-    ]
 
     def complete_require_path(target, preposing, postposing)
       if target =~ /\A(['"])([^'"]+)\Z/
