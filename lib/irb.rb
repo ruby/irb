@@ -146,6 +146,9 @@ require_relative "irb/debug"
 #
 # Details of the options are described in the relevant subsections below.
 #
+# If you are interested in a specific option, consult the
+# {index}[./doc/irb/indexes_rdoc.html#label-Index+of+Command-Line+Options].
+#
 # === Command-Line Arguments
 #
 # By default, the first command-line argument (after any options)

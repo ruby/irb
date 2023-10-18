@@ -1,11 +1,6 @@
 == Indexes
 
-This page has two indexes:
-
-- {Command-Line Options}[indexes_rdoc.html#label-Command-Line+Options].
-- {IRB.conf Hash Entries}[indexes_rdoc.html#label-IRB.conf+Entries].
-
-=== Command-Line Options
+=== Index of Command-Line Options
 
 These are the \IRB command-line options, with links to explanatory text:
 
@@ -75,7 +70,7 @@ These are the \IRB command-line options, with links to explanatory text:
 - <tt>--</tt>: Separate options from {arguments}[rdoc-ref:IRB@Command-Line+Arguments]
   on the command-line.
 
-=== \IRB.conf Entries
+=== Index of \IRB.conf Entries
 
 These are the keys for hash \IRB.conf entries, with links to explanatory text;
 for each entry that is pre-defined, the initial value is given:
