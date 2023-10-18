@@ -21,26 +21,18 @@ require_relative "irb/version"
 require_relative "irb/easter-egg"
 require_relative "irb/debug"
 
-# \Module \IRB provides user interaction with the Ruby interpreter.
-# Ruby code typed into \IRB behaves the same as Ruby code in a file, except that:
-#
-# - Because \IRB evaluates input immediately after it is syntactically complete,
-#   some results may be slightly different.
-# - Forking may not be well behaved.
-# - Variable +conf+ is defined, and contains an \IRB::Context object
-#   that contains much information about the state of the \IRB session,
-#   and allows you to make changes to that state.
+# \Module \IRB ("Interactive Ruby") provides a shell-like command-line interface
+# that supports user interaction with the Ruby interpreter.
 #
 # == The REPL Loop
 #
-# \IRB is an interactive programming environment that operates as a
-# <i>read-eval-print</i>
+# \IRB operates as a <i>read-eval-print</i>
 # ({REPL}[https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop])
 # loop that:
 #
 # - Reads the Ruby code you type.
 # - Evaluates the code.
-# - Prints the last returned value from the code.
+# - Prints returned values.
 #
 # The typed input may also include
 # {\IRB-specific commands}[rdoc-ref:IRB@IRB-Specific+Commands].
@@ -51,12 +43,22 @@ require_relative "irb/debug"
 # and may use highlighting to indicate syntax,
 # as well as errors such as unbalanced parentheses.
 #
-# You can change the current context to affect the way input works.
+# You can modify the initial context or the current context
+# to change the way input works.
 # See {Input}[rdoc-ref:IRB@Input].
 #
 # === Evaluate
 #
-# \IRB evaluates each time it has read a syntactically complete passage:
+# \IRB evaluates each time it has read a syntactically complete passage.
+#
+# === Print
+#
+# By default, \IRB prints after evaluating.
+# You can modify the initial context or the current context
+# to change the way output works.
+# See {Output}[rdoc-ref:IRB@Output].
+#
+# === REPL Example
 #
 #   $ irb
 #   irb(main):001:0> File.basename(Dir.pwd)
@@ -67,15 +69,6 @@ require_relative "irb/debug"
 #   irb(main):004:1*   entry.start_with?('R')
 #   irb(main):005:0> end
 #   => ["README.md", "Rakefile"]
-#
-# === Print
-#
-# By default, \IRB prints after evaluating;
-# you can change the context to affect
-# what gets printed.
-#
-# You can change the current context to affect the way printing works.
-# See {Output}[rdoc-ref:IRB@Output].
 #
 # == Starting \IRB
 #
@@ -221,6 +214,10 @@ require_relative "irb/debug"
 #
 # Note that the configuration file entry overrides the command-line options.
 #
+# === \IRB Loader
+#
+# IRB.conf[:USE_LOADER]
+#
 # === RI Documentation Directories
 #
 # You can specify the paths to RI documentation directories
@@ -299,9 +296,19 @@ require_relative "irb/debug"
 # Each time the configuration is changed,
 # that proc is called with argument +conf+:
 #
-# === Locale
+# === \Locale
 #
 # IRB.conf[:LC_MESSAGES]
+#
+# === Performance Measurement
+#
+# IRB.conf[:MEASURE]
+# IRB.conf[:MEASURE_CALLBACKS]
+# IRB.conf[:MEASURE_PROC]
+#
+# === Single-IRB Mode
+#
+# IRB.conf[:SINGLE_IRB]
 #
 # == Input
 #
@@ -402,9 +409,9 @@ require_relative "irb/debug"
 #
 # You can change the setting at any time using method <tt>conf.ignore_sigint=</tt>.
 #
-# === Auto-Completion
+# === Automatic Completion
 #
-# By default, \IRB enables auto-completion:
+# By default, \IRB enables automatic completion:
 #
 #   irb(main):001> IRB.conf[:USE_AUTOCOMPLETE]
 #   => true
@@ -414,7 +421,7 @@ require_relative "irb/debug"
 #   IRB.conf[:USE_AUTOCOMPLETE] = false
 #
 # \Method <tt>conf.use_autocomplete?</tt> returns +true+
-# if auto-completion is enabled, +false+ otherwise.
+# if automatic completion is enabled, +false+ otherwise.
 #
 # === Input \Method
 #
@@ -836,7 +843,7 @@ require_relative "irb/debug"
 #
 # === Tracer
 #
-# === Debug
+# === \Debug
 #
 # === Warnings
 #
@@ -898,6 +905,14 @@ require_relative "irb/debug"
 # You can retrieve the thread for a session with method <tt>conf.thread</tt>.
 #
 # == Workspaces
+#
+# == Restrictions
+#
+# Ruby code typed into \IRB behaves the same as Ruby code in a file, except that:
+#
+# - Because \IRB evaluates input immediately after it is syntactically complete,
+#   some results may be slightly different.
+# - Forking may not be well behaved.
 #
 # == Old Doc
 #
