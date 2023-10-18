@@ -30,35 +30,22 @@ require_relative "irb/debug"
 # ({REPL}[https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop])
 # loop that:
 #
-# - Reads the Ruby code you type.
-# - Evaluates the code.
-# - Prints returned values.
+# - Reads each character as you type,
+#   and may use color highlighting to indicate syntax,
+#   as well as errors such as unbalanced parentheses.
 #
-# The typed input may also include
-# {\IRB-specific commands}[rdoc-ref:IRB@IRB-Specific+Commands].
+#   You can modify the initial context or the current context
+#   to change the way input works.
+#   See {Input}[rdoc-ref:IRB@Input].
 #
-# === Read
+# - Evaluates the code each time it has read a syntactically complete passage.
 #
-# \IRB reads each character as you type,
-# and may use highlighting to indicate syntax,
-# as well as errors such as unbalanced parentheses.
+# - Prints after evaluating.
+#   You can modify the initial context or the current context
+#   to change the way output works.
+#   See {Output}[rdoc-ref:IRB@Output].
 #
-# You can modify the initial context or the current context
-# to change the way input works.
-# See {Input}[rdoc-ref:IRB@Input].
-#
-# === Evaluate
-#
-# \IRB evaluates each time it has read a syntactically complete passage.
-#
-# === Print
-#
-# By default, \IRB prints after evaluating.
-# You can modify the initial context or the current context
-# to change the way output works.
-# See {Output}[rdoc-ref:IRB@Output].
-#
-# === REPL Example
+# Example
 #
 #   $ irb
 #   irb(main):001:0> File.basename(Dir.pwd)
@@ -70,13 +57,16 @@ require_relative "irb/debug"
 #   irb(main):005:0> end
 #   => ["README.md", "Rakefile"]
 #
+# The typed input may also include
+# {\IRB-specific commands}[rdoc-ref:IRB@IRB-Specific+Commands].
+#
 # == Starting \IRB
 #
 # As seen above, you can start \IRB by using the shell command +irb+;
 # at startup, \IRB reads and interprets the
 # {configuration file}[rdoc-ref:IRB@Configuration+File] (if any),
 # and accordingly sets values in the
-# {configuration object +conf+}[rdoc-ref:irb@Configuration].
+# {context}[rdoc-ref:IRB@Context].
 #
 # == Stopping \IRB
 #
@@ -87,7 +77,7 @@ require_relative "irb/debug"
 # At that point, \IRB calls any hooks found in array <tt>IRB.conf[:AT_EXIT]</tt>,
 # then exits.
 #
-# == Context
+# == \Context
 #
 # A running \IRB session has a <i>current context</i>
 # that is an IRB::Context object;
@@ -101,8 +91,8 @@ require_relative "irb/debug"
 # - Default values.
 #
 # Values in the current context can be retrieved
-# via methods and attributes in the configuration object;
-# much of the content can be modified by other methods and attributes.
+# via methods and attributes in the context object;
+# much of its content can be modified by other methods and attributes.
 #
 # === Configuration File
 #
@@ -122,11 +112,10 @@ require_relative "irb/debug"
 # - File +_irbrc+, if it exists.
 # - The value of variable <tt>$irbrc</tt>, if defined.
 #
-# If the search fails, there is no configuration file,
-# and \IRB begins with its default configuration settings.
-#
-# The configuration file is read as Ruby code,
+# If the search succeeds, the configuration file is read as Ruby code,
 # and so can contain any Ruby programming you like.
+#
+# If the search fails, there is no configuration file.
 #
 # \Method <tt>conf.rc?</tt> returns +true+ if a configuration file was read,
 # +false+ otherwise.
@@ -135,13 +124,13 @@ require_relative "irb/debug"
 #
 # Importantly, the configuration file can create, delete, or modify entries
 # in hash <tt>IRB.conf</tt>,
-# which affects the \IRB configuration.
+# which affects the \IRB context.
 #
 # <b>Note well</b>:
 #
-# - \Hash <tt>IRB.conf</tt> affects the configuration only once,
-#   immediately after the configuration file is interpreted;
-#   any subsequent changes to it do not affect the configuration
+# - \Hash <tt>IRB.conf</tt> affects the context only once,
+#   when the configuration file is interpreted;
+#   any subsequent changes to it do not affect the context
 #   and are therefore essentially useless.
 # - Values in the hash override corresponding command-line options.
 #
