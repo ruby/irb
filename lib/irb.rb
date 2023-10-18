@@ -77,7 +77,9 @@ require_relative "irb/debug"
 # At that point, \IRB calls any hooks found in array <tt>IRB.conf[:AT_EXIT]</tt>,
 # then exits.
 #
-# == \Context
+# == Startup
+#
+# === \Context
 #
 # A running \IRB session has a <i>current context</i>
 # that is an IRB::Context object;
@@ -136,7 +138,10 @@ require_relative "irb/debug"
 #
 # You can see the hash by typing <tt>IRB.conf</tt>.
 #
-# == Startup
+# Details of the entries' meanings are described in the relevant subsections below.
+#
+# If you are interested in a specific entry, consult the
+# {index}[./doc/irb/indexes_rdoc.html#label-Index+of+IRB.conf+Entries].
 #
 # === Command-Line Options
 #
@@ -163,7 +168,8 @@ require_relative "irb/debug"
 # - Requires or loads files.
 #
 # Command-line option <tt>--noscript</tt> causes the first command-line argument
-# to be treated as an ordinary argument (instead of an initialization script).
+# to be
+# treated as an ordinary argument (instead of an initialization script).
 #
 # Command-line arguments are passed to \IRB in array +ARGV+:
 #
