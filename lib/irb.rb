@@ -21,16 +21,14 @@ require_relative "irb/version"
 require_relative "irb/easter-egg"
 require_relative "irb/debug"
 
-# \Module \IRB ("Interactive Ruby") provides a shell-like command-line interface
+# \Module \IRB ("Interactive Ruby") provides a shell-like interface
 # that supports user interaction with the Ruby interpreter.
 #
-# \IRB operates as a <i>read-eval-print loop</i>
+# Its operates as a <i>read-eval-print loop</i>
 # ({REPL}[https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop])
 # that:
 #
-# - <b>_Reads_</b> each character as you type,
-#   and may use color highlighting to indicate syntax
-#   (and errors such as unbalanced parentheses).
+# - <b>_Reads_</b> each character as you type.
 #   You can modify the \IRB context to change the way input works.
 #   See {Input}[rdoc-ref:IRB@Input].
 # - <b>_Evaluates_</b> the code each time it has read a syntactically complete passage.
@@ -81,7 +79,7 @@ require_relative "irb/debug"
 #    {initialization script}[rdoc-ref:IRB@Initialization+Script]
 #    onto the \IRB shell, just as if it were user-typed commands.
 #
-# == Command-Line Options
+# === Command-Line Options
 #
 # Many command-line options affect values in hash <tt>IRB.conf</tt>.
 # Note that effect from an option may be overridden by an assignment
@@ -96,7 +94,7 @@ require_relative "irb/debug"
 # If you are interested in a specific option, consult the
 # {index}[./doc/irb/indexes_rdoc.html#label-Index+of+Command-Line+Options].
 #
-# == Command-Line Arguments
+# === Command-Line Arguments
 #
 # Command-line arguments are passed to \IRB in array +ARGV+:
 #
@@ -111,7 +109,7 @@ require_relative "irb/debug"
 #   irb(main):001> ARGV
 #   => ["--noscript", "--", "Foo", "Bar", "Baz"]
 #
-# == Configuration File
+# === Configuration File
 #
 # If command-line option <tt>-f</tt> is given,
 # no configuration file is looked for.
@@ -137,7 +135,7 @@ require_relative "irb/debug"
 # \Method <tt>conf.rc?</tt> returns +true+ if a configuration file was read,
 # +false+ otherwise.
 #
-# == Session \Context
+# === Session \Context
 #
 # Ab \IRB session has a <i>context</i>, an IRB::Context object
 # that is created at session startup.
@@ -148,7 +146,7 @@ require_relative "irb/debug"
 # via methods and attributes in the context object;
 # much of its content can be modified by other methods and attributes.
 #
-# == \Hash <tt>IRB.conf</tt>
+# === \Hash <tt>IRB.conf</tt>
 #
 # The initial entries in hash <tt>IRB.conf</tt> are determined by:
 #
@@ -170,7 +168,7 @@ require_relative "irb/debug"
 # If you are interested in a specific entry, consult the
 # {index}[./doc/irb/indexes_rdoc.html#label-Index+of+IRB.conf+Entries].
 #
-# == Initialization Script
+# === Initialization Script
 #
 # By default, the first command-line argument (after any options)
 # is the path to a Ruby initialization script,
@@ -187,133 +185,9 @@ require_relative "irb/debug"
 # to be
 # treated as an ordinary argument (instead of an initialization script).
 #
-# == Load Modules
-#
-# You can specify the names of modules that are to be required at startup.
-#
-# \Array <tt>conf.load_modules</tt> determines the modules (if any)
-# that are to be required during session startup.
-# The array is used only during session startup,
-# so the initial value is the only one that counts.
-#
-# The default initial value is <tt>[]</tt> (load no modules):
-#
-#   irb(main):001:0> conf.load_modules
-#   => []
-#
-# You can set the default initial value via:
-#
-# - Command-line option <tt>-r</tt>
-#
-#     $ irb -r csv -r json
-#     irb(main):001:0> conf.load_modules
-#     => ["csv", "json"]
-#
-# - \Hash entry <tt>IRB.conf[:LOAD_MODULES] = _array_</tt>:
-#
-#     IRB.conf[:LOAD_MODULES] = %w[csv, json]
-#
-# Note that the configuration file entry overrides the command-line options.
-#
-# == \IRB Loader
-#
-# IRB.conf[:USE_LOADER]
-#
-# == RI Documentation Directories
-#
-# You can specify the paths to RI documentation directories
-# that are to be loaded (in addition to the default directories) at startup;
-# see details about RI by typing <tt>ri --help</tt>.
-#
-# \Array <tt>conf.extra_doc_dirs</tt> determines the directories (if any)
-# that are to be loaded during session startup.
-# The array is used only during session startup,
-# so the initial value is the only one that counts.
-#
-# The default initial value is <tt>[]</tt> (load no extra documentation):
-#
-#   irb(main):001:0> conf.extra_doc_dirs
-#   => []
-#
-# You can set the default initial value via:
-#
-# - Command-line option <tt>--extra_doc_dir</tt>
-#
-#     $ irb --extra-doc-dir your_doc_dir --extra-doc-dir my_doc_dir
-#     irb(main):001:0> conf.extra_doc_dirs
-#     => ["your_doc_dir", "my_doc_dir"]
-#
-# - \Hash entry <tt>IRB.conf[:EXTRA_DOC_DIRS] = _array_</tt>:
-#
-#     IRB.conf[:EXTRA_DOC_DIRS] = %w[your_doc_dir my_doc_dir]
-#
-# Note that the configuration file entry overrides the command-line options.
-#
-# == \Color Highlighting
-#
-# == \Context Mode
-#
-# [workspace.new]
-#
-# == \IRB Name
-#
-# You can specify a name for \IRB.
-#
-# The default initial value is <tt>'irb'</tt>:
-#
-#   irb(main):001:0> conf.irb_name
-#   => "irb"
-#
-# You can set the default initial value
-# via hash entry <tt>IRB.conf[:IRB_NAME] = _string_</tt>:
-#
-#   IRB.conf[:IRB_NAME] = 'foo'
-#
-# == Application Name
-#
-# You can specify an application name for the \IRB session.
-#
-# The default initial value is <tt>'irb'</tt>:
-#
-#   irb(main):001:0> conf.ap_name
-#   => "irb"
-#
-# You can set the default initial value
-# via hash entry <tt>IRB.conf[:AP_NAME] = _string_</tt>:
-#
-#   IRB.conf[:AP_NAME] = 'my_ap_name'
-#
-# == \IRB Library Directory
-#
-# IRB.conf[:IRB_LIB_PATH]
-#
-# == Configuration Monitor
-#
-# You can monitor changes to the configuration by assigning a proc
-# to <tt>IRB.conf[:IRB_RC]</tt> in the configuration file:
-#
-#   IRB.conf[:IRB_RC] = proc {|conf| puts conf.class }
-#
-# Each time the configuration is changed,
-# that proc is called with argument +conf+:
-#
-# == \Locale
-#
-# IRB.conf[:LC_MESSAGES]
-#
-# == Performance Measurement
-#
-# IRB.conf[:MEASURE]
-# IRB.conf[:MEASURE_CALLBACKS]
-# IRB.conf[:MEASURE_PROC]
-#
-# == Single-IRB Mode
-#
-# IRB.conf[:SINGLE_IRB]
-#
 # == Input
 #
-# == Input Command History
+# === Input Command History
 #
 # You can specify whether and where a history of input commands is to be stored.
 #
@@ -339,7 +213,7 @@ require_relative "irb/debug"
 # The count can be reset or retrieved at any time by (respectively)
 # methods <tt>conf.save_history</tt> or <tt>conf.save_history=</tt>.
 #
-# == Command Aliases
+# === Command Aliases
 #
 # You can specify aliases for \IRB input commands.
 #
@@ -383,7 +257,9 @@ require_relative "irb/debug"
 # be changed by <tt>IRB.conf[:COMMAND_ALIASES] = hash</tt>
 # in the \IRB session.
 #
-# == End-of-File
+# === \Color Highlighting
+#
+# === End-of-File
 #
 # You can specify how \IRB responds to the end-of-file character <tt>Ctrl-D</tt>;
 # method <tt>conf.ignore_eof</tt> returns the boolean setting.
@@ -396,7 +272,7 @@ require_relative "irb/debug"
 #
 # You can change the setting at any time using method <tt>conf.ignore_eof=</tt>
 #
-# == SIGINT
+# === SIGINT
 #
 # You can specify how \IRB responds to the interrupt character <tt>Ctrl-C</tt>
 # method <tt>conf.ignore_sigint</tt> returns the setting.
@@ -410,7 +286,7 @@ require_relative "irb/debug"
 #
 # You can change the setting at any time using method <tt>conf.ignore_sigint=</tt>.
 #
-# == Automatic Completion
+# === Automatic Completion
 #
 # By default, \IRB enables automatic completion:
 #
@@ -424,7 +300,7 @@ require_relative "irb/debug"
 # \Method <tt>conf.use_autocomplete?</tt> returns +true+
 # if automatic completion is enabled, +false+ otherwise.
 #
-# == Input \Method
+# === Input \Method
 #
 # You can specify an input method that determines how command input is to be read;
 # the initial value is an instance of IRB::RelineInputMethod.
@@ -466,11 +342,11 @@ require_relative "irb/debug"
 # - IRB::ReidlineInputMethod.
 # - IRB::RelineInputMethod.
 #
-# == Encodings
+# === Encodings
 #
 # == Output
 #
-# == Automatic Indentation
+# === Automatic Indentation
 #
 # You can specify whether \IRB is to automatically indent input lines
 # to show structure (e.g., indent the contents of a block).
@@ -494,7 +370,7 @@ require_relative "irb/debug"
 #
 # Note that the _current_ setting <i>may not</i> be changed in the \IRB session.
 #
-# == Return-Value Printing (Echoing)
+# === Return-Value Printing (Echoing)
 #
 # You can specify whether and how \IRB prints return values.
 #
@@ -581,7 +457,7 @@ require_relative "irb/debug"
 #
 #   You can change the setting at any time using method <tt>conf.inspect_mode=</tt>.
 #
-# == Multiline Output
+# === Multiline Output
 #
 # You can specify whether \IRB is to prefix a newline to a multiline response;
 # method <tt>conf.newline_before_multiline_output</tt> returns a boolean:
@@ -610,7 +486,7 @@ require_relative "irb/debug"
 #   => foo
 #   bat  r
 #
-# == Evaluation History
+# === Evaluation History
 #
 # You can specify whether and how much evaluation history is to be saved;
 # this is the history of values returned for input commands.
@@ -704,11 +580,11 @@ require_relative "irb/debug"
 #         irb(main):012:0> __[0]
 #         => nil
 #
-# == Prompt and Return Formats
+# === Prompt and Return Formats
 #
 # You can specify what the prompts and return values are to look like.
 #
-# === The Default Prompt and Return Format
+# ==== The Default Prompt and Return Format
 #
 # By default, the prompt and return values look like this:
 #
@@ -746,7 +622,7 @@ require_relative "irb/debug"
 #     irb(main):005> end
 #     => ["Rakefile", "README.md"]
 #
-# === Pre-Defined Prompts
+# ==== Pre-Defined Prompts
 #
 # \IRB has several pre-defined prompts, stored in hash <tt>IRB.conf[:PROMPT]</tt>:
 #
@@ -781,7 +657,7 @@ require_relative "irb/debug"
 # If you're interested in prompts and return formats other than the defaults,
 # you might experiment by trying some of the others.
 #
-# === Custom Prompts
+# ==== Custom Prompts
 #
 # You can also define custom prompts and return formats,
 # which may be done either in an \IRB session or in the configuration file.
@@ -814,7 +690,7 @@ require_relative "irb/debug"
 # - <tt>conf.prompt_s</tt>, <tt>conf.s=</tt>.
 # - <tt>conf.return_format</tt>, <tt>return_format=</tt>.
 #
-# === Prompt Specifiers
+# ==== Prompt Specifiers
 #
 # A prompt's definition can include specifiers for which certain values are substituted:
 #
@@ -827,7 +703,7 @@ require_relative "irb/debug"
 # - <tt><i>NN</i>n</tt>: Line number.
 # - <tt>%%</tt>: Literal <tt>%</tt>.
 #
-# == Verbosity
+# === Verbosity
 #
 # By default, \IRB verbosity is off:
 #
@@ -842,13 +718,13 @@ require_relative "irb/debug"
 #
 # If you do both, the configuration file overrides the command-line option.
 #
-# == Tracer
+# === Tracer
 #
-# == \Debug
+# === \Debug
 #
-# == Warnings
+# === Warnings
 #
-# == Back Trace Limit
+# === Back Trace Limit
 #
 # You can specify a back trace limit, +n+,
 # which specifies that the back trace for an exception
@@ -880,9 +756,9 @@ require_relative "irb/debug"
 # be changed by <tt>IRB.conf[:BACK_TRACE_LIMIT] = '_value_'</tt>
 # in the \IRB session.
 #
-# == Version
+# === Version
 #
-# == Help
+# === Help
 #
 # == Sessions
 #
@@ -907,6 +783,128 @@ require_relative "irb/debug"
 #
 # == Workspaces
 #
+# == Load Modules
+#
+# You can specify the names of modules that are to be required at startup.
+#
+# \Array <tt>conf.load_modules</tt> determines the modules (if any)
+# that are to be required during session startup.
+# The array is used only during session startup,
+# so the initial value is the only one that counts.
+#
+# The default initial value is <tt>[]</tt> (load no modules):
+#
+#   irb(main):001:0> conf.load_modules
+#   => []
+#
+# You can set the default initial value via:
+#
+# - Command-line option <tt>-r</tt>
+#
+#     $ irb -r csv -r json
+#     irb(main):001:0> conf.load_modules
+#     => ["csv", "json"]
+#
+# - \Hash entry <tt>IRB.conf[:LOAD_MODULES] = _array_</tt>:
+#
+#     IRB.conf[:LOAD_MODULES] = %w[csv, json]
+#
+# Note that the configuration file entry overrides the command-line options.
+#
+# == \IRB Loader
+#
+# IRB.conf[:USE_LOADER]
+#
+# == RI Documentation Directories
+#
+# You can specify the paths to RI documentation directories
+# that are to be loaded (in addition to the default directories) at startup;
+# see details about RI by typing <tt>ri --help</tt>.
+#
+# \Array <tt>conf.extra_doc_dirs</tt> determines the directories (if any)
+# that are to be loaded during session startup.
+# The array is used only during session startup,
+# so the initial value is the only one that counts.
+#
+# The default initial value is <tt>[]</tt> (load no extra documentation):
+#
+#   irb(main):001:0> conf.extra_doc_dirs
+#   => []
+#
+# You can set the default initial value via:
+#
+# - Command-line option <tt>--extra_doc_dir</tt>
+#
+#     $ irb --extra-doc-dir your_doc_dir --extra-doc-dir my_doc_dir
+#     irb(main):001:0> conf.extra_doc_dirs
+#     => ["your_doc_dir", "my_doc_dir"]
+#
+# - \Hash entry <tt>IRB.conf[:EXTRA_DOC_DIRS] = _array_</tt>:
+#
+#     IRB.conf[:EXTRA_DOC_DIRS] = %w[your_doc_dir my_doc_dir]
+#
+# Note that the configuration file entry overrides the command-line options.
+#
+# == \Context Mode
+#
+# [workspace.new]
+#
+# == \IRB Name
+#
+# You can specify a name for \IRB.
+#
+# The default initial value is <tt>'irb'</tt>:
+#
+#   irb(main):001:0> conf.irb_name
+#   => "irb"
+#
+# You can set the default initial value
+# via hash entry <tt>IRB.conf[:IRB_NAME] = _string_</tt>:
+#
+#   IRB.conf[:IRB_NAME] = 'foo'
+#
+# == Application Name
+#
+# You can specify an application name for the \IRB session.
+#
+# The default initial value is <tt>'irb'</tt>:
+#
+#   irb(main):001:0> conf.ap_name
+#   => "irb"
+#
+# You can set the default initial value
+# via hash entry <tt>IRB.conf[:AP_NAME] = _string_</tt>:
+#
+#   IRB.conf[:AP_NAME] = 'my_ap_name'
+#
+# == \IRB Library Directory
+#
+# IRB.conf[:IRB_LIB_PATH]
+#
+# == Configuration Monitor
+#
+# You can monitor changes to the configuration by assigning a proc
+# to <tt>IRB.conf[:IRB_RC]</tt> in the configuration file:
+#
+#   IRB.conf[:IRB_RC] = proc {|conf| puts conf.class }
+#
+# Each time the configuration is changed,
+# that proc is called with argument +conf+:
+#
+# == \Locale
+#
+# IRB.conf[:LC_MESSAGES]
+#
+# == Performance Measurement
+#
+# IRB.conf[:MEASURE]
+# IRB.conf[:MEASURE_CALLBACKS]
+# IRB.conf[:MEASURE_PROC]
+#
+# == Single-IRB Mode
+#
+# IRB.conf[:SINGLE_IRB]
+#
 # == Restrictions
 #
 # Ruby code typed into \IRB behaves the same as Ruby code in a file, except that:
@@ -915,7 +913,7 @@ require_relative "irb/debug"
 #   some results may be slightly different.
 # - Forking may not be well behaved.
 #
-# == Old Doc
+# == XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX Old Doc XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 #
 # IRB stands for "interactive Ruby" and is a tool to interactively execute Ruby
 # expressions read from the standard input.
