@@ -21,6 +21,8 @@ require_relative "irb/version"
 require_relative "irb/easter-egg"
 require_relative "irb/debug"
 
+# == \IRB
+# 
 # \Module \IRB ("Interactive Ruby") provides a shell-like interface
 # that supports user interaction with the Ruby interpreter.
 #
@@ -795,34 +797,9 @@ require_relative "irb/debug"
 #
 # [TODO] --help
 #
-# == Sessions
+# == Other Properties
 #
-# An \IRB configuration has:
-#
-# - A _session_, which is an IRB::Irb object.
-#   You can retrieve the session using method <tt>conf.irb</tt>.
-#
-# - A string _name_.
-#   The default initial name is <tt>'irb'</tt>.
-#   You can change the initial name in the configuration file
-#   with <tt>IRB.conf[:IRB_NAME] = '_name_'.
-#
-#   You can change the name at any time with method <tt>conf.irb_name=</tt>.
-#
-# - A string _path_.
-#   The default initial path is <tt>'(irb)'</tt>.
-#
-#   You can change the name at any time with method <tt>conf.irb_name=</tt>.
-#
-# You can retrieve the thread for a session with method <tt>conf.thread</tt>.
-#
-# You can retrieve the main session from hash entry <tt>IRB.conf[:__MAIN__]</tt>.
-#
-# == Workspaces
-#
-# [TODO] --context-mode n
-#
-# == Load Modules
+# === Load Modules
 #
 # You can specify the names of modules that are to be required at startup.
 #
@@ -850,11 +827,11 @@ require_relative "irb/debug"
 #
 # Note that the configuration file entry overrides the command-line options.
 #
-# == \IRB Loader
+# === \IRB Loader
 #
 # IRB.conf[:USE_LOADER]
 #
-# == RI Documentation Directories
+# === RI Documentation Directories
 #
 # You can specify the paths to RI documentation directories
 # that are to be loaded (in addition to the default directories) at startup;
@@ -884,11 +861,11 @@ require_relative "irb/debug"
 #
 # Note that the configuration file entry overrides the command-line options.
 #
-# == \Context Mode
+# === \Context Mode
 #
 # IRB.conf[:CONTEXT_MODE]
 #
-# == \IRB Name
+# === \IRB Name
 #
 # You can specify a name for \IRB.
 #
@@ -902,7 +879,7 @@ require_relative "irb/debug"
 #
 #   IRB.conf[:IRB_NAME] = 'foo'
 #
-# == Application Name
+# === Application Name
 #
 # You can specify an application name for the \IRB session.
 #
@@ -916,11 +893,11 @@ require_relative "irb/debug"
 #
 #   IRB.conf[:AP_NAME] = 'my_ap_name'
 #
-# == \IRB Library Directory
+# === \IRB Library Directory
 #
 # IRB.conf[:IRB_LIB_PATH]
 #
-# == Configuration Monitor
+# === Configuration Monitor
 #
 # You can monitor changes to the configuration by assigning a proc
 # to <tt>IRB.conf[:IRB_RC]</tt> in the configuration file:
@@ -930,27 +907,19 @@ require_relative "irb/debug"
 # Each time the configuration is changed,
 # that proc is called with argument +conf+:
 #
-# == \Locale
+# === \Locale
 #
 # IRB.conf[:LC_MESSAGES]
 #
-# == Performance Measurement
+# === Performance Measurement
 #
 # IRB.conf[:MEASURE]
 # IRB.conf[:MEASURE_CALLBACKS]
 # IRB.conf[:MEASURE_PROC]
 #
-# == Single-IRB Mode
+# === Single-IRB Mode
 #
 # IRB.conf[:SINGLE_IRB]
-#
-# == Restrictions
-#
-# Ruby code typed into \IRB behaves the same as Ruby code in a file, except that:
-#
-# - Because \IRB evaluates input immediately after it is syntactically complete,
-#   some results may be slightly different.
-# - Forking may not be well behaved.
 #
 # === Encodings
 #
@@ -958,37 +927,6 @@ require_relative "irb/debug"
 # sets initial external (ex) and internal (in) encodings.
 #
 # Command-line option <tt>-U</tt> sets both to UTF-8.
-#
-# == XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX Old Doc XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-#
-# IRB stands for "interactive Ruby" and is a tool to interactively execute Ruby
-# expressions read from the standard input.
-#
-# The +irb+ command from your shell will start the interpreter.
-#
-# == Usage
-#
-# Use of irb is easy if you know Ruby.
-#
-# When executing irb, prompts are displayed as follows. Then, enter the Ruby
-# expression. An input is executed when it is syntactically complete.
-#
-#     $ irb
-#     irb(main):001:0> 1+2
-#     #=> 3
-#     irb(main):002:0> class Foo
-#     irb(main):003:1>  def foo
-#     irb(main):004:2>    print 1
-#     irb(main):005:2>  end
-#     irb(main):006:1> end
-#     #=> nil
-#
-# The singleline editor module or multiline editor module can be used with irb.
-# Use of multiline editor is default if it's installed.
-#
-# == Command line options
-#
-#   :include: ./irb/lc/help-message
 #
 # == Commands
 #
@@ -1035,157 +973,6 @@ require_relative "irb/debug"
 #   * Start the debugger of debug.gem.
 # * break, delete, next, step, continue, finish, backtrace, info, catch
 #   * Start the debugger of debug.gem and run the command on it.
-#
-# == Configuration
-#
-# IRB reads a personal initialization file when it's invoked.
-# IRB searches a file in the following order and loads the first one found.
-#
-# * <tt>$IRBRC</tt> (if <tt>$IRBRC</tt> is set)
-# * <tt>$XDG_CONFIG_HOME/irb/irbrc</tt> (if <tt>$XDG_CONFIG_HOME</tt> is set)
-# * <tt>~/.irbrc</tt>
-# * +.config/irb/irbrc+
-# * +.irbrc+
-# * +irb.rc+
-# * +_irbrc+
-# * <code>$irbrc</code>
-#
-# The following are alternatives to the command line options. To use them type
-# as follows in an +irb+ session:
-#
-#     IRB.conf[:IRB_NAME]="irb"
-#     IRB.conf[:INSPECT_MODE]=nil
-#     IRB.conf[:IRB_RC] = nil
-#     IRB.conf[:BACK_TRACE_LIMIT]=16
-#     IRB.conf[:USE_LOADER] = false
-#     IRB.conf[:USE_MULTILINE] = nil
-#     IRB.conf[:USE_SINGLELINE] = nil
-#     IRB.conf[:USE_COLORIZE] = true
-#     IRB.conf[:USE_TRACER] = false
-#     IRB.conf[:USE_AUTOCOMPLETE] = true
-#     IRB.conf[:IGNORE_SIGINT] = true
-#     IRB.conf[:IGNORE_EOF] = false
-#     IRB.conf[:PROMPT_MODE] = :DEFAULT
-#     IRB.conf[:PROMPT] = {...}
-#
-# === Auto indentation
-#
-# To disable auto-indent mode in irb, add the following to your +.irbrc+:
-#
-#     IRB.conf[:AUTO_INDENT] = false
-#
-# === Autocompletion
-#
-# To disable autocompletion for irb, add the following to your +.irbrc+:
-#
-#     IRB.conf[:USE_AUTOCOMPLETE] = false
-#
-# === History
-#
-# By default, irb will store the last 1000 commands you used in
-# <code>IRB.conf[:HISTORY_FILE]</code> (<code>~/.irb_history</code> by default).
-#
-# If you want to disable history, add the following to your +.irbrc+:
-#
-#     IRB.conf[:SAVE_HISTORY] = nil
-#
-# See IRB::Context#save_history= for more information.
-#
-# The history of _results_ of commands evaluated is not stored by default,
-# but can be turned on to be stored with this +.irbrc+ setting:
-#
-#     IRB.conf[:EVAL_HISTORY] = <number>
-#
-# See IRB::Context#eval_history= and EvalHistory class. The history of command
-# results is not permanently saved in any file.
-#
-# == Customizing the IRB Prompt
-#
-# In order to customize the prompt, you can change the following Hash:
-#
-#     IRB.conf[:PROMPT]
-#
-# This example can be used in your +.irbrc+
-#
-#     IRB.conf[:PROMPT][:MY_PROMPT] = { # name of prompt mode
-#       :AUTO_INDENT => false,          # disables auto-indent mode
-#       :PROMPT_I =>  ">> ",		# simple prompt
-#       :PROMPT_S => nil,		# prompt for continuated strings
-#       :PROMPT_C => nil,		# prompt for continuated statement
-#       :RETURN => "    ==>%s\n"	# format to return value
-#     }
-#
-#     IRB.conf[:PROMPT_MODE] = :MY_PROMPT
-#
-# Or, invoke irb with the above prompt mode by:
-#
-#     irb --prompt my-prompt
-#
-# Constants +PROMPT_I+, +PROMPT_S+ and +PROMPT_C+ specify the format. In the
-# prompt specification, some special strings are available:
-#
-#     %N    # command name which is running
-#     %m    # to_s of main object (self)
-#     %M    # inspect of main object (self)
-#     %l    # type of string(", ', /, ]), `]' is inner %w[...]
-#     %NNi  # indent level. NN is digits and means as same as printf("%NNd").
-#           # It can be omitted
-#     %NNn  # line number.
-#     %%    # %
-#
-# For instance, the default prompt mode is defined as follows:
-#
-#     IRB.conf[:PROMPT_MODE][:DEFAULT] = {
-#       :PROMPT_I => "%N(%m):%03n> ",
-#       :PROMPT_S => "%N(%m):%03n%l ",
-#       :PROMPT_C => "%N(%m):%03n* ",
-#       :RETURN => "%s\n" # used to printf
-#     }
-#
-# irb comes with a number of available modes:
-#
-#   # :NULL:
-#   #   :PROMPT_I:
-#   #   :PROMPT_S:
-#   #   :PROMPT_C:
-#   #   :RETURN: |
-#   #     %s
-#   # :DEFAULT:
-#   #   :PROMPT_I: ! '%N(%m):%03n> '
-#   #   :PROMPT_S: ! '%N(%m):%03n%l '
-#   #   :PROMPT_C: ! '%N(%m):%03n* '
-#   #   :RETURN: |
-#   #     => %s
-#   # :CLASSIC:
-#   #   :PROMPT_I: ! '%N(%m):%03n:%i> '
-#   #   :PROMPT_S: ! '%N(%m):%03n:%i%l '
-#   #   :PROMPT_C: ! '%N(%m):%03n:%i* '
-#   #   :RETURN: |
-#   #     %s
-#   # :SIMPLE:
-#   #   :PROMPT_I: ! '>> '
-#   #   :PROMPT_S:
-#   #   :PROMPT_C: ! '?> '
-#   #   :RETURN: |
-#   #     => %s
-#   # :INF_RUBY:
-#   #   :PROMPT_I: ! '%N(%m):%03n> '
-#   #   :PROMPT_S:
-#   #   :PROMPT_C:
-#   #   :RETURN: |
-#   #     %s
-#   #   :AUTO_INDENT: true
-#   # :XMP:
-#   #   :PROMPT_I:
-#   #   :PROMPT_S:
-#   #   :PROMPT_C:
-#   #   :RETURN: |2
-#   #         ==>%s
-#
-# == Restrictions
-#
-# Because irb evaluates input immediately after it is syntactically complete,
-# the results may be slightly different than directly using Ruby.
 #
 # == IRB Sessions
 #
@@ -1302,6 +1089,15 @@ require_relative "irb/debug"
 #     #0->irb on main (#<Thread:0x400fb7e4> : running)
 #   # quit irb
 #   irb(main):010:0> exit
+#
+# == Restrictions
+#
+# Ruby code typed into \IRB behaves the same as Ruby code in a file, except that:
+#
+# - Because \IRB evaluates input immediately after it is syntactically complete,
+#   some results may be slightly different.
+# - Forking may not be well behaved.
+#
 module IRB
 
   # An exception raised by IRB.irb_abort
