@@ -134,10 +134,13 @@ require_relative "irb/debug"
 #
 # \Method <tt>conf.rc?</tt> returns +true+ if a configuration file was read,
 # +false+ otherwise.
+# \Hash entry <tt>IRB.conf[:RC] also contains that value.
+#
+# IRB.conf[:RC_NAME_GENERATOR]
 #
 # === Session \Context
 #
-# Ab \IRB session has a <i>context</i>, an IRB::Context object
+# An \IRB session has a <i>context</i>, an IRB::Context object
 # that is created at session startup.
 #
 # Its initial content is determined by entries in hash <tt>IRB.conf</tt>
@@ -145,6 +148,9 @@ require_relative "irb/debug"
 # Values in the context can be retrieved
 # via methods and attributes in the context object;
 # much of its content can be modified by other methods and attributes.
+#
+# \Hash entry <tt>IRB.conf[:MAIN_CONTEXT]</tt>
+# contains the context for the main session.
 #
 # === \Hash <tt>IRB.conf</tt>
 #
@@ -259,10 +265,12 @@ require_relative "irb/debug"
 #
 # === \Color Highlighting
 #
+# IRB.conf[:USE_COLORIZE]
+#
 # === End-of-File
 #
 # You can specify how \IRB responds to the end-of-file character <tt>Ctrl-D</tt>;
-# method <tt>conf.ignore_eof</tt> returns the boolean setting.
+# method <tt>conf.ignore_eof?</tt> returns the boolean setting.
 #
 # The default initial setting is +false+, which means that \IRB exits immediately.
 #
@@ -274,11 +282,11 @@ require_relative "irb/debug"
 #
 # === SIGINT
 #
-# You can specify how \IRB responds to the interrupt character <tt>Ctrl-C</tt>
-# method <tt>conf.ignore_sigint</tt> returns the setting.
+# You can specify how \IRB responds to the interrupt character <tt>Ctrl-C</tt>;
+# method <tt>conf.ignore_sigint?</tt> returns the setting.
 #
 # The default initial setting is +true+, which means that \IRB
-# ignores the character, and does not exit.
+# ignores the character.
 #
 # You can change the initial setting in the configuration file:
 #
@@ -341,8 +349,6 @@ require_relative "irb/debug"
 # - IRB::ReadlineInputMethod
 # - IRB::ReidlineInputMethod.
 # - IRB::RelineInputMethod.
-#
-# === Encodings
 #
 # == Output
 #
@@ -720,6 +726,8 @@ require_relative "irb/debug"
 #
 # === Tracer
 #
+# IRB.conf[:USE_TRACER]
+#
 # === \Debug
 #
 # === Warnings
@@ -780,6 +788,8 @@ require_relative "irb/debug"
 #   You can change the name at any time with method <tt>conf.irb_name=</tt>.
 #
 # You can retrieve the thread for a session with method <tt>conf.thread</tt>.
+#
+# You can retrieve the main session from hash entry <tt>IRB.conf[:__MAIN__]</tt>.
 #
 # == Workspaces
 #
@@ -847,7 +857,7 @@ require_relative "irb/debug"
 #
 # == \Context Mode
 #
-# [workspace.new]
+# IRB.conf[:CONTEXT_MODE]
 #
 # == \IRB Name
 #
@@ -912,6 +922,8 @@ require_relative "irb/debug"
 # - Because \IRB evaluates input immediately after it is syntactically complete,
 #   some results may be slightly different.
 # - Forking may not be well behaved.
+#
+# === Encodings
 #
 # == XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX Old Doc XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 #
