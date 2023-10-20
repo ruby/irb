@@ -613,7 +613,7 @@ require_relative "irb/debug"
 # - The name of the running program (<tt>irb</tt>);
 #   see {IRB Name}[rdoc-ref:IRB@IRB+Name].
 # - The name of the current session (<tt>main</tt>);
-#   See {Sessions}[rdoc-ref:IRB@Sessions].
+#   See {Sessions}[rdoc-ref:IRB@IRB+Sessions].
 # - A 3-digit line number (1-based).
 #
 # The default prompt actually defines three formats:
@@ -1007,7 +1007,7 @@ require_relative "irb/debug"
 # The command line options, or IRB.conf, specify the default behavior of
 # Irb.irb.
 #
-# On the other hand, each conf in IRB@Command+line+options is used to
+# On the other hand, each conf in IRB@Command-Line+Options is used to
 # individually configure IRB.irb.
 #
 # If a proc is set for <code>IRB.conf[:IRB_RC]</code>, its will be invoked after execution
@@ -1790,8 +1790,7 @@ class Binding
   #     irb(#<Potato:0x00007feea1916670>):005:0> exit
   #     Cooked potato: true
   #
-  #
-  # See IRB@Usage for more information.
+  # See IRB for more information.
   def irb(show_code: true)
     # Setup IRB with the current file's path and no command line arguments
     IRB.setup(source_location[0], argv: [])

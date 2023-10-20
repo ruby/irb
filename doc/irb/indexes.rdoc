@@ -4,7 +4,7 @@
 
 These are the \IRB command-line options, with links to explanatory text:
 
-- <tt>-d</tt>: Set {$DEBUG}[rdoc-ref:IRB@Debug] and {$VERBOSE}[rdoc-ref:IRB@Verbosity]
+- <tt>-d</tt>: Set <tt>$DEBUG</tt> and {$VERBOSE}[rdoc-ref:IRB@Verbosity]
   to +true+.
 - <tt>-E _ex_[:_in_]</tt>: Set initial external (ex) and internal (in)
   {encodings}[rdoc-ref:IRB@Encodings] (same as <tt>ruby -E></tt>).
@@ -23,7 +23,7 @@ These are the \IRB command-line options, with links to explanatory text:
 - <tt>--colorize</tt>: Use {color-highlighting}[rdoc-ref:IRB@Color+Highlighting]
   for input and output.
 - <tt>--context-mode _n_</tt>: Select method to create Binding object
-  for new {workspace}[rdoc-ref:IRB@Workspaces]; +n+ in range <tt>0..4</tt>.
+  for new {workspace}[rdoc-ref:IRB@Commands]; +n+ in range <tt>0..4</tt>.
 - <tt>--echo</tt>: Print ({echo}[rdoc-ref:IRB@Return-Value+Printing+-28Echoing-29])
   return values.
 - <tt>--extra-doc-dir _dirpath_</tt>:
@@ -78,7 +78,7 @@ for each entry that is pre-defined, the initial value is given:
 - <tt>:AP_NAME</tt>: \IRB {application name}[rdoc-ref:IRB@Application+Name];
   initial value: <tt>'irb'</tt>.
 - <tt>:AT_EXIT</tt>: Array of hooks to call
-  {at exit}[rdoc-ref:IRB@Stopping+IRB];
+  {at exit}[rdoc-ref:IRB@IRB];
   initial value: <tt>[]</tt>.
 - <tt>:AUTO_INDENT</tt>: Whether {automatic indentation}[rdoc-ref:IRB@Automatic+Indentation]
   is enabled; initial value: +true+.
