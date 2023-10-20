@@ -189,7 +189,8 @@ require_relative "irb/debug"
 #
 # Command-line option <tt>--noscript</tt> causes the first command-line argument
 # to be
-# treated as an ordinary argument (instead of an initialization script).
+# treated as an ordinary argument (instead of an initialization script);
+# <tt>--script</tt> is the default.
 #
 # == Input
 #
@@ -265,7 +266,10 @@ require_relative "irb/debug"
 #
 # === \Color Highlighting
 #
+# [TODO]
 # IRB.conf[:USE_COLORIZE]
+# --colorize
+# --nocolorize
 #
 # === End-of-File
 #
@@ -461,6 +465,9 @@ require_relative "irb/debug"
 #
 #     IRB.conf[:INSPECT_MODE] = false
 #
+#   or with command-line option <tt>--noinspect</tt>
+#   (<tt>--inspect</tt> is the default).
+#
 #   You can change the setting at any time using method <tt>conf.inspect_mode=</tt>.
 #
 # === Multiline Output
@@ -647,9 +654,9 @@ require_relative "irb/debug"
 #   rb(main):002:0> IRB.conf[:PROMPT_MODE]
 #   => :DEFAULT
 #
-# You can change the initial prompt and return format in the configuration file:
-#
-#   IRB.conf[:PROMPT = :CLASSIC
+# You can change the initial prompt and return format in the configuration file
+# with <tt>IRB.conf[:PROMPT] = _mode_</tt>,
+# or with command-line option <tt>--prompt _mode_</tt>.
 #
 # You can change the prompt and return format using method <tt>conf.prompt_mode=</tt>;
 # in this example, the prompt has been changed to <tt>>></tt>:
@@ -659,6 +666,9 @@ require_relative "irb/debug"
 #   irb(main):002> conf.prompt_mode = :SIMPLE
 #   => :SIMPLE
 #   >>
+#
+# You can set the prompt mode to <tt>:SIMPLE</tt>
+# with command-line option <tt>--simple-prompt</tt> or <tt>--sample-book-mode</tt>.
 #
 # If you're interested in prompts and return formats other than the defaults,
 # you might experiment by trying some of the others.
@@ -709,6 +719,8 @@ require_relative "irb/debug"
 # - <tt><i>NN</i>n</tt>: Line number.
 # - <tt>%%</tt>: Literal <tt>%</tt>.
 #
+# You can suppress the prompt with command-line option <tt>--noprompt</tt>.
+#
 # === Verbosity
 #
 # By default, \IRB verbosity is off:
@@ -718,19 +730,30 @@ require_relative "irb/debug"
 #
 # You can control verbosity on with:
 #
-# - Command-line options <tt>--verbose</tt> and <tt>--noverbose</tt>.
+# - Command-line options <tt>--verbose</tt>, <tt>--noverbose</tt>.
 # - Configuration file <tt>IRB.conf[:VERBOSE] = _boolean_</tt>,
 #   where +boolean+ is +true+ or +false+.
 #
 # If you do both, the configuration file overrides the command-line option.
 #
+# Command-line option <tt>-d</tt> sets variables <tt>$VERBOSE</tt>
+# and <tt>$DEBUG</tt> to +true+.
+#
 # === Tracer
 #
-# IRB.conf[:USE_TRACER]
+# [TODO] IRB.conf[:USE_TRACER] --tracer
 #
-# === \Debug
+# === \Debuging
+#
+# Command-line option <tt>-d</tt> sets variables <tt>$VERBOSE</tt>
+# and <tt>$DEBUG</tt> to +true+.
 #
 # === Warnings
+#
+# Command-line option <tt>-w</tt> suppresses warnings.
+#
+# Command-line option <tt>-W[_level_]<tt>
+# sets warning level; 0=silence, 1=medium, 2=verbose.
 #
 # === Back Trace Limit
 #
@@ -766,7 +789,11 @@ require_relative "irb/debug"
 #
 # === Version
 #
+# [TODO] --version
+#
 # === Help
+#
+# [TODO] --help
 #
 # == Sessions
 #
@@ -792,6 +819,8 @@ require_relative "irb/debug"
 # You can retrieve the main session from hash entry <tt>IRB.conf[:__MAIN__]</tt>.
 #
 # == Workspaces
+#
+# [TODO] --context-mode n
 #
 # == Load Modules
 #
@@ -924,6 +953,11 @@ require_relative "irb/debug"
 # - Forking may not be well behaved.
 #
 # === Encodings
+#
+# Command-line option <tt>-E _ex_[:_in_]</tt>
+# sets initial external (ex) and internal (in) encodings.
+#
+# Command-line option <tt>-U</tt> sets both to UTF-8.
 #
 # == XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX Old Doc XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 #

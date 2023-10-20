@@ -17,8 +17,8 @@ These are the \IRB command-line options, with links to explanatory text:
 - <tt>-w</tt>: Suppress {warnings}[rdoc-ref:IRB@Warnings] (same as <tt>ruby -w</tt>).
 - <tt>-W[_level_]</tt>: Set {warning level}[rdoc-ref:IRB@Warnings];
   0=silence, 1=medium, 2=verbose (same as <tt>ruby -W</tt>).
-- <tt>--autocomplete</tt>: Use {auto-completion}[rdoc-ref:IRB@Auto-Completion].
-- <tt>--back-trace-limit _n_</tt>: Set a {backtrace limit}[rdoc-ref:IRB@Backtrace+Limit];
+- <tt>--autocomplete</tt>: Use {auto-completion}[rdoc-ref:IRB@Automatic+Completion].
+- <tt>--back-trace-limit _n_</tt>: Set a {backtrace limit}[rdoc-ref:IRB@Back+Trace+Limit];
   display at most the top +n+ and bottom +n+ entries.
 - <tt>--colorize</tt>: Use {color-highlighting}[rdoc-ref:IRB@Color+Highlighting]
   for input and output.
@@ -35,7 +35,7 @@ These are the \IRB command-line options, with links to explanatory text:
 - <tt>--inspect</tt>: Use method +inspect+ for printing ({echoing}[rdoc-ref:IRB@Return-Value+Printing+-28Echoing-29])
   return values.
 - <tt>--multiline</tt>: Use the multiline editor as the {input method}[rdoc-ref:IRB@Input+Method].
-- <tt>--noautocomplete</tt>: Don't use {auto-completion}[rdoc-ref:IRB@Auto-Completion].
+- <tt>--noautocomplete</tt>: Don't use {auto-completion}[rdoc-ref:IRB@Automatic+Completion].
 - <tt>--nocolorize</tt>: Don't use {color-highlighting}[rdoc-ref:IRB@Color+Highlighting]
   for input and output.
 - <tt>--noecho</tt>: Don't print ({echo}[rdoc-ref:IRB@Return-Value+Printing+-28Echoing-29])
@@ -45,18 +45,18 @@ These are the \IRB command-line options, with links to explanatory text:
 - <tt>--noinspect</tt>: Don't se method +inspect+ for printing ({echoing}[rdoc-ref:IRB@Return-Value+Printing+-28Echoing-29])
   return values.
 - <tt>--nomultiline</tt>: Don't use the multiline editor as the {input method}[rdoc-ref:IRB@Input+Method].
-- <tt>--noprompt</tt>: Don't print prompts.
+- <tt>--noprompt</tt>: Don't print {prompts}[rdoc-ref:IRB@Prompt+and+Return+Formats].
 - <tt>--noscript</tt>:  Treat the first command-line argument as a normal
-  {command-line argument}[rdoc-ref:IRB@Command-Line+Arguments],
+  {command-line argument}[rdoc-ref:IRB@Initialization+Script],
   and include it in +ARGV+.
 - <tt>--nosingleline</tt>: Don't use the singleline editor as the {input method}[rdoc-ref:IRB@Input+Method].
 - <tt>--noverbose</tt>Don't print {verbose}[rdoc-ref:IRB@Verbosity] details.
 - <tt>--prompt _mode_</tt>, <tt>--prompt-mode _mode_</tt>:
-  Set {prompt and return formats}[rdoc-ref:IRB@IRB+Prompt+and+Return+Formats];
+  Set {prompt and return formats}[rdoc-ref:IRB@Prompt+and+Return+Formats];
   +mode+ may be a {pre-defined prompt}[rdoc-ref:IRB@Pre-Defined+Prompts]
   or the name of a {custom prompt}[rdoc-ref:IRB@Custom+Prompts].
 - <tt>--script</tt>: Treat the first command-line argument as the path to an
-  {initialization script}[rdoc-ref:IRB@Command-Line+Arguments],
+  {initialization script}[rdoc-ref:IRB@Initialization+Script],
   and omit it from +ARGV+.
 - <tt>--simple-prompt</tt>, <tt>--sample-book-mode</tt>:
   Set prompt mode to {:SIMPLE}[rdoc-ref:IRB@Pre-Defined+Prompts].
