@@ -313,6 +313,8 @@ require_relative "irb/debug"
 # - Giving command-line option <tt>--noautocomplete</tt>
 #   ()<tt>--autocomplete</tt> is the default).
 #
+# See {Notes on Initialization Precedence}[rdoc-ref:IRB@Notes+on+Initialization+Precedence].
+#
 # \Method <tt>conf.use_autocomplete?</tt> returns +true+
 # if automatic completion is enabled, +false+ otherwise.
 #
@@ -320,8 +322,30 @@ require_relative "irb/debug"
 #
 # === Input \Method
 #
-# You can specify an input method that determines how command input is to be read;
-# the initial value is an instance of IRB::RelineInputMethod.
+# The \IRB input method determines how command input is to be read;
+# by default, the input method for the session is IRB::RelineInputMethod.
+#
+# You can set the input method by:
+#
+# - Adding to the configuration file:
+#
+#   - <tt>IRB.conf[:USE_SINGLELINE] = true</tt>
+#     or <tt>IRB.conf[:USE_MULTILINE]= false</tt>
+#     sets the input method to IRB::ReadlineInputMethod.
+#   - <tt>IRB.conf[:USE_SINGLELINE] = false</tt>
+#     or <tt>IRB.conf[:USE_MULTILINE] = true</tt>
+#     sets the input method to IRB::RelineInputMethod.
+#
+# - Giving command-line options:
+#
+#   - <tt>--singleline</tt>
+#     or <tt>--nomultiline</tt>
+#     sets the input method to IRB::ReadlineInputMethod.
+#   - <tt>--nosingleline</tt>
+#     or <tt>--multiline/tt>
+#     sets the input method to IRB::RelineInputMethod.
+#
+# See {Notes on Initialization Precedence}[rdoc-ref:IRB@Notes+on+Initialization+Precedence].
 #
 # You can retrieve the current value using method <tt>conf.io</tt>:
 #
@@ -330,10 +354,7 @@ require_relative "irb/debug"
 #   irb(main):002> conf.io.class
 #   => IRB::RelineInputMethod
 #
-# You can set the value to IRB::ReadlineInputMethod
-# using command-line option <tt>--singleline</tt> (or <tt>--nomultiline</tt>).
-#
-# \Method <tt>conf.use_multiline?</tt> returns:
+# \Method <tt>conf.use_multiline?</tt>
 # and its synonym <tt>conf.use_reline</tt> return:
 #
 # - +true+ if option <tt>--multiline</tt> was given.
@@ -347,12 +368,7 @@ require_relative "irb/debug"
 # - +false+ if option <tt>--nosingleline</tt> was given.
 # - +nil+ if neither was given.
 #
-# You can set the value of <tt>conf.io</tt> in the configuration file
-# by defining <tt>IRB.conf[:USE_SINGLELINE]</tt>
-# or <tt>IRB.conf[:USE_MULTILINE]</tt> as +true+ or +false+;
-# these override the command-line options mentioned above.
-#
-# You can change the value at any time using method <tt>conf.io=</tt>;
+# During the session you can change the value using method <tt>conf.io=</tt>;
 # the new value should be an instance of one of these classes:
 #
 # - IRB::FileInputMethod.
