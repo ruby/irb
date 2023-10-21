@@ -372,11 +372,16 @@ module IRB
         end
         formatter = RDoc::Markup::ToAnsi.new
         formatter.width = width
-        dialog.trap_key = alt_d
-        mod_key = RUBY_PLATFORM.match?(/darwin/) ? "Option" : "Alt"
-        message = "Press #{mod_key}+d to read the full document"
-        contents = [message] + doc.accept(formatter).split("\n")
-        contents = contents.take(preferred_dialog_height)
+        if name =~ /\ARubyVM/ and not ENV['RUBY_YES_I_AM_NOT_A_NORMAL_USER']
+          type = STDOUT.external_encoding == Encoding::UTF_8 ? :unicode : :ascii
+          contents = IRB.send(:easter_egg_logo, type).split("\n").take(preferred_dialog_height)
+        else
+          dialog.trap_key = alt_d
+          mod_key = RUBY_PLATFORM.match?(/darwin/) ? "Option" : "Alt"
+          message = "Press #{mod_key}+d to read the full document"
+          contents = [message] + doc.accept(formatter).split("\n")
+          contents = contents.take(preferred_dialog_height)
+        end
 
         y = cursor_pos_to_render.y
         Reline::DialogRenderInfo.new(pos: Reline::CursorPos.new(x, y), contents: contents, width: width, bg_color: '49')
