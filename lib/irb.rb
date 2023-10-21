@@ -146,7 +146,8 @@ require_relative "irb/debug"
 # +false+ otherwise.
 # \Hash entry <tt>IRB.conf[:RC]</tt> also contains that value.
 #
-# [TODO] IRB.conf[:RC_NAME_GENERATOR]
+# [TODO] What should be said about IRB.conf[:RC_NAME_GENERATOR]?
+# It's user-visible in IRB.conf, so presumably should be documented.
 #
 # === Session \Context
 #
@@ -223,7 +224,7 @@ require_relative "irb/debug"
 #
 # During the session, method <tt>conf.history_file</tt> returns the filepath,
 # and method <tt>conf.history_file = <i>new_filepath</i></tt>
-# copies the history to the new file, which becomes the history file
+# copies the history to the file at <i>new_filepath</i>, which becomes the history file
 # for the session.
 #
 # You can change the number of commands saved by adding to your configuration file:
@@ -234,7 +235,7 @@ require_relative "irb/debug"
 # - Zero: all commands are to be saved.
 # - +nil+: no commands are to be saved,.
 #
-# The count can be reset or retrieved at any time by (respectively)
+# During the session, he count can be reset or retrieved
 # methods <tt>conf.save_history</tt> or <tt>conf.save_history=</tt>.
 #
 # === Command Aliases
@@ -277,43 +278,29 @@ require_relative "irb/debug"
 #   irb(main):010:0> conf.command_aliases
 #   => {:bar=>:whereami}
 #
-# Note that the _current_ aliases <i>may not</i>
-# be changed by <tt>IRB.conf[:COMMAND_ALIASES] = hash</tt>
-# in the \IRB session.
-#
-# === \Color Highlighting
-#
-# [TODO]
-# IRB.conf[:USE_COLORIZE]
-# --colorize
-# --nocolorize
-#
 # === End-of-File
 #
-# You can specify how \IRB responds to the end-of-file character <tt>Ctrl-D</tt>;
-# method <tt>conf.ignore_eof?</tt> returns the boolean setting.
+# By default, <tt>IRB.conf[:IGNORE_EOF]</tt> is +false+,
+# which means that typing the end-of-file character <tt>Ctrl-D</tt>
+# does not cause the session to exit.
 #
-# The default initial setting is +false+, which means that \IRB exits immediately.
+# You can reverse that behavior by adding <tt>IRB.conf[:IGNORE_EOF] = true</tt>
+# to the configuration file.
 #
-# You can change the initial setting in the configuration file:
-#
-#   IRB.conf[:IGNORE_EOF] = true # Do not exit on Ctrl-D.
-#
-# You can change the setting at any time using method <tt>conf.ignore_eof=</tt>
+# During the session, method <tt>conf.ignore_eof?</tt> returns the setting,
+# and method <tt>conf.ignore_eof = _boolean_</tt> sets it.
 #
 # === SIGINT
 #
-# You can specify how \IRB responds to the interrupt character <tt>Ctrl-C</tt>;
-# method <tt>conf.ignore_sigint?</tt> returns the setting.
+# By default, <tt>IRB.conf[:IGNORE_SIGINT]</tt> is +true+,
+# which means that typing the interrupt character <tt>Ctrl-C</tt>
+# does not cause the session to exit.
 #
-# The default initial setting is +true+, which means that \IRB
-# ignores the character.
+# You can reverse that behavior by adding <tt>IRB.conf[:IGNORE_SIGING] = false</tt>
+# to the configuration file.
 #
-# You can change the initial setting in the configuration file:
-#
-#   IRB.conf[:IGNORE_SIGINT] = false # Exit on Ctrl-C.
-#
-# You can change the setting at any time using method <tt>conf.ignore_sigint=</tt>.
+# During the session, method <tt>conf.ignore_siging?</tt> returns the setting,
+# and method <tt>conf.ignore_sigint = _boolean_</tt> sets it.
 #
 # === Automatic Completion
 #
@@ -813,6 +800,13 @@ require_relative "irb/debug"
 # [TODO] --help
 #
 # == Other Properties
+#
+# === \Color Highlighting
+#
+# [TODO]
+# IRB.conf[:USE_COLORIZE]
+# --colorize
+# --nocolorize
 #
 # === Load Modules
 #
