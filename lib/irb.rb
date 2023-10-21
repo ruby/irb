@@ -956,7 +956,7 @@ require_relative "irb/debug"
 #
 # Command-line option <tt>-U</tt> sets both to UTF-8.
 #
-# == Commands
+# === Commands
 #
 # The following commands are available on IRB.
 #
@@ -1002,14 +1002,14 @@ require_relative "irb/debug"
 # * break, delete, next, step, continue, finish, backtrace, info, catch
 #   * Start the debugger of debug.gem and run the command on it.
 #
-# == IRB Sessions
+# === IRB Sessions
 #
 # IRB has a special feature, that allows you to manage many sessions at once.
 #
 # You can create new sessions with Irb.irb, and get a list of current sessions
 # with the +jobs+ command in the prompt.
 #
-# === \IRB-Specific Commands
+# ==== \IRB-Specific Commands
 #
 # JobManager provides commands to handle the current sessions:
 #
@@ -1030,7 +1030,7 @@ require_relative "irb/debug"
 # +irb_require+::
 #   Loads the given file similarly to Kernel#require
 #
-# === Configuration
+# ==== Configuration
 #
 # The command line options, or IRB.conf, specify the default behavior of
 # Irb.irb.
@@ -1042,7 +1042,7 @@ require_relative "irb/debug"
 # of that proc with the context of the current session as its argument. Each
 # session can be configured using this mechanism.
 #
-# === Session variables
+# ==== Session variables
 #
 # There are a few variables in every Irb session that can come in handy:
 #
@@ -1057,7 +1057,7 @@ require_relative "irb/debug"
 #   If +line_no+ is a negative, the return value +line_no+ many lines before
 #   the most recent return value.
 #
-# === Example using IRB Sessions
+# ==== Example using IRB Sessions
 #
 #   # invoke a new session
 #   irb(main):001:0> irb
