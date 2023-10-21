@@ -222,7 +222,9 @@ require_relative "irb/debug"
 # where _filepath_ is a string filepath.
 #
 # During the session, method <tt>conf.history_file</tt> returns the filepath,
-# and method <tt>conf.history_file = <i>new_filepath</i></tt> renames the file.
+# and method <tt>conf.history_file = <i>new_filepath</i></tt>
+# copies the history to the new file, which becomes the history file
+# for the session.
 #
 # You can change the number of commands saved by adding to your configuration file:
 # <tt>IRB.conf[:SAVE_HISTORY] = _n_</tt>,
