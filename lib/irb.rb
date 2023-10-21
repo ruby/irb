@@ -30,7 +30,9 @@ require_relative "irb/debug"
 # ({REPL}[https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop])
 # that:
 #
-# - <b>_Reads_</b> each character as you type.
+# - <b>_Reads_</b> each character as you type;
+#   by default uses color highlighting to show syntax
+#   and errors such as mismatched parentheses.
 #   You can modify the \IRB context to change the way input works.
 #   See {Input}[rdoc-ref:IRB@Input].
 # - <b>_Evaluates_</b> the code each time it has read a syntactically complete passage.
@@ -81,11 +83,15 @@ require_relative "irb/debug"
 #    {initialization script}[rdoc-ref:IRB@Initialization+Script]
 #    onto the \IRB shell, just as if it were user-typed commands.
 #
-# === Command-Line Options
+# === The Command Line
+#
+# On the command line, all options precede all arguments;
+# the first item that is not recognized as an options is treated as an argument,
+# as are all items that follow.
+#
+# ==== Command-Line Options
 #
 # Many command-line options affect values in hash <tt>IRB.conf</tt>.
-# Note that effect from an option may be overridden by an assignment
-# in the configuration file.
 #
 # Details of the options are described in the relevant subsections below.
 #
@@ -96,7 +102,7 @@ require_relative "irb/debug"
 # If you are interested in a specific option, consult the
 # {index}[./doc/irb/indexes_rdoc.html#label-Index+of+Command-Line+Options].
 #
-# === Command-Line Arguments
+# ==== Command-Line Arguments
 #
 # Command-line arguments are passed to \IRB in array +ARGV+:
 #
@@ -136,7 +142,7 @@ require_relative "irb/debug"
 #
 # \Method <tt>conf.rc?</tt> returns +true+ if a configuration file was read,
 # +false+ otherwise.
-# \Hash entry <tt>IRB.conf[:RC] also contains that value.
+# \Hash entry <tt>IRB.conf[:RC]</tt> also contains that value.
 #
 # IRB.conf[:RC_NAME_GENERATOR]
 #
@@ -159,15 +165,8 @@ require_relative "irb/debug"
 # The initial entries in hash <tt>IRB.conf</tt> are determined by:
 #
 # - Default values.
-# - Certain command-line options, which may override defaults.
-# - Direct assignments in the configuration file,
-#   which may override command-line options and default values.
-#
-# <b>Note well</b>:
-# \Hash <tt>IRB.conf</tt> affects the context only once,
-# when the configuration file is interpreted;
-# any subsequent changes to it do not affect the context
-# and are therefore essentially meaningless.
+# - Command-line options, which may override defaults.
+# - Direct assignments in the configuration file.
 #
 # You can see the hash by typing <tt>IRB.conf</tt>.
 #
@@ -175,6 +174,17 @@ require_relative "irb/debug"
 #
 # If you are interested in a specific entry, consult the
 # {index}[./doc/irb/indexes_rdoc.html#label-Index+of+IRB.conf+Entries].
+#
+# === Notes on Initialization Precedence
+#
+# - Any conflict between an entry in hash <tt>IRB.conf</tt> and a command-line option
+#   is resolved in favor of the hash entry.
+# - \Hash <tt>IRB.conf</tt> affects the context only once,
+#   when the configuration file is interpreted;
+#   any subsequent changes to it do not affect the context
+#   and are therefore essentially meaningless.
+#
+#
 #
 # === Initialization Script
 #
