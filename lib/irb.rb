@@ -413,6 +413,11 @@ module IRB
     PROMPT_MAIN_TRUNCATE_OMISSION = '...'.freeze
     CONTROL_CHARACTERS_PATTERN = "\x00-\x1F".freeze
 
+    # Returns the current context of this irb session
+    attr_reader :context
+    # The lexer used by this irb session
+    attr_accessor :scanner
+
     # Creates a new irb session
     def initialize(workspace = nil, input_method = nil)
       @context = Context.new(self, workspace, input_method)
@@ -490,11 +495,6 @@ module IRB
         context.io.save_history if save_history
       end
     end
-
-    # Returns the current context of this irb session
-    attr_reader :context
-    # The lexer used by this irb session
-    attr_accessor :scanner
 
     # Evaluates input for this session.
     def eval_input
