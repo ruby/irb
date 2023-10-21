@@ -119,6 +119,8 @@ require_relative "irb/debug"
 #
 # === Configuration File
 #
+# You can initialize \IRB via a <i>configuration file</i>.
+#
 # If command-line option <tt>-f</tt> is given,
 # no configuration file is looked for.
 #
@@ -144,15 +146,16 @@ require_relative "irb/debug"
 # +false+ otherwise.
 # \Hash entry <tt>IRB.conf[:RC]</tt> also contains that value.
 #
-# IRB.conf[:RC_NAME_GENERATOR]
+# [TODO] IRB.conf[:RC_NAME_GENERATOR]
 #
 # === Session \Context
 #
 # An \IRB session has a <i>context</i>, an IRB::Context object
 # that is created at session startup.
-#
-# Its initial content is determined by entries in hash <tt>IRB.conf</tt>
+# Its initial content is determined by command-line options,
+# by entries in hash <tt>IRB.conf</tt>,
 # and by defaults.
+#
 # Values in the context can be retrieved
 # via methods and attributes in the context object;
 # much of its content can be modified by other methods and attributes.
@@ -184,8 +187,6 @@ require_relative "irb/debug"
 #   any subsequent changes to it do not affect the context
 #   and are therefore essentially meaningless.
 #
-#
-#
 # === Initialization Script
 #
 # By default, the first command-line argument (after any options)
@@ -216,10 +217,12 @@ require_relative "irb/debug"
 # A new \IRB session creates the file if it does not exist,
 # and appends to the file if it does exist.
 #
-# You can change the initial filepath by adding to your configuration file:
+# You can change the filepath by adding to your configuration file:
 # <tt>IRB.conf[:HISTORY_FILE] = _filepath_</tt>,
-# where _filepath_ is a string filepath;
-# the filepath cannot be changed during the \IRB session.
+# where _filepath_ is a string filepath.
+#
+# During the session, method <tt>conf.history_file</tt> returns the filepath,
+# and method <tt>conf.history_file = <i>new_filepath</i></tt> renames the file.
 #
 # You can change the number of commands saved by adding to your configuration file:
 # <tt>IRB.conf[:SAVE_HISTORY] = _n_</tt>,
