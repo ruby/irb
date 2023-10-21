@@ -146,7 +146,8 @@ require_relative "irb/debug"
 # +false+ otherwise.
 # \Hash entry <tt>IRB.conf[:RC]</tt> also contains that value.
 #
-# [TODO] What should be said about IRB.conf[:RC_NAME_GENERATOR]?
+# TODO
+# What should be said about IRB.conf[:RC_NAME_GENERATOR]?
 # It's user-visible in IRB.conf, so presumably should be documented.
 #
 # === Session \Context
@@ -208,14 +209,14 @@ require_relative "irb/debug"
 #
 # == Input
 #
+# You can use various \IRB features to modify the way input works.
+#
 # === Input Command History
 #
-# You can specify whether and where a history of input commands is to be stored.
+# By default, \IRB stores a history of up to 1000 input commands
+# in file <tt>./.irb_history</tt>.
 #
-# The default filepath for the history file is <tt>./.irb_history</tt>
-# and the default number of commands stored is 1000.
-#
-# A new \IRB session creates the file if it does not exist,
+# A new \IRB session creates the history file if it does not exist,
 # and appends to the file if it does exist.
 #
 # You can change the filepath by adding to your configuration file:
@@ -224,26 +225,24 @@ require_relative "irb/debug"
 #
 # During the session, method <tt>conf.history_file</tt> returns the filepath,
 # and method <tt>conf.history_file = <i>new_filepath</i></tt>
-# copies the history to the file at <i>new_filepath</i>, which becomes the history file
-# for the session.
+# copies the history to the file at <i>new_filepath</i>,
+# which becomes the history file for the session.
 #
 # You can change the number of commands saved by adding to your configuration file:
 # <tt>IRB.conf[:SAVE_HISTORY] = _n_</tt>,
-# where _count_ is the integer _n_ is one of:
+# where _n_ is one of:
 #
 # - Positive integer: the number of commands to be saved,
 # - Zero: all commands are to be saved.
 # - +nil+: no commands are to be saved,.
 #
-# During the session, he count can be reset or retrieved
-# methods <tt>conf.save_history</tt> or <tt>conf.save_history=</tt>.
+# During the session, you can use
+# methods <tt>conf.save_history</tt> or <tt>conf.save_history=</tt>
+# to retrieve or change the count.
 #
 # === Command Aliases
 #
-# You can specify aliases for \IRB input commands.
-#
-# The current aliases are returned by method <tt>conf.command_aliases</tt>.
-# The default initial aliases:
+# By default, \IRB defines several command aliases:
 #
 #   irb(main):001:0> conf.command_aliases
 #   => {:"$"=>:show_source, :"@"=>:whereami, :break=>:irb_break, :catch=>:irb_catch, :next=>:irb_next}
@@ -378,10 +377,12 @@ require_relative "irb/debug"
 #
 # == Output
 #
+# You can use various \IRB features to modify the way in\\output works.
+#
 # === Automatic Indentation
 #
-# You can specify whether \IRB is to automatically indent input lines
-# to show structure (e.g., indent the contents of a block).
+# By default, \IRB automatically indents lines of code to show structure
+# (e.g., it indent the contents of a block).
 #
 # The current setting is returned
 # by the configuration method <tt>conf.auto_indent_mode</tt>.
