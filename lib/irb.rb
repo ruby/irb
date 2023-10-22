@@ -498,19 +498,16 @@ require_relative "irb/debug"
 #
 # === Evaluation History
 #
-# You can specify whether and how much evaluation history is to be saved;
-# this is the history of values returned for input commands.
+# By default, \IRB saves no history of evaluations (returned values),
+# and the related methods <tt>conf.eval_history</tt>, <tt>_</tt>,
+# and <tt>__</tt> are undefined.
 #
-# By default:
-#
-# - No evaluation history is stored.
-# - Methods <tt>conf.eval_history</tt>, <tt>_</tt>, and <tt>__</tt> are undefined.
-#
-# You can set the maximum number of evaluations to be stored:
+# You can turn on that history, and set the maximum number of evaluations to be stored:
 #
 # - In the configuration file: add <tt>IRB.conf[:EVAL_HISTORY] = _n_</tt>.
 #   (Examples below assume that we've added <tt>IRB.conf[:EVAL_HISTORY] = 5</tt>.)
-# - In the session (at any time): <tt>conf.eval_historyh = _n_</tt>.
+# - In the session (at any time): <tt>conf.eval_history = _n_</tt>.
+#   [Raises an exception: undefined method `push' for nil:NilClass (NoMethodError).]
 #
 # If +n+ is zero, all evaluation history is stored.
 #
