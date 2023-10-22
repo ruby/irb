@@ -589,11 +589,12 @@ require_relative "irb/debug"
 #
 # === Prompt and Return Formats
 #
-# You can specify what the prompts and return values are to look like.
+# By default, \IRB uses the prompt and return value formats
+# defined in its +:DEFAULT+ prompt mode.
 #
 # ==== The Default Prompt and Return Format
 #
-# By default, the prompt and return values look like this:
+# The default prompt and return values look like this:
 #
 #   irb(main):001> 1 + 1
 #   => 2
@@ -605,7 +606,7 @@ require_relative "irb/debug"
 # - The name of the running program (<tt>irb</tt>);
 #   see {IRB Name}[rdoc-ref:IRB@IRB+Name].
 # - The name of the current session (<tt>main</tt>);
-#   See {Sessions}[rdoc-ref:IRB@IRB+Sessions].
+#   See {IRB Sessions}[rdoc-ref:IRB@IRB+Sessions].
 # - A 3-digit line number (1-based).
 #
 # The default prompt actually defines three formats:
@@ -642,27 +643,25 @@ require_relative "irb/debug"
 # values like the \IRB name, session name, and line number;
 # see {Prompt Specifiers}[rdoc-ref:IRB@Prompt+Specifiers].
 #
-# The initial prompt and return format are determined by <tt>IRB.conf[:PROMPT_MODE]</tt>,
-# which has the initial default value <tt>:DEFAULT</tt>.
+# You can change the initial prompt and return format by:
 #
-#   rb(main):002:0> IRB.conf[:PROMPT_MODE]
-#   => :DEFAULT
+# - Adding to the configuration file: <tt>IRB.conf[:PROMPT] = _mode_</tt>
+#   where _mode_ is the symbol name of a prompt mode.
+# - Giving a command-line option:
 #
-# You can change the initial prompt and return format in the configuration file
-# with <tt>IRB.conf[:PROMPT] = _mode_</tt>,
-# or with command-line option <tt>--prompt _mode_</tt>.
+#   - <tt>--prompt _mode_</tt>: sets the prompt mode to _mode_.
+#     where _mode_ is the symbol name of a prompt mode.
+#   - <tt>--simple-prompt</tt> or <tt>--sample-book-mode</tt>:
+#     sets the prompt mode to +:SIMPLE+.
+#   - <tt>--inf-ruby-mode</tt>: sets the prompt mode to +:INF_RUBY+
+#     and suppresses both <tt>--multiline</tt> and <tt>--singleline</tt>.
+#   - <tt>--noprompt</tt>: suppresses prompting; does not affect echoing.
 #
-# You can change the prompt and return format using method <tt>conf.prompt_mode=</tt>;
-# in this example, the prompt has been changed to <tt>>></tt>:
+# See {Notes on Initialization Precedence}[rdoc-ref:IRB@Notes+on+Initialization+Precedence].
 #
-#   irb(main):001> conf.prompt_mode
-#   => :DEFAULT
-#   irb(main):002> conf.prompt_mode = :SIMPLE
-#   => :SIMPLE
-#   >>
+# You can retrieve or set the current prompt mode with methods
 #
-# You can set the prompt mode to <tt>:SIMPLE</tt>
-# with command-line option <tt>--simple-prompt</tt> or <tt>--sample-book-mode</tt>.
+# <tt>conf.prompt_mode</tt> and <tt>conf.prompt_mode=</tt>.
 #
 # If you're interested in prompts and return formats other than the defaults,
 # you might experiment by trying some of the others.
@@ -712,8 +711,6 @@ require_relative "irb/debug"
 # - <tt><i>NN</i>i</tt>: Indentation level.
 # - <tt><i>NN</i>n</tt>: Line number.
 # - <tt>%%</tt>: Literal <tt>%</tt>.
-#
-# You can suppress the prompt with command-line option <tt>--noprompt</tt>.
 #
 # === Verbosity
 #
