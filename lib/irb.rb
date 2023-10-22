@@ -323,6 +323,30 @@ require_relative "irb/debug"
 #
 # The setting may not be changed during the session.
 #
+# === Automatic Indentation
+#
+# By default, \IRB automatically indents lines of code to show structure
+# (e.g., it indent the contents of a block).
+#
+# The current setting is returned
+# by the configuration method <tt>conf.auto_indent_mode</tt>.
+#
+# The default initial setting is +true+:
+#
+#   irb(main):001:0> conf.auto_indent_mode
+#   => true
+#   irb(main):002:1* Dir.entries('.').select do |entry|
+#   irb(main):003:1*   entry.start_with?('R')
+#   irb(main):004:0> end
+#   => ["README.md", "Rakefile"]
+#
+# You can change the initial setting in the
+# configuration file with:
+#
+#   IRB.conf[:AUTO_INDENT] = false
+#
+# Note that the _current_ setting <i>may not</i> be changed in the \IRB session.
+#
 # === Input \Method
 #
 # The \IRB input method determines how command input is to be read;
@@ -382,30 +406,6 @@ require_relative "irb/debug"
 # == Output
 #
 # You can use various \IRB features to modify the way in\\output works.
-#
-# === Automatic Indentation
-#
-# By default, \IRB automatically indents lines of code to show structure
-# (e.g., it indent the contents of a block).
-#
-# The current setting is returned
-# by the configuration method <tt>conf.auto_indent_mode</tt>.
-#
-# The default initial setting is +true+:
-#
-#   irb(main):001:0> conf.auto_indent_mode
-#   => true
-#   irb(main):002:1* Dir.entries('.').select do |entry|
-#   irb(main):003:1*   entry.start_with?('R')
-#   irb(main):004:0> end
-#   => ["README.md", "Rakefile"]
-#
-# You can change the initial setting in the
-# configuration file with:
-#
-#   IRB.conf[:AUTO_INDENT] = false
-#
-# Note that the _current_ setting <i>may not</i> be changed in the \IRB session.
 #
 # === Return-Value Printing (Echoing)
 #
