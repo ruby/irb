@@ -91,7 +91,8 @@ require_relative "irb/debug"
 #
 # ==== Command-Line Options
 #
-# Many command-line options affect values in hash <tt>IRB.conf</tt>.
+# Many command-line options affect values in hash <tt>IRB.conf</tt>,
+# which in turn affects the initial configuration of the \IRB session.
 #
 # Details of the options are described in the relevant subsections below.
 #
@@ -127,6 +128,13 @@ require_relative "irb/debug"
 # Otherwise, \IRB reads and interprets a configuration file
 # if one is available.
 #
+# The configuration file can contain any Ruby code, and can usefully include
+# user code that:
+#
+# - Can then be debugged in \IRB.
+# - Configures \IRB itself.
+# - Requires or loads files.
+#
 # The path to the configuration file is the first found among:
 #
 # - The value of variable <tt>$IRBRC</tt>, if defined.
@@ -146,7 +154,7 @@ require_relative "irb/debug"
 # +false+ otherwise.
 # \Hash entry <tt>IRB.conf[:RC]</tt> also contains that value.
 #
-# TODO
+# TODO:
 # What should be said about IRB.conf[:RC_NAME_GENERATOR]?
 # It's user-visible in IRB.conf, so presumably should be documented.
 #
@@ -195,17 +203,13 @@ require_relative "irb/debug"
 # is the path to a Ruby initialization script,
 # which is a script to be executed as the \IRB process begins.
 #
-# The script can contain any Ruby code, and can usefully be
-# user code that:
-#
-# - Can then be debugged in \IRB.
-# - Configures \IRB itself.
-# - Requires or loads files.
-#
 # Command-line option <tt>--noscript</tt> causes the first command-line argument
 # to be
 # treated as an ordinary argument (instead of an initialization script);
 # <tt>--script</tt> is the default.
+#
+# \IRB reads the initialization script and puts it onto the \IRB shell,
+# just as if it were user-typed commands.
 #
 # == Input
 #
@@ -322,7 +326,7 @@ require_relative "irb/debug"
 # === Input \Method
 #
 # The \IRB input method determines how command input is to be read;
-# by default, the input method for the session is IRB::RelineInputMethod.
+# by default, the input method for a session is IRB::RelineInputMethod.
 #
 # You can set the input method by:
 #
