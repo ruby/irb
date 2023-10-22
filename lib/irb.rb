@@ -30,9 +30,7 @@ require_relative "irb/debug"
 # ({REPL}[https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop])
 # that:
 #
-# - <b>_Reads_</b> each character as you type;
-#   by default uses color highlighting to show syntax
-#   and errors such as mismatched parentheses.
+# - <b>_Reads_</b> each character as you type.
 #   You can modify the \IRB context to change the way input works.
 #   See {Input}[rdoc-ref:IRB@Input].
 # - <b>_Evaluates_</b> the code each time it has read a syntactically complete passage.
@@ -86,13 +84,13 @@ require_relative "irb/debug"
 # === The Command Line
 #
 # On the command line, all options precede all arguments;
-# the first item that is not recognized as an options is treated as an argument,
+# the first item that is not recognized as an option is treated as an argument,
 # as are all items that follow.
 #
 # ==== Command-Line Options
 #
-# Many command-line options affect values in hash <tt>IRB.conf</tt>,
-# which in turn affects the initial configuration of the \IRB session.
+# Many command-line options affect entries in hash <tt>IRB.conf</tt>,
+# which in turn affect the initial configuration of the \IRB session.
 #
 # Details of the options are described in the relevant subsections below.
 #
@@ -198,16 +196,14 @@ require_relative "irb/debug"
 # === Initialization Script
 #
 # By default, the first command-line argument (after any options)
-# is the path to a Ruby initialization script,
-# which is a script to be executed as the \IRB process begins.
+# is the path to a Ruby initialization script.
+#
+# \IRB reads the initialization script and puts its content onto the \IRB shell,
+# just as if it were user-typed commands.
 #
 # Command-line option <tt>--noscript</tt> causes the first command-line argument
-# to be
-# treated as an ordinary argument (instead of an initialization script);
+# to be treated as an ordinary argument (instead of an initialization script);
 # <tt>--script</tt> is the default.
-#
-# \IRB reads the initialization script and puts it onto the \IRB shell,
-# just as if it were user-typed commands.
 #
 # == Input
 #
