@@ -154,9 +154,7 @@ require_relative "irb/debug"
 # +false+ otherwise.
 # \Hash entry <tt>IRB.conf[:RC]</tt> also contains that value.
 #
-# TODO:
-# What should be said about IRB.conf[:RC_NAME_GENERATOR]?
-# It's user-visible in IRB.conf, so presumably should be documented.
+# [REVIEWERS] What should be said about IRB.conf[:RC_NAME_GENERATOR]?
 #
 # === Session \Context
 #
@@ -215,8 +213,7 @@ require_relative "irb/debug"
 #
 # This section describes the features that allow you to change
 # the way \IRB input works;
-# see also {Color Highlighting}[rdoc-ref:IRB@Color+Highlighting],
-# which affects both input and output.
+# see also {Input and Output}[rdoc-ref:IRB@Input+and+Output].
 #
 # === Input Command History
 #
@@ -410,8 +407,7 @@ require_relative "irb/debug"
 #
 # This section describes the features that allow you to change
 # the way \IRB output works;
-# see also {Color Highlighting}[rdoc-ref:IRB@Color+Highlighting],
-# which affects both input and output.
+# see also {Input and Output}[rdoc-ref:IRB@Input+and+Output].
 #
 # === Return-Value Printing (Echoing)
 #
@@ -507,7 +503,7 @@ require_relative "irb/debug"
 # - In the configuration file: add <tt>IRB.conf[:EVAL_HISTORY] = _n_</tt>.
 #   (Examples below assume that we've added <tt>IRB.conf[:EVAL_HISTORY] = 5</tt>.)
 # - In the session (at any time): <tt>conf.eval_history = _n_</tt>.
-#   [Raises an exception: undefined method `push' for nil:NilClass (NoMethodError).]
+#   [BUG] Raises exception "undefined method `push' for nil:NilClass (NoMethodError)."
 #
 # If +n+ is zero, all evaluation history is stored.
 #
@@ -714,30 +710,60 @@ require_relative "irb/debug"
 #
 # === Verbosity
 #
-# By default, \IRB verbosity is off:
+# By default, \IRB verbosity is disabled, which means that output is smaller
+# rather than larger.
 #
-#   irb(main):001> conf.verbose?
-#   => false
+# You can enable verbosity by:
 #
-# You can control verbosity on with:
+# - Adding to the configuration file: <tt>IRB.conf[:VERBOSE] = true</tt>
+#   (the default is +nil+).
+# - Giving command-line options <tt>--verbose</tt>
+#   (the default is <tt>--noverbose</tt>).
 #
-# - Command-line options <tt>--verbose</tt>, <tt>--noverbose</tt>.
-# - Configuration file <tt>IRB.conf[:VERBOSE] = _boolean_</tt>,
-#   where +boolean+ is +true+ or +false+.
+# See {Notes on Initialization Precedence}[rdoc-ref:IRB@Notes+on+Initialization+Precedence].
 #
-# If you do both, the configuration file overrides the command-line option.
+# During a session, you can retrieve or set verbosith with methods
+# <tt>conf.verbose</tt> and <tt>conf.verbose=</tt>.
+#
+# === Help
+#
+# Command-line option <tt>--version</tt> causes \IRB to print its help text
+# and exit.
+#
+# === Version
+#
+# Command-line option <tt>--version</tt> causes \IRB to print its version text
+# and exit.
+#
+# == Input and Output
+#
+# === \Color Highlighting
+#
+# By default, \IRB color highlighting is enabled, and is used for both:
+#
+# - Input: As you type, \IRB reads the typed characters and highlights
+#   elements that it recognizes;
+#   it also highlights errors such as mismatched parentheses.
+# - Output: \IRB highlights syntactical elements.
+#
+# You can disable color highlighting by:
+#
+# - Adding to the configuration file: <tt>IRB.conf[:USE_COLORIZE] = false</tt>
+#   (the default value is +true+).
+# - Giving command-line option <tt>--nocolorize</tt>
+#
+# See {Notes on Initialization Precedence}[rdoc-ref:IRB@Notes+on+Initialization+Precedence].
+#
+# == Debugging
 #
 # Command-line option <tt>-d</tt> sets variables <tt>$VERBOSE</tt>
-# and <tt>$DEBUG</tt> to +true+.
+# and <tt>$DEBUG</tt> to +true+;
+# these have no effect on \IRB output.
+# [BUG] Raises an exception if ~/.inputrc does not exist.
 #
 # === Tracer
 #
 # [TODO] IRB.conf[:USE_TRACER] --tracer
-#
-# === \Debuging
-#
-# Command-line option <tt>-d</tt> sets variables <tt>$VERBOSE</tt>
-# and <tt>$DEBUG</tt> to +true+.
 #
 # === Warnings
 #
@@ -778,19 +804,13 @@ require_relative "irb/debug"
 # be changed by <tt>IRB.conf[:BACK_TRACE_LIMIT] = '_value_'</tt>
 # in the \IRB session.
 #
-# === Version
+# === Performance Measurement
 #
-# [TODO] --version
+# IRB.conf[:MEASURE]
+# IRB.conf[:MEASURE_CALLBACKS]
+# IRB.conf[:MEASURE_PROC]
 #
-# === Help
-#
-# [TODO] --help
-#
-# == Other Properties
-#
-# === \Color Highlighting
-#
-# [TODO] IRB.conf[:USE_COLORIZE] --colorize --nocolorize
+# == Other Features
 #
 # === Load Modules
 #
@@ -822,7 +842,7 @@ require_relative "irb/debug"
 #
 # === \IRB Loader
 #
-# IRB.conf[:USE_LOADER]
+# [TODO] IRB.conf[:USE_LOADER]
 #
 # === RI Documentation Directories
 #
@@ -856,7 +876,7 @@ require_relative "irb/debug"
 #
 # === \Context Mode
 #
-# IRB.conf[:CONTEXT_MODE]
+# [TODO] IRB.conf[:CONTEXT_MODE]
 #
 # === \IRB Name
 #
@@ -888,7 +908,7 @@ require_relative "irb/debug"
 #
 # === \IRB Library Directory
 #
-# IRB.conf[:IRB_LIB_PATH]
+# [TODO] IRB.conf[:IRB_LIB_PATH]
 #
 # === Configuration Monitor
 #
@@ -902,17 +922,11 @@ require_relative "irb/debug"
 #
 # === \Locale
 #
-# IRB.conf[:LC_MESSAGES]
-#
-# === Performance Measurement
-#
-# IRB.conf[:MEASURE]
-# IRB.conf[:MEASURE_CALLBACKS]
-# IRB.conf[:MEASURE_PROC]
+# [TODO] IRB.conf[:LC_MESSAGES]
 #
 # === Single-IRB Mode
 #
-# IRB.conf[:SINGLE_IRB]
+# [TODO] IRB.conf[:SINGLE_IRB]
 #
 # === Encodings
 #
