@@ -415,93 +415,60 @@ require_relative "irb/debug"
 #
 # === Return-Value Printing (Echoing)
 #
-# You can specify whether and how \IRB prints return values.
+# By default, \IRB prints (echoes) the values returned by all input commands.
 #
-# - The value of <tt>conf.echo</tt> determines whether
-#   \IRB prints the return values.
+# You can change the initial behavior and suppress all echoing by:
 #
-#   The default initial setting is +true+:
+# - Adding to the configuration file: <tt>IRB.conf[:ECHO] = false</tt>.
+#   (The default value for this entry is +niL+, which means the same as +true+.)
+# - Giving command-line option <tt>--noecho</tt>.
+#   (The default is <tt>--echo</tt>.)
 #
-#     irb(main):001:0> conf.echo
-#     => true
-#     irb(main):002:0> 1 + 1
-#     => 2
+# See {Notes on Initialization Precedence}[rdoc-ref:IRB@Notes+on+Initialization+Precedence].
 #
-#   You can use command-line options to change the initial setting:
+# During the session, you can change the current setting
+# with configuration method <tt>conf.echo=</tt> (set to +true+ or +false+).
 #
-#   - <tt>--echo</tt>: sets <tt>conf.echo</tt> to +true+.
-#   - <tt>--noecho</tt>: sets <tt>conf.echo</tt> to +false+.
+# As stated above, by default \IRB prints the values returned by all input commands;
+# but \IRB offers special treatment for values returned by assignment statements,
+# which may be:
 #
-#   You can also change the initial setting in the
-#   configuration file with (which overrides the command-line settings above):
+# - Printed with truncation (to fit on a single line of output),
+#   which is the default;
+#   an ellipsis (<tt>...</tt> is suffixed, to indicate the truncation):
 #
-#     IRB.conf[:ECHO] = false
-#
-#   Note that if <tt>IRB.conf[:ECHO] is +nil+ (its default value),
-#   the value of <tt>conf.echo</tt> will nevertheless be +true+.
-#
-#   You can change the current setting at any time
-#   with configuration method <tt>conf.echo=</tt>:
-#
-#     irb(main):001:0> conf.echo = false
-#     irb(main):002:0> 1 + 1
-#     irb(main):003:0> puts 1 + 1
-#     2
-#
-#   Note that the _current_ setting <i>may not</i>
-#   be changed by <tt>IRB.conf[:ECHO] = '_value_'</tt>
-#   in the \IRB session.
-#
-# - The value of <tt>conf.echo_on_assignment</tt> determines whether and how
-#   \IRB prints the return value for a non-assignment
-#   (but -- note well -- the value is ignored if <tt>conf.echo</tt> is +false+).
-#
-#   The default initial setting is +:truncate+,
-#   which means that the echoed return value will end with a 3-period ellipsis
-#   (<tt>...</tt>), and will fit on one line in your window:
-#
-#     irb(main):004:0> x = 'abc' * 100
+#     irb(main):001:0> x = 'abc' * 1000
 #     => "abcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcab...
 #
-#   You can use command-line options to change the initial value:
+# - Printed in full (regardless of the length).
+# - Suppressed (not printed at all)
 #
-#   - <tt>--echo-on-assignment</tt>:
-#     sets <tt>conf.echo_on_assignment</tt> to +true+.
-#   - <tt>--noecho-on-assignment</tt>:
-#     sets <tt>conf.echo_on_assignment</tt> to +false+.
-#   - <tt>--truncate-echo-on-assignment</tt>:
-#     sets <tt>conf.echo_on_assignment</tt> to +:truncate+.
+# You can change the initial behavior by:
 #
-#   You can change the initial value by assigning <tt>IRB.conf[:ECHO_ON_ASSIGNMENT]</tt>
-#   in the configuration file (which overrides the command-line options above);
-#   the assigned value should be one of the following:
+# - Adding to the configuration file: <tt>IRB.conf[:ECHO_ON_ASSIGNMENT] = false</tt>.
+#   (The default value for this entry is +niL+, which means the same as +:truncate+.)
+# - Giving command-line option <tt>--noecho-on-assignment</tt>
+#   or <tt>--echo-on-assignment</tt>.
+#   (The default is <tt>--truncate-echo-on-assigment</tt>.)
 #
-#     - +false+: Assigned values is not printed.
-#     - +:truncate+ or +nil+: Assigned value is printed, possibly truncated.
-#     - Any other value: Assigned value is printed in full.
+# See {Notes on Initialization Precedence}[rdoc-ref:IRB@Notes+on+Initialization+Precedence].
 #
-#   You can change the current setting at any time
-#   with configuration method <tt>conf.echo_on_assignment=</tt>:
+# During the session, you can change the current setting
+# with configuration method <tt>conf.echo_on_assignment=</tt>
+# (set to +true+, +false+, or +:truncate+).
 #
-#     irb(main):002:0> conf.echo = false
-#     irb(main):003:0> 1 + 1
+# By default, \IRB formats returned values by calling method +inspect+.
 #
-#   Note that the _current_ setting <i>may not</i>
-#   be changed by <tt>IRB.conf[:ECHO_ON_ASSIGNMENT] = '_value_'</tt>
-#   in the \IRB session.
+# You can change the initial behavior by:
 #
-# - \Method <tt>conf.inspect_mode</tt> returns +true+ if returned values
-#   are to be formatted using method +inspect+, +false+ otherwise;
-#   the initial default value is +true+.
+# - Adding to the configuration file: <tt>IRB.conf[:INSPECT_MODE] = false</tt>.
+#   (The default value for this entry is +true+.)
+# - Giving command-line option <tt>--noinspect</tt>.
+#   (The default is <tt>--inspect</tt>.)
 #
-#   You can change the initial default value in the configuration file:
+# See {Notes on Initialization Precedence}[rdoc-ref:IRB@Notes+on+Initialization+Precedence].
 #
-#     IRB.conf[:INSPECT_MODE] = false
-#
-#   or with command-line option <tt>--noinspect</tt>
-#   (<tt>--inspect</tt> is the default).
-#
-#   You can change the setting at any time using method <tt>conf.inspect_mode=</tt>.
+# During the session, you can change the setting using method <tt>conf.inspect_mode=</tt>.
 #
 # === Multiline Output
 #
