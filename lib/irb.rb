@@ -213,7 +213,10 @@ require_relative "irb/debug"
 #
 # == Input
 #
-# You can use various \IRB features to modify the way input works.
+# This section describes the features that allow you to change
+# the way \IRB input works;
+# see also {Color Highlighting}[rdoc-ref:IRB@Color+Highlighting],
+# which affects both input and output.
 #
 # === Input Command History
 #
@@ -405,7 +408,10 @@ require_relative "irb/debug"
 #
 # == Output
 #
-# You can use various \IRB features to modify the way in\\output works.
+# This section describes the features that allow you to change
+# the way \IRB output works;
+# see also {Color Highlighting}[rdoc-ref:IRB@Color+Highlighting],
+# which affects both input and output.
 #
 # === Return-Value Printing (Echoing)
 #
@@ -826,10 +832,7 @@ require_relative "irb/debug"
 #
 # === \Color Highlighting
 #
-# [TODO]
-# IRB.conf[:USE_COLORIZE]
-# --colorize
-# --nocolorize
+# [TODO] IRB.conf[:USE_COLORIZE] --colorize --nocolorize
 #
 # === Load Modules
 #
