@@ -472,18 +472,15 @@ require_relative "irb/debug"
 #
 # === Multiline Output
 #
-# You can specify whether \IRB is to prefix a newline to a multiline response;
-# method <tt>conf.newline_before_multiline_output</tt> returns a boolean:
-#
-# - +true+ (the default) if a newline is to be prefixed.
-# - +false+ if not.
+# By default, \IRB prefixes a newline to a multiline response.
 #
 # You can change the initial default value by adding to the configuation file:
 #
 #   IRB.conf[:NEWLINE_BEFORE_MULTILINE_OUTPUT] = false
 #
-# You can change the value at any time using
-# method <tt>conf.newline_before_multiline_output=</tt>.
+# During a session, you can retrieve or set the value using
+# methods <tt>conf.newline_before_multiline_output?</tt>
+# and <tt>conf.newline_before_multiline_output=</tt>.
 #
 # Examples:
 #
@@ -497,7 +494,7 @@ require_relative "irb/debug"
 #   => false
 #   irb(main):004:0> "foo\nbar"
 #   => foo
-#   bat  r
+#   bar
 #
 # === Evaluation History
 #
