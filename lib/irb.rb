@@ -68,8 +68,7 @@ require_relative "irb/debug"
 #
 # 1. Interprets (as Ruby code) the content of the
 #    {configuration file}[rdoc-ref:IRB@Configuration+File] (if given).
-# 1. Constructs the initial
-#    {session context}[rdoc-ref:IRB@Session+Context] (an IRB::Context object)
+# 1. Constructs the initial session context
 #    from {hash IRB.conf}[rdoc-ref:IRB@Hash+IRB.conf] and from default values;
 #    the hash content may have been affected
 #    by {command-line options}[rdoc-ref:IB@Command-Line+Options],
@@ -153,21 +152,6 @@ require_relative "irb/debug"
 # \Method <tt>conf.rc?</tt> returns +true+ if a configuration file was read,
 # +false+ otherwise.
 # \Hash entry <tt>IRB.conf[:RC]</tt> also contains that value.
-#
-# === Session \Context
-#
-# An \IRB session has a <i>context</i>, an IRB::Context object
-# that is created at session startup.
-# Its initial content is determined by command-line options,
-# by entries in hash <tt>IRB.conf</tt>,
-# and by defaults.
-#
-# Values in the context can be retrieved
-# via methods and attributes in the context object;
-# much of its content can be modified by other methods and attributes.
-#
-# \Hash entry <tt>IRB.conf[:MAIN_CONTEXT]</tt>
-# contains the context for the main session.
 #
 # === \Hash <tt>IRB.conf</tt>
 #
@@ -349,13 +333,6 @@ require_relative "irb/debug"
 #
 # See {Notes on Initialization Precedence}[rdoc-ref:IRB@Notes+on+Initialization+Precedence].
 #
-# You can retrieve the current value using method <tt>conf.io</tt>:
-#
-#   irb(main):001> conf.io
-#   => RelineInputMethod with Reline 0.3.9
-#   irb(main):002> conf.io.class
-#   => IRB::RelineInputMethod
-#
 # \Method <tt>conf.use_multiline?</tt>
 # and its synonym <tt>conf.use_reline</tt> return:
 #
@@ -369,14 +346,6 @@ require_relative "irb/debug"
 # - +true+ if option <tt>--singleline</tt> was given.
 # - +false+ if option <tt>--nosingleline</tt> was given.
 # - +nil+ if neither was given.
-#
-# During the session you can change the value using method <tt>conf.io=</tt>;
-# the new value should be an instance of one of these classes:
-#
-# - IRB::FileInputMethod.
-# - IRB::ReadlineInputMethod
-# - IRB::ReidlineInputMethod.
-# - IRB::RelineInputMethod.
 #
 # == Output
 #
