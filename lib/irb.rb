@@ -26,7 +26,7 @@ require_relative "irb/debug"
 # \Module \IRB ("Interactive Ruby") provides a shell-like interface
 # that supports user interaction with the Ruby interpreter.
 #
-# Its operates as a <i>read-eval-print loop</i>
+# It operates as a <i>read-eval-print loop</i>
 # ({REPL}[https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop])
 # that:
 #
@@ -95,7 +95,7 @@ require_relative "irb/debug"
 # Details of the options are described in the relevant subsections below.
 #
 # A cursory list of the \IRB command-line options
-# may be seen in the {help message}[rdoc-ref:lib/irb/lc/help-message],
+# may be seen in the {help message}[https://raw.githubusercontent.com/ruby/irb/master/lib/irb/lc/help-message],
 # which is also displayed if you use command-line option <tt>--help</tt>.
 #
 # If you are interested in a specific option, consult the
@@ -137,11 +137,13 @@ require_relative "irb/debug"
 #
 # - The value of variable <tt>$IRBRC</tt>, if defined.
 # - The value of variable <tt>$XDG_CONFIG_HOME/irb/irbrc</tt>, if defined.
-# - File +.config/irb/irbrc+, if it exists.
-# - File +.irbrc+, if it exists.
-# - File +irb.rc+, if it exists.
-# - File +_irbrc+, if it exists.
-# - The value of variable <tt>$irbrc</tt>, if defined.
+# - File +$HOME/.irbrc+, if it exists.
+# - File +$HOME/.config/irb/irbrc+, if it exists.
+# - File +.config/irb/irbrc+ in the current directory, if it exists.
+# - File +.irbrc+ in the current directory, if it exists.
+# - File +irb.rc+ in the current directory, if it exists.
+# - File +_irbrc+ in the current directory, if it exists.
+# - File +$irbrc+ in the current directory, if defined.
 #
 # If the search fails, there is no configuration file.
 #
@@ -151,8 +153,6 @@ require_relative "irb/debug"
 # \Method <tt>conf.rc?</tt> returns +true+ if a configuration file was read,
 # +false+ otherwise.
 # \Hash entry <tt>IRB.conf[:RC]</tt> also contains that value.
-#
-# [REVIEWERS] What should be said about IRB.conf[:RC_NAME_GENERATOR]?
 #
 # === Session \Context
 #
@@ -252,36 +252,15 @@ require_relative "irb/debug"
 #   IRB.conf[:COMMAND_ALIASES] = {foo: :show_source, bar: :whereami}
 #
 # You can replace the current aliases at any time
-# with configuration method <tt>conf.command_aliases=</tt>:
-#
-#   irb(main):002:0> conf.command_aliases = {baz: :show_source}
-#   => {:baz=>:show_source}
-#   irb(main):003:0> conf.command_aliases
-#   => {:baz=>:show_source}
-#   irb(main):004:0> conf.command_aliases = {}
-#   => {}
-#   irb(main):005:0> conf.command_aliases
-#   => {}
-#
+# with configuration method <tt>conf.command_aliases=</tt>;
 # Because <tt>conf.command_aliases</tt> is a hash,
-# you can modify it:
-#
-#   irb(main):006:0> conf.command_aliases[:foo] = :show_source
-#   => :show_source
-#   irb(main):007:0> conf.command_aliases[:bar] = :whereami
-#   => :whereami
-#   irb(main):008:0> conf.command_aliases
-#   => {:foo=>:show_source, :bar=>:whereami}
-#   irb(main):009:0> conf.command_aliases.delete(:foo)
-#   => nil
-#   irb(main):010:0> conf.command_aliases
-#   => {:bar=>:whereami}
+# you can modify it.
 #
 # === End-of-File
 #
 # By default, <tt>IRB.conf[:IGNORE_EOF]</tt> is +false+,
 # which means that typing the end-of-file character <tt>Ctrl-D</tt>
-# does not cause the session to exit.
+# causes the session to exit.
 #
 # You can reverse that behavior by adding <tt>IRB.conf[:IGNORE_EOF] = true</tt>
 # to the configuration file.
@@ -293,7 +272,7 @@ require_relative "irb/debug"
 #
 # By default, <tt>IRB.conf[:IGNORE_SIGINT]</tt> is +true+,
 # which means that typing the interrupt character <tt>Ctrl-C</tt>
-# does not cause the session to exit.
+# causes the session to exit.
 #
 # You can reverse that behavior by adding <tt>IRB.conf[:IGNORE_SIGING] = false</tt>
 # to the configuration file.
@@ -310,7 +289,7 @@ require_relative "irb/debug"
 #
 # - Adding <tt>IRB.conf[:USE_AUTOCOMPLETE] = false</tt> to the configuration file.
 # - Giving command-line option <tt>--noautocomplete</tt>
-#   ()<tt>--autocomplete</tt> is the default).
+#   (<tt>--autocomplete</tt> is the default).
 #
 # See {Notes on Initialization Precedence}[rdoc-ref:IRB@Notes+on+Initialization+Precedence].
 #
@@ -416,8 +395,6 @@ require_relative "irb/debug"
 # - Giving command-line option <tt>--noecho</tt>.
 #   (The default is <tt>--echo</tt>.)
 #
-# See {Notes on Initialization Precedence}[rdoc-ref:IRB@Notes+on+Initialization+Precedence].
-#
 # During the session, you can change the current setting
 # with configuration method <tt>conf.echo=</tt> (set to +true+ or +false+).
 #
@@ -443,8 +420,6 @@ require_relative "irb/debug"
 #   or <tt>--echo-on-assignment</tt>.
 #   (The default is <tt>--truncate-echo-on-assigment</tt>.)
 #
-# See {Notes on Initialization Precedence}[rdoc-ref:IRB@Notes+on+Initialization+Precedence].
-#
 # During the session, you can change the current setting
 # with configuration method <tt>conf.echo_on_assignment=</tt>
 # (set to +true+, +false+, or +:truncate+).
@@ -457,8 +432,6 @@ require_relative "irb/debug"
 #   (The default value for this entry is +true+.)
 # - Giving command-line option <tt>--noinspect</tt>.
 #   (The default is <tt>--inspect</tt>.)
-#
-# See {Notes on Initialization Precedence}[rdoc-ref:IRB@Notes+on+Initialization+Precedence].
 #
 # During the session, you can change the setting using method <tt>conf.inspect_mode=</tt>.
 #
@@ -499,7 +472,6 @@ require_relative "irb/debug"
 # - In the configuration file: add <tt>IRB.conf[:EVAL_HISTORY] = _n_</tt>.
 #   (Examples below assume that we've added <tt>IRB.conf[:EVAL_HISTORY] = 5</tt>.)
 # - In the session (at any time): <tt>conf.eval_history = _n_</tt>.
-#   [BUG] Raises exception "undefined method `push' for nil:NilClass (NoMethodError)."
 #
 # If +n+ is zero, all evaluation history is stored.
 #
@@ -649,8 +621,6 @@ require_relative "irb/debug"
 #     and suppresses both <tt>--multiline</tt> and <tt>--singleline</tt>.
 #   - <tt>--noprompt</tt>: suppresses prompting; does not affect echoing.
 #
-# See {Notes on Initialization Precedence}[rdoc-ref:IRB@Notes+on+Initialization+Precedence].
-#
 # You can retrieve or set the current prompt mode with methods
 #
 # <tt>conf.prompt_mode</tt> and <tt>conf.prompt_mode=</tt>.
@@ -716,9 +686,7 @@ require_relative "irb/debug"
 # - Giving command-line options <tt>--verbose</tt>
 #   (the default is <tt>--noverbose</tt>).
 #
-# See {Notes on Initialization Precedence}[rdoc-ref:IRB@Notes+on+Initialization+Precedence].
-#
-# During a session, you can retrieve or set verbosith with methods
+# During a session, you can retrieve or set verbosity with methods
 # <tt>conf.verbose</tt> and <tt>conf.verbose=</tt>.
 #
 # === Help
@@ -747,8 +715,6 @@ require_relative "irb/debug"
 # - Adding to the configuration file: <tt>IRB.conf[:USE_COLORIZE] = false</tt>
 #   (the default value is +true+).
 # - Giving command-line option <tt>--nocolorize</tt>
-#
-# See {Notes on Initialization Precedence}[rdoc-ref:IRB@Notes+on+Initialization+Precedence].
 #
 # == Debugging
 #
