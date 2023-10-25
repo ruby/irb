@@ -275,8 +275,6 @@ require_relative "irb/debug"
 # - Giving command-line option <tt>--noautocomplete</tt>
 #   (<tt>--autocomplete</tt> is the default).
 #
-# See {Notes on Initialization Precedence}[rdoc-ref:IRB@Notes+on+Initialization+Precedence].
-#
 # \Method <tt>conf.use_autocomplete?</tt> returns +true+
 # if automatic completion is enabled, +false+ otherwise.
 #
@@ -330,8 +328,6 @@ require_relative "irb/debug"
 #   - <tt>--nosingleline</tt>
 #     or <tt>--multiline/tt>
 #     sets the input method to IRB::RelineInputMethod.
-#
-# See {Notes on Initialization Precedence}[rdoc-ref:IRB@Notes+on+Initialization+Precedence].
 #
 # \Method <tt>conf.use_multiline?</tt>
 # and its synonym <tt>conf.use_reline</tt> return:
