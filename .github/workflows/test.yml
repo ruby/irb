@@ -72,6 +72,7 @@ jobs:
       - name: Install dependencies
         run: |
           gem install bundler --no-document
+          gem install rake
           gem rdoc --all --ri --no-rdoc
           WITH_VTERM=1 bundle install
       - name: rake test_yamatanooroti
