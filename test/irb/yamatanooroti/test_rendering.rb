@@ -204,7 +204,6 @@ class IRB::RenderingTest < Yamatanooroti::TestCase
   end
 
   def test_autocomplete_with_showdoc_in_gaps_on_narrow_screen_right
-    omit if Gem::Version.new(RUBY_VERSION) < Gem::Version.new('3.1')
     rdoc_dir = File.join(@tmpdir, 'rdoc')
     system("bundle exec rdoc -r -o #{rdoc_dir}")
     write_irbrc <<~LINES
@@ -241,7 +240,6 @@ class IRB::RenderingTest < Yamatanooroti::TestCase
   end
 
   def test_autocomplete_with_showdoc_in_gaps_on_narrow_screen_left
-    omit if Gem::Version.new(RUBY_VERSION) < Gem::Version.new('3.1')
     rdoc_dir = File.join(@tmpdir, 'rdoc')
     system("bundle exec rdoc -r -o #{rdoc_dir}")
     write_irbrc <<~LINES
