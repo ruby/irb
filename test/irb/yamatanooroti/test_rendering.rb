@@ -203,8 +203,7 @@ class IRB::RenderingTest < Yamatanooroti::TestCase
     EOC
   end
 
-  def test_autocomplete_with_showdoc_in_gaps_on_narrow_screen_right
-    omit if Gem::Version.new(RUBY_VERSION) < Gem::Version.new('3.1')
+  def write_irbrc_for_showdoc
     write_irbrc <<~'LINES'
       IRB.conf[:PROMPT][:MY_PROMPT] = {
         :PROMPT_I => "%03n> ",
@@ -212,10 +211,36 @@ class IRB::RenderingTest < Yamatanooroti::TestCase
         :PROMPT_C => "%03n> "
       }
       IRB.conf[:PROMPT_MODE] = :MY_PROMPT
+
+      # Prepare dummy document
+      require 'rdoc'
+      class RDoc::RI::Driver
+        TEST_CLASS_DOCUMENT_ARGS = [:arg_found, :arg_klasses, :arg_includes, :arg_extends]
+        def expand_class(name)
+          raise RDoc::RI::Driver::NotFoundError, name unless name == 'String'
+          'String'
+        end
+        def classes_and_includes_and_extends_for(name)
+          TEST_CLASS_DOCUMENT_ARGS
+        end
+        def class_document(name, found, klasses, includes, extends)
+          # Assert that return value of classes_and_includes_and_extends_for is passed to this method
+          raise ArgumentError unless [found, klasses, includes, extends] == TEST_CLASS_DOCUMENT_ARGS
+          out = RDoc::Markup::Document.new
+          out << RDoc::Markup::Heading.new(1, "[#{name.upcase}]")
+          out
+        end
+      end
       puts 'start IRB'
     LINES
+  end
+
+  def test_autocomplete_with_showdoc_in_gaps_on_narrow_screen_right
+    omit if Gem::Version.new(RUBY_VERSION) < Gem::Version.new('3.1')
+    write_irbrc_for_showdoc
     start_terminal(4, 19, %W{ruby -I/home/aycabta/ruby/reline/lib -I#{@pwd}/lib #{@pwd}/exe/irb}, startup_message: 'start IRB')
     write("Str\C-i")
+    sleep 0.5 # To avoid random test failure. TODO: fix yamatanooroti
     close
 
     # This is because on macOS we display different shortcut for displaying the full doc
@@ -225,37 +250,30 @@ class IRB::RenderingTest < Yamatanooroti::TestCase
         start IRB
         001> String
              StringPress O
-             StructString
+             Struct[STRING
       EOC
     else
       assert_screen(<<~EOC)
         start IRB
         001> String
              StringPress A
-             StructString
+             Struct[STRING
       EOC
     end
   end
 
   def test_autocomplete_with_showdoc_in_gaps_on_narrow_screen_left
     omit if Gem::Version.new(RUBY_VERSION) < Gem::Version.new('3.1')
-    write_irbrc <<~'LINES'
-      IRB.conf[:PROMPT][:MY_PROMPT] = {
-        :PROMPT_I => "%03n> ",
-        :PROMPT_S => "%03n> ",
-        :PROMPT_C => "%03n> "
-      }
-      IRB.conf[:PROMPT_MODE] = :MY_PROMPT
-      puts 'start IRB'
-    LINES
+    write_irbrc_for_showdoc
     start_terminal(4, 12, %W{ruby -I#{@pwd}/lib #{@pwd}/exe/irb}, startup_message: 'start IRB')
     write("Str\C-i")
+    sleep 0.5 # To avoid random test failure. TODO: fix yamatanooroti
     close
     assert_screen(<<~EOC)
       start IRB
       001> String
       PressString
-      StrinStruct
+      [STRIStruct
     EOC
   end
 
