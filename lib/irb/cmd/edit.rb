@@ -31,7 +31,7 @@ module IRB
         if !File.exist?(path)
           source =
             begin
-              SourceFinder.new(@irb_context).find_source(path)
+              SourceFinder.new(@irb_context.workspace.binding).find_source(path)
             rescue NameError
               # if user enters a path that doesn't exist, it'll cause NameError when passed here because find_source would try to evaluate it as well
               # in this case, we should just ignore the error

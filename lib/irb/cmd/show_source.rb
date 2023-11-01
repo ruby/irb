@@ -28,7 +28,7 @@ module IRB
           return
         end
 
-        source = SourceFinder.new(@irb_context).find_source(str)
+        source = SourceFinder.new(@irb_context.workspace.binding).find_source(str)
 
         if source
           show_source(source)
