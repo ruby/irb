@@ -318,6 +318,7 @@ module TestIRB
       assert_call('a,*b=[1,2]; a.', include: Integer, exclude: Array)
       assert_call('a,*b=[1,2]; b.', include: Array, exclude: Integer)
       assert_call('a,*b=[1,2]; b.sample.', include: Integer)
+      assert_call('a,*,(*)=[1,2]; a.', include: Integer)
       assert_call('*a=[1,2]; a.', include: Array, exclude: Integer)
       assert_call('*a=[1,2]; a.sample.', include: Integer)
       assert_call('a,*b,c=[1,2,3]; b.', include: Array, exclude: Integer)
@@ -360,6 +361,7 @@ module TestIRB
       assert_call('def (a="").f; end; a.', include: String)
       assert_call('def f(a=1); a.', include: Integer)
       assert_call('def f(**nil); 1.', include: Integer)
+      assert_call('def f((*),*); 1.', include: Integer)
       assert_call('def f(a,*b); b.', include: Array)
       assert_call('def f(a,x:1); x.', include: Integer)
       assert_call('def f(a,x:,**); 1.', include: Integer)
@@ -370,6 +372,8 @@ module TestIRB
       assert_call('def f(a,...); 1.', include: Integer)
       assert_call('def f(...); g(...); 1.', include: Integer)
       assert_call('def f(*,**,&); g(*,**,&); 1.', include: Integer)
+      assert_call('def f(*,**,&); {**}.', include: Hash)
+      assert_call('def f(*,**,&); [*,**].', include: Array)
       assert_call('class Array; def f; self.', include: Array)
     end
 
@@ -469,6 +473,7 @@ module TestIRB
       assert_call('true.', include: TrueClass)
       assert_call('false.', include: FalseClass)
       assert_call('nil.', include: NilClass)
+      assert_call('().', include: NilClass)
       assert_call('//.', include: Regexp)
       assert_call('/#{a=1}/.', include: Regexp)
       assert_call('/#{a=1}/; a.', include: Integer)
@@ -573,6 +578,7 @@ module TestIRB
     def test_for
       assert_call('for i in [1,2,3]; i.', include: Integer)
       assert_call('for i,j in [1,2,3]; i.', include: Integer)
+      assert_call('for *,(*) in [1,2,3]; 1.', include: Integer)
       assert_call('for *i in [1,2,3]; i.sample.', include: Integer)
       assert_call('for (a=1).b in [1,2,3]; a.', include: Integer)
       assert_call('for Array::B in [1,2,3]; Array::B.', include: Integer)
@@ -678,6 +684,7 @@ module TestIRB
       assert_call('[1,2,3].tap{|a,*b| b.', include: Array)
       assert_call('[1,2,3].tap{|a=1.0| a.', include: [Array, Float])
       assert_call('[1,2,3].tap{|a,**b| b.', include: Hash)
+      assert_call('1.tap{|(*),*,**| 1.', include: Integer)
     end
 
     def test_array_aref
