@@ -16,7 +16,7 @@ module IRB
         @binding = binding
         @self_object = self_object
         @cache = {}
-        modules = [*binding.eval('Module.nesting'), Object]
+        modules = [*binding.eval('::Module.nesting'), Object]
         @module_nesting = modules.map { [_1, []] }
         binding_local_variables = binding.local_variables
         uninitialized_locals = local_variables - binding_local_variables
@@ -110,7 +110,7 @@ module IRB
     class Scope < BaseScope
       attr_reader :parent, :mergeable_changes, :level, :module_nesting
 
-      def self.from_binding(binding, locals) = new(BaseScope.new(binding, binding.eval('self'), locals))
+      def self.from_binding(binding, locals) = new(BaseScope.new(binding, binding.receiver, locals))
 
       def initialize(parent, table = {}, trace_ivar: true, trace_lvar: true, self_type: nil, nesting: nil)
         @parent = parent
