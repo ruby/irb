@@ -18,7 +18,7 @@ require_relative '../helper'
 module TestIRB
   class TypeCompletionAnalyzeTest < TestCase
     def setup
-      IRB::TypeCompletion::Types.preload_in_thread.join
+      IRB::TypeCompletion::Types.load_rbs_builder unless IRB::TypeCompletion::Types.rbs_builder
     end
 
     def empty_binding

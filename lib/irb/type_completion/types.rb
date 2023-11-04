@@ -10,8 +10,11 @@ module IRB
       singleton_class.attr_reader :rbs_builder, :rbs_load_error
 
       def self.preload_in_thread
-        @loader_thread ||= Thread.new do
-          @rbs_builder = load_rbs_builder
+        return if @preload_started
+
+        @preload_started = true
+        Thread.new do
+          load_rbs_builder
         end
       end
 
@@ -20,7 +23,7 @@ module IRB
         require 'rbs/cli'
         loader = RBS::CLI::LibraryOptions.new.loader
         loader.add path: Pathname('sig')
-        RBS::DefinitionBuilder.new env: RBS::Environment.from_loader(loader).resolve_type_names
+        @rbs_builder = RBS::DefinitionBuilder.new env: RBS::Environment.from_loader(loader).resolve_type_names
       rescue LoadError, StandardError => e
         @rbs_load_error = e
         nil
