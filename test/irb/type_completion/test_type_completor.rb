@@ -144,8 +144,6 @@ module TestIRB
       assert_completion('bo.', binding: bind, include: 'foo')
       assert_completion('def bo.baz; self.', binding: bind, include: 'foo')
       assert_completion('[bo].first.', binding: bind, include: 'foo')
-      assert_completion('def bo.baz; @', binding: bind, include: '@bar')
-      assert_completion('def bo.baz; @bar.', binding: bind, include: 'abs')
       assert_doc_namespace('bo', 'BasicObject', binding: bind)
       assert_doc_namespace('bo.__id__', 'BasicObject#__id__', binding: bind)
       assert_doc_namespace('v = [bo]; v', 'Array', binding: bind)
@@ -156,6 +154,10 @@ module TestIRB
       assert_completion('@bar.', binding: bo_self_bind, include: 'abs')
       assert_doc_namespace('self.__id__', 'BasicObject#__id__', binding: bo_self_bind)
       assert_doc_namespace('@bar', 'Integer', binding: bo_self_bind)
+      if RUBY_VERSION >= '3.2.0' # Needs Class#attached_object to get instance variables from singleton class
+        assert_completion('def bo.baz; @bar.', binding: bind, include: 'abs')
+        assert_completion('def bo.baz; @', binding: bind, include: '@bar')
+      end
     end
 
     def test_inspect
