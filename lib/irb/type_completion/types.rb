@@ -24,8 +24,6 @@ module IRB
         nil
       end
 
-      Splat = Struct.new :item
-
       def self.class_name_of(klass)
         klass = klass.superclass if klass.singleton_class?
         Methods::MODULE_NAME_METHOD.bind_call klass
@@ -73,7 +71,7 @@ module IRB
             [t, t.klass, false]
           end
         end
-        has_splat = args_types.any? { _1.is_a? Splat }
+        has_splat = args_types.include?(nil)
         methods_with_score = receivers.flat_map do |receiver_type, klass, singleton|
           method = rbs_search_method klass, method_name, singleton
           next [] unless method
@@ -93,7 +91,7 @@ module IRB
               args += [InstanceType.new(Hash, K: SYMBOL, V: kw_value_type)]
             end
             if has_splat
-              score += 1 if args.count { !(_1.is_a? Splat) } <= reqs.size + opts.size + trailings.size
+              score += 1 if args.count(&:itself) <= reqs.size + opts.size + trailings.size
             elsif reqs.size + trailings.size <= args.size && (rest || args.size <= reqs.size + opts.size + trailings.size)
               score += 2
               centers = args[reqs.size...-trailings.size]
