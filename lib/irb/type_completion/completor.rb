@@ -1,6 +1,9 @@
+# frozen_string_literal: true
+
 require 'prism'
 require 'irb/completion'
 require_relative 'type_analyzer'
+
 module IRB
   module TypeCompletion
     class Completor < BaseCompletor # :nodoc:
@@ -40,9 +43,10 @@ module IRB
         name = matched[/[a-zA-Z_0-9]*[!?=]?\z/]
         method_doc = -> type do
           type = type.types.find { _1.all_methods.include? name.to_sym }
-          if type.is_a? Types::SingletonType
+          case type
+          when Types::SingletonType
             "#{Types.class_name_of(type.module_or_class)}.#{name}"
-          elsif type.is_a? Types::InstanceType
+          when Types::InstanceType
             "#{Types.class_name_of(type.klass)}##{name}"
           end
         end

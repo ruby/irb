@@ -275,7 +275,7 @@ module IRB
     end
 
     def completion_info
-      autocomplete_message = IRB.conf[:USE_AUTOCOMPLETE] ? 'Autocomplete' : 'Tab Complete'
+      autocomplete_message = Reline.autocompletion ? 'Autocomplete' : 'Tab Complete'
       "#{autocomplete_message}, #{@completor.inspect}"
     end
 

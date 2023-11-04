@@ -4,7 +4,6 @@ return unless RUBY_VERSION >= '3.0.0'
 return if RUBY_ENGINE == 'truffleruby' # needs endless method definition
 
 require 'irb/type_completion/scope'
-require 'irb/type_completion/types'
 require_relative '../helper'
 
 module TestIRB

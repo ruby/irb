@@ -153,7 +153,6 @@ module IRB
       # Valid values are :regexp and :type
       if IRB.conf[:COMPLETOR] == :type && RUBY_VERSION >= '3.0.0'
         begin
-          require 'prism'
           require 'irb/type_completion/completor'
           TypeCompletion::Types.preload_in_thread
           return TypeCompletion::Completor.new
