@@ -60,11 +60,6 @@ module TestIRB
       assert_equal 'Hash[K: String, V: Symbol]', hash_type.inspect
       assert_equal 'Array.itself', IRB::TypeCompletion::Types.type_from_object(Array).inspect
       assert_equal 'IRB::TypeCompletion.itself', IRB::TypeCompletion::Types.type_from_object(IRB::TypeCompletion).inspect
-      # Deep nesting basic objects
-      deep_bo_array = [bo, [bo, [bo, [bo, [bo]]]]]
-      assert_equal Array, IRB::TypeCompletion::Types.type_from_object(deep_bo_array).klass
-      deep_bo_hash = { bo => bo, y: { bo => bo, y: { bo => bo, y: { bo => bo, y: { bo => bo } } } } }
-      assert_equal Hash, IRB::TypeCompletion::Types.type_from_object(deep_bo_hash).klass
     end
 
     def test_type_methods

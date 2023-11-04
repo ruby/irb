@@ -5,6 +5,8 @@ require_relative 'methods'
 module IRB
   module TypeCompletion
     module Types
+      OBJECT_TO_TYPE_SAMPLE_SIZE = 50
+
       singleton_class.attr_reader :rbs_builder, :rbs_load_error
 
       def self.preload_in_thread
@@ -129,43 +131,22 @@ module IRB
 
       def self.type_from_object(object)
         case object
-        when Array, Hash, Module
-          type_from_object_recursive(object, max_level: 4)
+        when Array
+          InstanceType.new Array, { Elem: union_type_from_objects(object) }
+        when Hash
+          InstanceType.new Hash, { K: union_type_from_objects(object.keys), V: union_type_from_objects(object.values) }
+        when Module
+          SingletonType.new object
         else
           klass = Methods::OBJECT_SINGLETON_CLASS_METHOD.bind_call(object) rescue Methods::OBJECT_CLASS_METHOD.bind_call(object)
           InstanceType.new klass
         end
       end
 
-      def self.type_from_object_recursive(object, max_level:)
-        max_level -= 1
-        sample_size = 1000
-        case object
-        when Array
-          values = object.size > sample_size ? object.sample(sample_size) : object
-          if max_level > 0
-            InstanceType.new Array, { Elem: UnionType[*values.map { type_from_object_recursive(_1, max_level: max_level) }] }
-          else
-            value_types = values.map { Methods::OBJECT_CLASS_METHOD.bind_call(_1) }.uniq.map { InstanceType.new _1 }
-            InstanceType.new Array, { Elem: UnionType[*value_types] }
-          end
-        when Hash
-          keys = object.size > sample_size ? object.keys.sample(sample_size) : object.keys
-          values = object.size > sample_size ? object.values.sample(sample_size) : object.values
-          if max_level > 0
-            key_types = keys.map { type_from_object_recursive(_1, max_level: max_level) }
-            value_types = values.map { type_from_object_recursive(_1, max_level: max_level) }
-            InstanceType.new Hash, { K: UnionType[*key_types], V: UnionType[*value_types] }
-          else
-            key_types = keys.map { Methods::OBJECT_CLASS_METHOD.bind_call(_1) }.uniq.map { InstanceType.new _1 }
-            value_types = values.map { Methods::OBJECT_CLASS_METHOD.bind_call(_1) }.uniq.map { InstanceType.new _1 }
-            InstanceType.new Hash, { K: UnionType[*key_types], V: UnionType[*value_types] }
-          end
-        when Module
-          SingletonType.new object
-        else
-          InstanceType.new Methods::OBJECT_CLASS_METHOD.bind_call(object)
-        end
+      def self.union_type_from_objects(objects)
+        values = objects.size <= OBJECT_TO_TYPE_SAMPLE_SIZE ? objects : objects.sample(OBJECT_TO_TYPE_SAMPLE_SIZE)
+        klasses = values.map { Methods::OBJECT_CLASS_METHOD.bind_call(_1) }
+        UnionType[*klasses.uniq.map { InstanceType.new _1 }]
       end
 
       class SingletonType
