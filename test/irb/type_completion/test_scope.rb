@@ -23,7 +23,7 @@ module TestIRB
     end
 
     def base_scope
-      IRB::TypeCompletion::BaseScope.new(binding, Object.new, [])
+      IRB::TypeCompletion::RootScope.new(binding, Object.new, [])
     end
 
     def test_lvar

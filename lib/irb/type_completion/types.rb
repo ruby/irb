@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative 'methods'
+
 module IRB
   module TypeCompletion
     module Types
@@ -24,15 +26,9 @@ module IRB
 
       Splat = Struct.new :item
 
-      OBJECT_CLASS_METHOD = Object.instance_method(:class)
-      OBJECT_SINGLETON_CLASS_METHOD = Object.instance_method(:singleton_class)
-      CLASS_SUPERCLASS_METHOD = Class.instance_method(:superclass)
-      CLASS_IS_SINGLETON_CLASS_METHOD = Class.instance_method(:singleton_class?)
-      MODULE_NAME_METHOD = Module.instance_method(:name)
-
       def self.class_name_of(klass)
         klass = klass.superclass if klass.singleton_class?
-        MODULE_NAME_METHOD.bind_call klass
+        Methods::MODULE_NAME_METHOD.bind_call klass
       end
 
       def self.rbs_search_method(klass, method_name, singleton)
@@ -138,7 +134,7 @@ module IRB
         when Array, Hash, Module
           type_from_object_recursive(object, max_level: 4)
         else
-          klass = OBJECT_SINGLETON_CLASS_METHOD.bind_call(object) rescue OBJECT_CLASS_METHOD.bind_call(object)
+          klass = Methods::OBJECT_SINGLETON_CLASS_METHOD.bind_call(object) rescue Methods::OBJECT_CLASS_METHOD.bind_call(object)
           InstanceType.new klass
         end
       end
@@ -152,7 +148,7 @@ module IRB
           if max_level > 0
             InstanceType.new Array, { Elem: UnionType[*values.map { type_from_object_recursive(_1, max_level: max_level) }] }
           else
-            value_types = values.map { OBJECT_CLASS_METHOD.bind_call(_1) }.uniq.map { InstanceType.new _1 }
+            value_types = values.map { Methods::OBJECT_CLASS_METHOD.bind_call(_1) }.uniq.map { InstanceType.new _1 }
             InstanceType.new Array, { Elem: UnionType[*value_types] }
           end
         when Hash
@@ -163,14 +159,14 @@ module IRB
             value_types = values.map { type_from_object_recursive(_1, max_level: max_level) }
             InstanceType.new Hash, { K: UnionType[*key_types], V: UnionType[*value_types] }
           else
-            key_types = keys.map { OBJECT_CLASS_METHOD.bind_call(_1) }.uniq.map { InstanceType.new _1 }
-            value_types = values.map { OBJECT_CLASS_METHOD.bind_call(_1) }.uniq.map { InstanceType.new _1 }
+            key_types = keys.map { Methods::OBJECT_CLASS_METHOD.bind_call(_1) }.uniq.map { InstanceType.new _1 }
+            value_types = values.map { Methods::OBJECT_CLASS_METHOD.bind_call(_1) }.uniq.map { InstanceType.new _1 }
             InstanceType.new Hash, { K: UnionType[*key_types], V: UnionType[*value_types] }
           end
         when Module
           SingletonType.new object
         else
-          InstanceType.new OBJECT_CLASS_METHOD.bind_call(object)
+          InstanceType.new Methods::OBJECT_CLASS_METHOD.bind_call(object)
         end
       end
 
