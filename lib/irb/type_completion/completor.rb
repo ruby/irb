@@ -9,6 +9,10 @@ module IRB
     class Completor < BaseCompletor # :nodoc:
       HIDDEN_METHODS = %w[Namespace TypeName] # defined by rbs, should be hidden
 
+      class << self
+        attr_accessor :last_completion_error
+      end
+
       def inspect
         name = 'TypeCompletion::Completor'
         prism_info = "Prism: #{Prism::VERSION}"
@@ -33,6 +37,7 @@ module IRB
           target + _1[name.size..]
         end
       rescue SyntaxError, StandardError => e
+        Completor.last_completion_error = e
         handle_error(e)
         []
       ensure
