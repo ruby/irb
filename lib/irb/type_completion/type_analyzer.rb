@@ -843,16 +843,16 @@ module IRB
       end
 
       def assign_required_parameter(node, value, scope)
-        case node.type
-        when :required_parameter_node
+        case node
+        when Prism::RequiredParameterNode
           scope[node.name.to_s] = value || Types::OBJECT
-        when :multi_target_node
+        when Prism::MultiTargetNode
           parameters = [*node.lefts, *node.rest, *node.rights]
           values = value ? sized_splat(value, :to_ary, parameters.size) : []
           parameters.zip values do |n, v|
             assign_required_parameter n, v, scope
           end
-        when :splat_node
+        when Prism::SplatNode
           splat_value = value ? Types.array_of(value) : Types::ARRAY
           assign_required_parameter node.expression, splat_value, scope if node.expression
         end
@@ -918,12 +918,10 @@ module IRB
           scope[node.rest.name.to_s] = Types.array_of(*rest)
         end
         node.keywords.each do |n|
-          # n is Prism::KeywordParameterNode (prism = 0.16.0)
-          # n is Prism::RequiredKeywordParameterNode | Prism::OptionalKeywordParameterNode (prism > 0.16.0)
           name = n.name.to_s.delete(':')
           values = [kwargs.delete(name)]
-          # `respond_to?` is for prism > 0.16.0, `&& n.value` is for prism = 0.16.0
-          values << evaluate(n.value, scope) if n.respond_to?(:value) && n.value
+          # n is Prism::OptionalKeywordParameterNode (has n.value) or Prism::RequiredKeywordParameterNode (does not have n.value)
+          values << evaluate(n.value, scope) if n.respond_to?(:value)
           scope[name] = Types::UnionType[*values.compact]
         end
         # node.keyword_rest is Prism::KeywordRestParameterNode or Prism::ForwardingParameterNode or Prism::NoKeywordsParameterNode
