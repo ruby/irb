@@ -98,7 +98,7 @@ require_relative "irb/debug"
 # which is also displayed if you use command-line option <tt>--help</tt>.
 #
 # If you are interested in a specific option, consult the
-# {index}[./doc/irb/indexes_rdoc.html#label-Index+of+Command-Line+Options].
+# {index}[rdoc-ref:doc/irb/indexes.rdoc@Index+of+Command-Line+Options].
 #
 # ==== Command-Line Arguments
 #
@@ -142,7 +142,7 @@ require_relative "irb/debug"
 # - File +.irbrc+ in the current directory, if it exists.
 # - File +irb.rc+ in the current directory, if it exists.
 # - File +_irbrc+ in the current directory, if it exists.
-# - File +$irbrc+ in the current directory, if defined.
+# - File +$irbrc+ in the current directory, if it exists.
 #
 # If the search fails, there is no configuration file.
 #
@@ -166,7 +166,7 @@ require_relative "irb/debug"
 # Details of the entries' meanings are described in the relevant subsections below.
 #
 # If you are interested in a specific entry, consult the
-# {index}[./doc/irb/indexes_rdoc.html#label-Index+of+IRB.conf+Entries].
+# {index}[rdoc-ref:doc/irb/indexes.rdoc@Index+of+IRB.conf+Entries].
 #
 # === Notes on Initialization Precedence
 #
