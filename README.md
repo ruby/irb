@@ -52,6 +52,10 @@ $ gem install irb
 
 ## Usage
 
+> **Note**
+>
+> We're working hard to match Pry's variety of powerful features in IRB, and you can track our progress or find contribution ideas in [this document](./COMPARED_WITH_PRY.md).
+
 ### The `irb` Executable
 
 You can start a fresh IRB session by typing `irb` in your terminal.
