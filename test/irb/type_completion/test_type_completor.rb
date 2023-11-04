@@ -144,7 +144,7 @@ module TestIRB
       assert_completion('bo.', binding: bind, include: 'foo')
       assert_completion('def bo.baz; self.', binding: bind, include: 'foo')
       assert_completion('[bo].first.', binding: bind, include: 'foo')
-      assert_completion('def bo.baz; @b', binding: bind, include: '@bar')
+      assert_completion('def bo.baz; @', binding: bind, include: '@bar')
       assert_completion('def bo.baz; @bar.', binding: bind, include: 'abs')
       assert_doc_namespace('bo', 'BasicObject', binding: bind)
       assert_doc_namespace('bo.__id__', 'BasicObject#__id__', binding: bind)
@@ -152,7 +152,7 @@ module TestIRB
       assert_doc_namespace('v = [bo].first; v', 'BasicObject', binding: bind)
       bo_self_bind = bo.instance_eval { Kernel.binding }
       assert_completion('self.', binding: bo_self_bind, include: 'foo')
-      assert_completion('@b', binding: bo_self_bind, include: '@bar')
+      assert_completion('@', binding: bo_self_bind, include: '@bar')
       assert_completion('@bar.', binding: bo_self_bind, include: 'abs')
       assert_doc_namespace('self.__id__', 'BasicObject#__id__', binding: bo_self_bind)
       assert_doc_namespace('@bar', 'Integer', binding: bo_self_bind)

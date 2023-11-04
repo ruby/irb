@@ -64,15 +64,21 @@ module IRB
 
       def [](name)
         @cache[name] ||= (
-          fallback = Types::NIL
-          case BaseScope.type_by_name name
+          value = case BaseScope.type_by_name name
           when :ivar
-            BaseScope.type_of(fallback: fallback) { OBJECT_INSTANCE_VARIABLE_GET_METHOD.bind_call(@self_object, name) }
+            begin
+              OBJECT_INSTANCE_VARIABLE_GET_METHOD.bind_call(@self_object, name)
+            rescue NameError
+            end
           when :lvar
-            BaseScope.type_of(fallback: fallback) { @binding.local_variable_get(name) }
+            begin
+              @binding.local_variable_get(name)
+            rescue NameError
+            end
           when :gvar
-            BaseScope.type_of(fallback: fallback) { @binding.eval name if @global_variables.include? name }
+            @binding.eval name if @global_variables.include? name
           end
+          Types.type_from_object(value)
         )
       end
 
@@ -83,14 +89,6 @@ module IRB
       def local_variables() = @local_variables.to_a
 
       def global_variables() = @global_variables.to_a
-
-      def self.type_of(fallback: Types::OBJECT)
-        begin
-          Types.type_from_object yield
-        rescue
-          fallback
-        end
-      end
 
       def self.type_by_name(name)
         if name.start_with? '@@'
@@ -321,9 +319,11 @@ module IRB
           end
         end
         types = self_objects.map do |object|
-          BaseScope.type_of fallback: Types::NIL do
+          value = begin
             OBJECT_INSTANCE_VARIABLE_GET_METHOD.bind_call(object, name)
+          rescue NameError
           end
+          Types.type_from_object value
         end
         Types::UnionType[*types]
       end
