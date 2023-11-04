@@ -24,6 +24,10 @@ module IRB
 
       Splat = Struct.new :item
 
+      OBJECT_CLASS_METHOD = Object.instance_method(:class)
+      OBJECT_SINGLETON_CLASS_METHOD = Object.instance_method(:singleton_class)
+      CLASS_SUPERCLASS_METHOD = Class.instance_method(:superclass)
+      CLASS_IS_SINGLETON_CLASS_METHOD = Class.instance_method(:singleton_class?)
       MODULE_NAME_METHOD = Module.instance_method(:name)
 
       def self.class_name_of(klass)
@@ -134,7 +138,7 @@ module IRB
         when Array, Hash, Module
           type_from_object_recursive(object, max_level: 4)
         else
-          klass = object.singleton_class rescue object.class
+          klass = OBJECT_SINGLETON_CLASS_METHOD.bind_call(object) rescue OBJECT_CLASS_METHOD.bind_call(object)
           InstanceType.new klass
         end
       end
@@ -148,7 +152,8 @@ module IRB
           if max_level > 0
             InstanceType.new Array, { Elem: UnionType[*values.map { type_from_object_recursive(_1, max_level: max_level) }] }
           else
-            InstanceType.new Array, { Elem: UnionType[*values.map(&:class).uniq.map { InstanceType.new _1 }] }
+            value_types = values.map { OBJECT_CLASS_METHOD.bind_call(_1) }.uniq.map { InstanceType.new _1 }
+            InstanceType.new Array, { Elem: UnionType[*value_types] }
           end
         when Hash
           keys = object.size > sample_size ? object.keys.sample(sample_size) : object.keys
@@ -158,14 +163,14 @@ module IRB
             value_types = values.map { type_from_object_recursive(_1, max_level: max_level) }
             InstanceType.new Hash, { K: UnionType[*key_types], V: UnionType[*value_types] }
           else
-            key_types = keys.map(&:class).uniq.map { InstanceType.new _1 }
-            value_types = values.map(&:class).uniq.map { InstanceType.new _1 }
+            key_types = keys.map { OBJECT_CLASS_METHOD.bind_call(_1) }.uniq.map { InstanceType.new _1 }
+            value_types = values.map { OBJECT_CLASS_METHOD.bind_call(_1) }.uniq.map { InstanceType.new _1 }
             InstanceType.new Hash, { K: UnionType[*key_types], V: UnionType[*value_types] }
           end
         when Module
           SingletonType.new object
         else
-          InstanceType.new object.class
+          InstanceType.new OBJECT_CLASS_METHOD.bind_call(object)
         end
       end
 

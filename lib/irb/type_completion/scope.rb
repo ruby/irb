@@ -10,6 +10,10 @@ module IRB
       RETURN_RESULT = '%return'
       PATTERNMATCH_BREAK = '%match'
 
+      OBJECT_SINGLETON_CLASS_METHOD = Object.instance_method(:singleton_class)
+      OBJECT_INSTANCE_VARIABLES_METHOD = Object.instance_method(:instance_variables)
+      OBJECT_INSTANCE_VARIABLE_GET_METHOD = Object.instance_method(:instance_variable_get)
+
       attr_reader :module_nesting, :self_object
 
       def initialize(binding, self_object, local_variables)
@@ -63,7 +67,7 @@ module IRB
           fallback = Types::NIL
           case BaseScope.type_by_name name
           when :ivar
-            BaseScope.type_of(fallback: fallback) { @self_object.instance_variable_get name }
+            BaseScope.type_of(fallback: fallback) { OBJECT_INSTANCE_VARIABLE_GET_METHOD.bind_call(@self_object, name) }
           when :lvar
             BaseScope.type_of(fallback: fallback) { @binding.local_variable_get(name) }
           when :gvar
@@ -291,9 +295,9 @@ module IRB
         base_self = base_scope.self_object
         self_instance_variables = singleton_classes.flat_map do |singleton_class|
           if singleton_class.respond_to? :attached_object
-            singleton_class.attached_object.instance_variables.map(&:to_s)
-          elsif singleton_class == base_self.singleton_class
-            base_self.instance_variables.map(&:to_s)
+            OBJECT_INSTANCE_VARIABLES_METHOD.bind_call(singleton_class.attached_object).map(&:to_s)
+          elsif singleton_class == OBJECT_SINGLETON_CLASS_METHOD.bind_call(base_self)
+            OBJECT_INSTANCE_VARIABLES_METHOD.bind_call(base_self).map(&:to_s)
           else
             []
           end
@@ -317,7 +321,9 @@ module IRB
           end
         end
         types = self_objects.map do |object|
-          BaseScope.type_of(fallback: Types::NIL) { object.instance_variable_get name }
+          BaseScope.type_of fallback: Types::NIL do
+            OBJECT_INSTANCE_VARIABLE_GET_METHOD.bind_call(object, name)
+          end
         end
         Types::UnionType[*types]
       end

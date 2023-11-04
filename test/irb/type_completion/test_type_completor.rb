@@ -135,6 +135,29 @@ module TestIRB
       assert_doc_namespace('@@bar = 1; @@bar', 'Integer')
     end
 
+    def test_basic_object
+      bo = BasicObject.new
+      def bo.foo; end
+      bo.instance_eval { @bar = 1 }
+      bind = binding
+      bo_self_bind = bo.instance_eval { Kernel.binding }
+      assert_completion('bo.', binding: bind, include: 'foo')
+      assert_completion('def bo.baz; self.', binding: bind, include: 'foo')
+      assert_completion('[bo].first.', binding: bind, include: 'foo')
+      assert_completion('def bo.baz; @b', binding: bind, include: '@bar')
+      assert_completion('def bo.baz; @bar.', binding: bind, include: 'abs')
+      assert_doc_namespace('bo', 'BasicObject', binding: bind)
+      assert_doc_namespace('bo.__id__', 'BasicObject#__id__', binding: bind)
+      assert_doc_namespace('v = [bo]; v', 'Array', binding: bind)
+      assert_doc_namespace('v = [bo].first; v', 'BasicObject', binding: bind)
+      bo_self_bind = bo.instance_eval { Kernel.binding }
+      assert_completion('self.', binding: bo_self_bind, include: 'foo')
+      assert_completion('@b', binding: bo_self_bind, include: '@bar')
+      assert_completion('@bar.', binding: bo_self_bind, include: 'abs')
+      assert_doc_namespace('self.__id__', 'BasicObject#__id__', binding: bo_self_bind)
+      assert_doc_namespace('@bar', 'Integer', binding: bo_self_bind)
+    end
+
     def test_inspect
       rbs_builder = IRB::TypeCompletion::Types.rbs_builder
       assert_match(/TypeCompletion::Completor\(Prism: \d.+, RBS: \d.+\)/, @completor.inspect)
