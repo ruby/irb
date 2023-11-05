@@ -144,11 +144,7 @@ module IRB
         # Workaround for https://github.com/ruby/prism/issues/1592
         return if code.match?(/%[qQ]\z/)
 
-        lvars_code = binding.local_variables.map do |name|
-          "#{name}="
-        end.join + "nil;\n"
-        code = lvars_code + code
-        ast = Prism.parse(code).value
+        ast = Prism.parse(code, scopes: [binding.local_variables]).value
         name = code[/(@@|@|\$)?\w*[!?=]?\z/]
         *parents, target_node = find_target ast, code.bytesize - name.bytesize
         return unless target_node

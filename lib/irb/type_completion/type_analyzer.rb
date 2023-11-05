@@ -1155,20 +1155,13 @@ module IRB
         Types::UnionType[*types, *breaks]
       end
 
-      def evaluate_program(program, scope)
-        # statements.body[0] is local variable assign code
-        program.statements.body[1..].each do |statement|
-          evaluate statement, scope
-        end
-      end
-
       def self.calculate_target_type_scope(binding, parents, target)
         dig_targets = DigTarget.new(parents, target) do |type, scope|
           return type, scope
         end
         program = parents.first
         scope = Scope.from_binding(binding, program.locals)
-        new(dig_targets).evaluate_program program, scope
+        new(dig_targets).evaluate program, scope
         [Types::NIL, scope]
       end
     end
