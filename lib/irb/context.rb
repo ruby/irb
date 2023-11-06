@@ -167,7 +167,7 @@ module IRB
     TYPE_COMPLETION_REQUIRED_PRISM_VERSION = '0.17.1'
 
     private def build_type_completor
-      unless Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('3.0.0')
+      unless Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('3.0.0') && RUBY_ENGINE != 'truffleruby'
         warn 'TypeCompletion requires RUBY_VERSION >= 3.0.0'
         return
       end

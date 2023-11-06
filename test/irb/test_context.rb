@@ -658,7 +658,7 @@ module TestIRB
       IRB.conf[:COMPLETOR] = :regexp
       assert_equal 'IRB::RegexpCompletor', @context.send(:build_completor).class.name
       IRB.conf[:COMPLETOR] = :type
-      if RUBY_VERSION >= '3.0.0'
+      if RUBY_VERSION >= '3.0.0' && RUBY_ENGINE != 'truffleruby'
         assert_equal 'IRB::TypeCompletion::Completor', @context.send(:build_completor).class.name
       else
         assert_equal 'IRB::RegexpCompletor', @context.send(:build_completor).class.name
