@@ -17,3 +17,5 @@ gem "rake"
 gem "test-unit"
 gem "test-unit-ruby-core"
 gem "debug", github: "ruby/debug"
+
+gem "racc"
