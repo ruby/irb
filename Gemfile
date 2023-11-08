@@ -19,3 +19,8 @@ gem "test-unit-ruby-core"
 gem "debug", github: "ruby/debug"
 
 gem "racc"
+
+if RUBY_VERSION >= "3.0.0"
+  gem "rbs"
+  gem "prism", ">= 0.17.1"
+end
