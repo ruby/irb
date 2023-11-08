@@ -231,6 +231,75 @@ However, there are also some limitations to be aware of:
 2. As IRB [doesn't currently support remote-connection](https://github.com/ruby/irb/issues/672), it can't be used with `debug.gem`'s remote debugging feature.
 3. Access to the previous return value via the underscore `_` is not supported.
 
+## Type Based Completion
+
+IRB's default completion `IRB::RegexpCompletor` uses Regexp. IRB has another experimental completion `IRB::TypeCompletion` that uses type analysis.
+
+### How to Enable IRB::TypeCompletion
+
+To enable IRB::TypeCompletion, write the code below to IRB's rc-file.
+```ruby
+IRB.conf[:COMPLETOR] = :type # default is :regexp
+```
+You also need `gem prism` and `gem rbs` to use this feature.
+
+To check if it's enabled, type `irb_info` into IRB and see the `Completion` section.
+```
+irb(main):001> irb_info
+...
+# Enabled
+Completion: Autocomplete, TypeCompletion::Completor(Prism: 0.17.1, RBS: 3.3.0)
+# Not enabled
+Completion: Autocomplete, RegexpCompletor
+...
+```
+If you have `sig/` directory or `rbs_collection.lock.yaml` in current directory, IRB will load it.
+
+### Advantage over Default IRB::RegexpCompletor
+
+IRB::TypeCompletion can autocomplete chained methods, block parameters and more if type information is available.
+These are some examples IRB::RegexpCompletor cannot complete.
+
+```ruby
+irb(main):001> 'Ruby'.upcase.chars.s # Array methods (sample, select, shift, size)
+```
+
+```ruby
+irb(main):001> 10.times.map(&:to_s).each do |s|
+irb(main):002>   s.up # String methods (upcase, upcase!, upto)
+```
+
+```ruby
+irb(main):001> class User < ApplicationRecord
+irb(main):002>   def foo
+irb(main):003>     sa # save, save!
+```
+
+As a trade-off, completion calculation takes more time than IRB::RegexpCompletor.
+
+### Difference between Steep's Completion
+
+Compared with Steep, IRB::TypeCompletion has some difference and limitations.
+```ruby
+[0, 'a'].sample.
+# Steep completes intersection of Integer methods and String methods
+# IRB::TypeCompletion completes both Integer and String methods
+```
+
+Some features like type narrowing is not implemented.
+```ruby
+def f(arg = [0, 'a'].sample)
+  if arg.is_a?(String)
+    arg. # Completes both Integer and String methods
+```
+
+Unlike other static type checker, IRB::TypeCompletion uses runtime information to provide better completion.
+```ruby
+irb(main):001> a = [1]
+=> [1]
+irb(main):002> a.first. # Completes Integer methods
+```
+
 ## Configuration
 
 ### Environment Variables
