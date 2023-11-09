@@ -346,6 +346,30 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/ruby/irb.
 
+### Set up the environment
+
+1. Fork the project to your GithHub account
+2. Clone the fork with `git clone git@github.com:[your_username]/irb.git`
+3. Run `bundle install`
+4. Run `bundle exec rake` to make sure tests pass locally
+
+### Run integration tests
+
+If your changes affect component rendering, such as the autocompletion's dialog/dropdown, you may need to run IRB's integration tests, known as `yamatanarroroti`.
+
+Before running these tests, ensure that you have `libvterm` installed. If you're using Homebrew, you can install it by running:
+
+```bash
+brew install libvterm
+```
+
+After installing `libvterm`, you can run the integration tests using the following commands:
+
+```bash
+WITH_VTERM=1 bundle install
+WITH_VTERM=1 bundle exec rake test test_yamatanooroti
+```
+
 ## Releasing
 
 ```
