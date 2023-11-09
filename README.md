@@ -241,7 +241,11 @@ IRB's default completion `IRB::RegexpCompletor` uses Regexp. IRB has another exp
 
 ### How to Enable IRB::TypeCompletion
 
-To enable IRB::TypeCompletion, write the code below to IRB's rc-file.
+To enable IRB::TypeCompletion, run IRB with `--type-completor` option
+```
+$ irb --type-completor
+```
+Or write the code below to IRB's rc-file.
 ```ruby
 IRB.conf[:COMPLETOR] = :type # default is :regexp
 ```
