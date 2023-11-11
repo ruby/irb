@@ -10,10 +10,7 @@ module IRB
       singleton_class.attr_reader :rbs_builder, :rbs_load_error
 
       def self.preload_in_thread
-        return if @preload_started
-
-        @preload_started = true
-        Thread.new do
+        @preloading_thread ||= Thread.new do
           load_rbs_builder
         end
       end
