@@ -112,8 +112,18 @@ module IRB # :nodoc:
   Inspector.def_inspector([:p, :inspect]){|v|
     Color.colorize_code(v.inspect, colorable: Color.colorable? && Color.inspect_colorable?(v))
   }
-  Inspector.def_inspector([true, :pp, :pretty_inspect], proc{require_relative "color_printer"}){|v|
-    IRB::ColorPrinter.pp(v, '').chomp
+  Inspector.def_inspector(
+    [true, :pp, :pretty_inspect],
+    proc{require "timeout"; require_relative "color_printer"; require_relative "pp_printer"}
+  ){|v|
+    begin
+      Timeout.timeout(IRB.conf.fetch(:INSPECT_COLORING_TIMEOUT, 2)) do
+        IRB::ColorPrinter.pp(v, '').chomp
+      end
+    rescue Timeout::Error
+      # Fall back to non-colored pp if coloring takes too long
+      IRB::PpPrinter.pp(v, '').chomp
+    end
   }
   Inspector.def_inspector([:yaml, :YAML], proc{require "yaml"}){|v|
     begin

@@ -61,6 +61,8 @@ module IRB
       @io = nil
 
       self.inspect_mode = IRB.conf[:INSPECT_MODE]
+      @inspect_coloring_timeout = IRB.conf[:INSPECT_COLORING_TIMEOUT]
+
       self.use_tracer = IRB.conf[:USE_TRACER] if IRB.conf[:USE_TRACER]
       self.use_loader = IRB.conf[:USE_LOADER] if IRB.conf[:USE_LOADER]
       self.eval_history = IRB.conf[:EVAL_HISTORY] if IRB.conf[:EVAL_HISTORY]
@@ -251,6 +253,8 @@ module IRB
     attr_reader :use_autocomplete
     # A copy of the default <code>IRB.conf[:INSPECT_MODE]</code>
     attr_reader :inspect_mode
+    # Timeout (in seconds) for inspect coloring when INSPECT_MODE is :pp or :pretty_inspect.
+    attr_reader :inspect_coloring_timeout
 
     # A copy of the default <code>IRB.conf[:PROMPT_MODE]</code>
     attr_reader :prompt_mode
