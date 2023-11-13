@@ -198,7 +198,8 @@ require_relative "irb/debug"
 # === Input Command History
 #
 # By default, \IRB stores a history of up to 1000 input commands
-# in file <tt>./.irb_history</tt>.
+# in file <tt>~/.irb_history</tt>
+# (or in file <tt>./.irb_history</tt> if file <tt>./.irbrc</tt exists).
 #
 # A new \IRB session creates the history file if it does not exist,
 # and appends to the file if it does exist.
