@@ -689,20 +689,15 @@ require_relative "irb/debug"
 # Command-line option <tt>-d</tt> sets variables <tt>$VERBOSE</tt>
 # and <tt>$DEBUG</tt> to +true+;
 # these have no effect on \IRB output.
-# [BUG] Raises an exception if ~/.inputrc does not exist.
 #
 # === Tracer
 #
-# [TODO] IRB.conf[:USE_TRACER] --tracer
+# \IRB's tracer feature controls whether a stack trace
+# is to be displayed for each command.
 #
-# === Warnings
-#
-# Command-line option <tt>-w</tt> suppresses warnings.
-#
-# Command-line option <tt>-W[_level_]<tt>
-# sets warning level; 0=silence, 1=medium, 2=verbose.
-#
-# === Back Trace Limit
+# Command-line option <tt>-tracer</tt> sets
+# variable <tt>IRB.conf[:USE_TRACER]</tt> to +true+
+# (the default is +false+).
 #
 # You can specify a back trace limit, +n+,
 # which specifies that the back trace for an exception
@@ -718,9 +713,9 @@ require_relative "irb/debug"
 #   => 16
 #
 # You can change the initial limit with command-line option
-# <tt>--back_trace_limit _value_</tt>:
+# <tt>--back-trace-limit _value_</tt>:
 #
-#   irb --back_trace_limit 32
+#   irb --back-trace-limit 32
 #
 # You can also change the initial limit in the configuration file
 # (which overrides the command-line option above):
@@ -733,6 +728,13 @@ require_relative "irb/debug"
 # Note that the _current_ limit <i>may not</i>
 # be changed by <tt>IRB.conf[:BACK_TRACE_LIMIT] = '_value_'</tt>
 # in the \IRB session.
+#
+# === Warnings
+#
+# Command-line option <tt>-w</tt> suppresses warnings.
+#
+# Command-line option <tt>-W[_level_]<tt>
+# sets warning level; 0=silence, 1=medium, 2=verbose.
 #
 # === Performance Measurement
 #

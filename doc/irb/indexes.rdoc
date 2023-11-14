@@ -18,7 +18,7 @@ These are the \IRB command-line options, with links to explanatory text:
 - <tt>-W[_level_]</tt>: Set {warning level}[rdoc-ref:IRB@Warnings];
   0=silence, 1=medium, 2=verbose (same as <tt>ruby -W</tt>).
 - <tt>--autocomplete</tt>: Use {auto-completion}[rdoc-ref:IRB@Automatic+Completion].
-- <tt>--back-trace-limit _n_</tt>: Set a {backtrace limit}[rdoc-ref:IRB@Back+Trace+Limit];
+- <tt>--back-trace-limit _n_</tt>: Set a {backtrace limit}[rdoc-ref:IRB@Tracer];
   display at most the top +n+ and bottom +n+ entries.
 - <tt>--colorize</tt>: Use {color-highlighting}[rdoc-ref:IRB@Color+Highlighting]
   for input and output.
@@ -82,7 +82,7 @@ for each entry that is pre-defined, the initial value is given:
   initial value: <tt>[]</tt>.
 - <tt>:AUTO_INDENT</tt>: Whether {automatic indentation}[rdoc-ref:IRB@Automatic+Indentation]
   is enabled; initial value: +true+.
-- <tt>:BACK_TRACE_LIMIT</tt>: Sets the {back trace limit}[rdoc-ref:IRB@Back+Trace+Limit];
+- <tt>:BACK_TRACE_LIMIT</tt>: Sets the {back trace limit}[rdoc-ref:IRB@Tracer];
   initial value: +16+.
 - <tt>:COMMAND_ALIASES</tt>: Defines input {command aliases}[rdoc-ref:IRB@Command+Aliases];
   initial value:
