@@ -136,13 +136,13 @@ require_relative "irb/debug"
 #
 # - The value of variable <tt>$IRBRC</tt>, if defined.
 # - The value of variable <tt>$XDG_CONFIG_HOME/irb/irbrc</tt>, if defined.
-# - File +$HOME/.irbrc+, if it exists.
-# - File +$HOME/.config/irb/irbrc+, if it exists.
+# - File <tt>$HOME/.irbrc</tt>, if it exists.
+# - File <tt>$HOME/.config/irb/irbrc</tt>, if it exists.
 # - File +.config/irb/irbrc+ in the current directory, if it exists.
 # - File +.irbrc+ in the current directory, if it exists.
 # - File +irb.rc+ in the current directory, if it exists.
 # - File +_irbrc+ in the current directory, if it exists.
-# - File +$irbrc+ in the current directory, if it exists.
+# - File <tt>$irbrc</tt> in the current directory, if it exists.
 #
 # If the search fails, there is no configuration file.
 #
@@ -199,7 +199,9 @@ require_relative "irb/debug"
 #
 # By default, \IRB stores a history of up to 1000 input commands
 # in file <tt>~/.irb_history</tt>
-# (or in file <tt>./.irb_history</tt> if file <tt>./.irbrc</tt exists).
+# (or, if a {configuration file}[rdoc-ref:IRB@Configuration+File]
+# is found, in file +.irb_history+
+# inin the same directory as that file).
 #
 # A new \IRB session creates the history file if it does not exist,
 # and appends to the file if it does exist.
