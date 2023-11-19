@@ -314,6 +314,7 @@ irb(main):002> a.first. # Completes Integer methods
 
 - `NO_COLOR`: Assigning a value to it disables IRB's colorization.
 - `IRB_USE_AUTOCOMPLETE`: Setting it to `false` disables IRB's autocompletion.
+- `IRB_COMPLETOR`: Configures IRB's auto-completion behavior, allowing settings for either `regexp` or `type`.
 - `VISUAL`: Its value would be used to open files by the `edit` command.
 - `EDITOR`: Its value would be used to open files by the `edit` command if `VISUAL` is unset.
 - `IRBRC`: The file specified would be evaluated as IRB's rc-file.
