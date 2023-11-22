@@ -20,5 +20,5 @@ gem "debug", github: "ruby/debug"
 
 if RUBY_VERSION >= "3.0.0"
   gem "rbs"
-  gem "prism", ">= 0.17.1"
+  gem "prism", ">= 0.18.0"
 end
