@@ -22,3 +22,6 @@ if RUBY_VERSION >= "3.0.0"
   gem "rbs"
   gem "prism", ">= 0.18.0"
 end
+
+# Remove this after stringio 3.1.0 is released
+gem "stringio", github: "ruby/stringio"
