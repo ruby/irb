@@ -10,6 +10,8 @@ end
 
 class IRB::RenderingTest < Yamatanooroti::TestCase
   def setup
+    @original_term = ENV['TERM']
+    ENV['TERM'] = "xterm-256color"
     @pwd = Dir.pwd
     suffix = '%010d' % Random.rand(0..65535)
     @tmpdir = File.join(File.expand_path(Dir.tmpdir), "test_irb_#{$$}_#{suffix}")
@@ -27,6 +29,7 @@ class IRB::RenderingTest < Yamatanooroti::TestCase
   def teardown
     FileUtils.rm_rf(@tmpdir)
     ENV['IRBRC'] = @irbrc_backup
+    ENV['TERM'] = @original_term
     ENV.delete('RELINE_TEST_PROMPT') if ENV['RELINE_TEST_PROMPT']
   end
 
