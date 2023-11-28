@@ -76,6 +76,29 @@ module TestIRB
       assert_match(%r[#{@ruby_file.to_path}:2\s+def foo\r\n  end\r\n], out)
     end
 
+    def test_show_source_method_s_with_incorrect_signature
+      write_ruby <<~RUBY
+        class Baz
+          def foo
+          end
+        end
+
+        class Bar < Baz
+          def foo
+            super
+          end
+        end
+
+        binding.irb
+      RUBY
+
+      out = run_ruby_file do
+        type "show_source Bar#fooo -s"
+        type "exit"
+      end
+
+      assert_match(%r[Error: Couldn't locate a super definition for Bar#fooo], out)
+    end
 
     def test_show_source_private_method
       write_ruby <<~RUBY
