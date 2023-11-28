@@ -5,7 +5,7 @@ Rake::TestTask.new(:test) do |t|
   t.libs << "test" << "test/lib"
   t.libs << "lib"
   t.ruby_opts << "-rhelper"
-  t.test_files = FileList["test/irb/test_*.rb", "test/irb/type_completion/test_*.rb"]
+  t.test_files = FileList["test/irb/**/test_*.rb"]
 end
 
 # To make sure they have been correctly setup for Ruby CI.
