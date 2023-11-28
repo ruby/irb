@@ -736,11 +736,11 @@ require_relative "irb/debug"
 # Command-line option <tt>-W[_level_]<tt>
 # sets warning level; 0=silence, 1=medium, 2=verbose.
 #
+# :stopdoc:
 # === Performance Measurement
 #
-# IRB.conf[:MEASURE]
-# IRB.conf[:MEASURE_CALLBACKS]
-# IRB.conf[:MEASURE_PROC]
+# IRB.conf[:MEASURE] IRB.conf[:MEASURE_CALLBACKS] IRB.conf[:MEASURE_PROC]
+# :startdoc:
 #
 # == Other Features
 #
@@ -772,9 +772,11 @@ require_relative "irb/debug"
 #
 # Note that the configuration file entry overrides the command-line options.
 #
+# :stopdoc:
 # === \IRB Loader
 #
-# [TODO] IRB.conf[:USE_LOADER]
+# IRB.conf[:USE_LOADER]
+# :startdoc:
 #
 # === RI Documentation Directories
 #
@@ -806,9 +808,11 @@ require_relative "irb/debug"
 #
 # Note that the configuration file entry overrides the command-line options.
 #
+# :stopdoc:
 # === \Context Mode
 #
-# [TODO] IRB.conf[:CONTEXT_MODE]
+# IRB.conf[:CONTEXT_MODE]
+# :startdoc:
 #
 # === \IRB Name
 #
@@ -838,9 +842,11 @@ require_relative "irb/debug"
 #
 #   IRB.conf[:AP_NAME] = 'my_ap_name'
 #
+# :stopdoc:
 # === \IRB Library Directory
 #
-# [TODO] IRB.conf[:IRB_LIB_PATH]
+# IRB.conf[:IRB_LIB_PATH]
+# :startdoc:
 #
 # === Configuration Monitor
 #
@@ -852,13 +858,17 @@ require_relative "irb/debug"
 # Each time the configuration is changed,
 # that proc is called with argument +conf+:
 #
+# :stopdoc:
 # === \Locale
 #
-# [TODO] IRB.conf[:LC_MESSAGES]
+# IRB.conf[:LC_MESSAGES]
+# :startdoc:
 #
+# :stopdoc:
 # === Single-IRB Mode
 #
-# [TODO] IRB.conf[:SINGLE_IRB]
+# IRB.conf[:SINGLE_IRB]
+# :startdoc:
 #
 # === Encodings
 #
