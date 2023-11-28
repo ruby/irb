@@ -5,7 +5,7 @@ Rake::TestTask.new(:test) do |t|
   t.libs << "test" << "test/lib"
   t.libs << "lib"
   t.ruby_opts << "-rhelper"
-  t.test_files = FileList["test/irb/test_*.rb"]
+  t.test_files = FileList["test/irb/test_*.rb", "test/irb/type_completion/test_*.rb"]
 end
 
 # To make sure they have been correctly setup for Ruby CI.
@@ -13,7 +13,7 @@ desc "Run each irb test file in isolation."
 task :test_in_isolation do
   failed = false
 
-  FileList["test/irb/test_*.rb"].each do |test_file|
+  FileList["test/irb/test_*.rb", "test/irb/type_completion/test_*.rb"].each do |test_file|
     ENV["TEST"] = test_file
     begin
       Rake::Task["test"].execute

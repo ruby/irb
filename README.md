@@ -52,6 +52,10 @@ $ gem install irb
 
 ## Usage
 
+> **Note**
+>
+> We're working hard to match Pry's variety of powerful features in IRB, and you can track our progress or find contribution ideas in [this document](https://github.com/ruby/irb/blob/master/COMPARED_WITH_PRY.md).
+
 ### The `irb` Executable
 
 You can start a fresh IRB session by typing `irb` in your terminal.
@@ -231,12 +235,86 @@ However, there are also some limitations to be aware of:
 2. As IRB [doesn't currently support remote-connection](https://github.com/ruby/irb/issues/672), it can't be used with `debug.gem`'s remote debugging feature.
 3. Access to the previous return value via the underscore `_` is not supported.
 
+## Type Based Completion
+
+IRB's default completion `IRB::RegexpCompletor` uses Regexp. IRB has another experimental completion `IRB::TypeCompletion` that uses type analysis.
+
+### How to Enable IRB::TypeCompletion
+
+To enable IRB::TypeCompletion, run IRB with `--type-completor` option
+```
+$ irb --type-completor
+```
+Or write the code below to IRB's rc-file.
+```ruby
+IRB.conf[:COMPLETOR] = :type # default is :regexp
+```
+You also need `gem prism` and `gem rbs` to use this feature.
+
+To check if it's enabled, type `irb_info` into IRB and see the `Completion` section.
+```
+irb(main):001> irb_info
+...
+# Enabled
+Completion: Autocomplete, TypeCompletion::Completor(Prism: 0.17.1, RBS: 3.3.0)
+# Not enabled
+Completion: Autocomplete, RegexpCompletor
+...
+```
+If you have `sig/` directory or `rbs_collection.lock.yaml` in current directory, IRB will load it.
+
+### Advantage over Default IRB::RegexpCompletor
+
+IRB::TypeCompletion can autocomplete chained methods, block parameters and more if type information is available.
+These are some examples IRB::RegexpCompletor cannot complete.
+
+```ruby
+irb(main):001> 'Ruby'.upcase.chars.s # Array methods (sample, select, shift, size)
+```
+
+```ruby
+irb(main):001> 10.times.map(&:to_s).each do |s|
+irb(main):002>   s.up # String methods (upcase, upcase!, upto)
+```
+
+```ruby
+irb(main):001> class User < ApplicationRecord
+irb(main):002>   def foo
+irb(main):003>     sa # save, save!
+```
+
+As a trade-off, completion calculation takes more time than IRB::RegexpCompletor.
+
+### Difference between Steep's Completion
+
+Compared with Steep, IRB::TypeCompletion has some difference and limitations.
+```ruby
+[0, 'a'].sample.
+# Steep completes intersection of Integer methods and String methods
+# IRB::TypeCompletion completes both Integer and String methods
+```
+
+Some features like type narrowing is not implemented.
+```ruby
+def f(arg = [0, 'a'].sample)
+  if arg.is_a?(String)
+    arg. # Completes both Integer and String methods
+```
+
+Unlike other static type checker, IRB::TypeCompletion uses runtime information to provide better completion.
+```ruby
+irb(main):001> a = [1]
+=> [1]
+irb(main):002> a.first. # Completes Integer methods
+```
+
 ## Configuration
 
 ### Environment Variables
 
 - `NO_COLOR`: Assigning a value to it disables IRB's colorization.
 - `IRB_USE_AUTOCOMPLETE`: Setting it to `false` disables IRB's autocompletion.
+- `IRB_COMPLETOR`: Configures IRB's auto-completion behavior, allowing settings for either `regexp` or `type`.
 - `VISUAL`: Its value would be used to open files by the `edit` command.
 - `EDITOR`: Its value would be used to open files by the `edit` command if `VISUAL` is unset.
 - `IRBRC`: The file specified would be evaluated as IRB's rc-file.
@@ -268,6 +346,30 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/ruby/irb.
+
+### Set up the environment
+
+1. Fork the project to your GithHub account
+2. Clone the fork with `git clone git@github.com:[your_username]/irb.git`
+3. Run `bundle install`
+4. Run `bundle exec rake` to make sure tests pass locally
+
+### Run integration tests
+
+If your changes affect component rendering, such as the autocompletion's dialog/dropdown, you may need to run IRB's integration tests, known as `yamatanarroroti`.
+
+Before running these tests, ensure that you have `libvterm` installed. If you're using Homebrew, you can install it by running:
+
+```bash
+brew install libvterm
+```
+
+After installing `libvterm`, you can run the integration tests using the following commands:
+
+```bash
+WITH_VTERM=1 bundle install
+WITH_VTERM=1 bundle exec rake test test_yamatanooroti
+```
 
 ## Releasing
 

@@ -203,6 +203,19 @@ class IRB::RenderingTest < Yamatanooroti::TestCase
     EOC
   end
 
+  def test_autocomplete_with_multiple_doc_namespaces
+    write_irbrc <<~'LINES'
+      puts 'start IRB'
+    LINES
+    start_terminal(3, 50, %W{ruby -I#{@pwd}/lib #{@pwd}/exe/irb}, startup_message: 'start IRB')
+    write("{}.__id_")
+    write("\C-i")
+    close
+    screen = result.join("\n").sub(/\n*\z/, "\n")
+    # This assertion passes whether showdoc dialog completed or not.
+    assert_match(/start\ IRB\nirb\(main\):001> {}\.__id__\n                }\.__id__(?:Press )?/, screen)
+  end
+
   def test_autocomplete_with_showdoc_in_gaps_on_narrow_screen_right
     rdoc_dir = File.join(@tmpdir, 'rdoc')
     system("bundle exec rdoc -r -o #{rdoc_dir}")
@@ -362,6 +375,52 @@ class IRB::RenderingTest < Yamatanooroti::TestCase
     assert_match(/a{80}/, screen)
     # because pager is not invoked, foobar will be evaluated
     assert_match(/foobar/, screen)
+  end
+
+  def test_debug_integration_hints_debugger_commands
+    write_irbrc <<~'LINES'
+      IRB.conf[:USE_COLORIZE] = false
+    LINES
+    script = Tempfile.create(["debug", ".rb"])
+    script.write <<~RUBY
+      puts 'start IRB'
+      binding.irb
+    RUBY
+    script.close
+    start_terminal(40, 80, %W{ruby -I#{@pwd}/lib #{script.to_path}}, startup_message: 'start IRB')
+    write("debug\n")
+    write("pp 1\n")
+    write("pp 1")
+    close
+
+    screen = result.join("\n").sub(/\n*\z/, "\n")
+    # submitted input shouldn't contain hint
+    assert_include(screen, "irb:rdbg(main):002> pp 1\n")
+    # unsubmitted input should contain hint
+    assert_include(screen, "irb:rdbg(main):003> pp 1 # debug command\n")
+  ensure
+    File.unlink(script) if script
+  end
+
+  def test_debug_integration_doesnt_hint_non_debugger_commands
+    write_irbrc <<~'LINES'
+      IRB.conf[:USE_COLORIZE] = false
+    LINES
+    script = Tempfile.create(["debug", ".rb"])
+    script.write <<~RUBY
+      puts 'start IRB'
+      binding.irb
+    RUBY
+    script.close
+    start_terminal(40, 80, %W{ruby -I#{@pwd}/lib #{script.to_path}}, startup_message: 'start IRB')
+    write("debug\n")
+    write("foo")
+    close
+
+    screen = result.join("\n").sub(/\n*\z/, "\n")
+    assert_include(screen, "irb:rdbg(main):002> foo\n")
+  ensure
+    File.unlink(script) if script
   end
 
   private
