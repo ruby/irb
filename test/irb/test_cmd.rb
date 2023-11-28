@@ -472,7 +472,7 @@ module TestIRB
           def foo
           end
         end
-      
+
         class Bar < Baz
           def foo
             super
@@ -494,7 +494,7 @@ module TestIRB
           def fob
           end
         end
-      
+
         class Bar < Baz
           def fob
             super
@@ -520,7 +520,7 @@ module TestIRB
       code = <<~RUBY
         class Baz
         end
-      
+
         class Bar < Baz
           def fee
             super
@@ -542,7 +542,7 @@ module TestIRB
           def fow
           end
         end
-      
+
         class Bar < Baz
           def fow
             super
@@ -564,7 +564,7 @@ module TestIRB
           def fol
           end
         end
-      
+
         class Bar < Baz
           def fol
             super
@@ -587,7 +587,7 @@ module TestIRB
           def fot
           end
         end
-      
+
         class Bar < Baz
           def fot
             super
