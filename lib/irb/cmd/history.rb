@@ -28,7 +28,7 @@ module IRB
             " " * header_length + line
           end
 
-          output.puts [first_line, *truncated_input].join("\n")
+          output.puts first_line, *truncated_input
         end
 
         Pager.page_content(output.string)
