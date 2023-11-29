@@ -18,7 +18,7 @@ module IRB
           header = "#{index}: "
           header_length = header.size
 
-          lines = input.split("\n")
+          lines = input.split("\n") || [""]
           first_line = header + lines[0]
 
           truncated_input = lines[1..1]
