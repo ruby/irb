@@ -237,11 +237,11 @@ However, there are also some limitations to be aware of:
 
 ## Type Based Completion
 
-IRB's default completion `IRB::RegexpCompletor` uses Regexp. IRB has another experimental completion `IRB::TypeCompletion` that uses type analysis.
+IRB's default completion `IRB::RegexpCompletor` uses Regexp. IRB has another experimental completion `IRB::TypeCompletor` that uses type analysis.
 
-### How to Enable IRB::TypeCompletion
+### How to Enable IRB::TypeCompletor
 
-To enable IRB::TypeCompletion, run IRB with `--type-completor` option
+To enable IRB::TypeCompletor, run IRB with `--type-completor` option
 ```
 $ irb --type-completor
 ```
@@ -249,14 +249,14 @@ Or write the code below to IRB's rc-file.
 ```ruby
 IRB.conf[:COMPLETOR] = :type # default is :regexp
 ```
-You also need `gem prism` and `gem rbs` to use this feature.
+You also need `gem repl_type_completor` to use this feature.
 
 To check if it's enabled, type `irb_info` into IRB and see the `Completion` section.
 ```
 irb(main):001> irb_info
 ...
 # Enabled
-Completion: Autocomplete, TypeCompletion::Completor(Prism: 0.17.1, RBS: 3.3.0)
+Completion: Autocomplete, ReplTypeCompletor: 0.1.0, Prism: 0.18.0, RBS: 3.3.0
 # Not enabled
 Completion: Autocomplete, RegexpCompletor
 ...
@@ -265,7 +265,7 @@ If you have `sig/` directory or `rbs_collection.lock.yaml` in current directory,
 
 ### Advantage over Default IRB::RegexpCompletor
 
-IRB::TypeCompletion can autocomplete chained methods, block parameters and more if type information is available.
+IRB::TypeCompletor can autocomplete chained methods, block parameters and more if type information is available.
 These are some examples IRB::RegexpCompletor cannot complete.
 
 ```ruby
@@ -287,11 +287,11 @@ As a trade-off, completion calculation takes more time than IRB::RegexpCompletor
 
 ### Difference between Steep's Completion
 
-Compared with Steep, IRB::TypeCompletion has some difference and limitations.
+Compared with Steep, IRB::TypeCompletor has some difference and limitations.
 ```ruby
 [0, 'a'].sample.
 # Steep completes intersection of Integer methods and String methods
-# IRB::TypeCompletion completes both Integer and String methods
+# IRB::TypeCompletor completes both Integer and String methods
 ```
 
 Some features like type narrowing is not implemented.
@@ -301,7 +301,7 @@ def f(arg = [0, 'a'].sample)
     arg. # Completes both Integer and String methods
 ```
 
-Unlike other static type checker, IRB::TypeCompletion uses runtime information to provide better completion.
+Unlike other static type checker, IRB::TypeCompletor uses runtime information to provide better completion.
 ```ruby
 irb(main):001> a = [1]
 => [1]
