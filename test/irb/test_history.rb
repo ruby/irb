@@ -148,6 +148,25 @@ module TestIRB
       ENV["IRBRC"] = backup_irbrc
     end
 
+    def test_history_different_encodings
+      backup_default_external = Encoding.default_external
+      backup_lang = ENV["LANG"]
+      IRB.conf[:SAVE_HISTORY] = 2
+      ENV["LANG"] = "C"
+      Encoding.default_external = Encoding::US_ASCII
+      assert_history(<<~EXPECTED_HISTORY.encode(Encoding::US_ASCII), <<~INITIAL_HISTORY.encode(Encoding::UTF_8), <<~INPUT)
+        ????
+        exit
+      EXPECTED_HISTORY
+        😀
+      INITIAL_HISTORY
+        exit
+      INPUT
+    ensure
+      ENV["LANG"] = backup_lang
+      Encoding.default_external = backup_default_external
+    end
+
     private
 
     def history_concurrent_use_for_input_method(input_method)
