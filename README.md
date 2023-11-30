@@ -119,6 +119,7 @@ IRB
   source         Loads a given file in the current session.
   irb_info       Show information about IRB.
   show_cmds      List all available commands and their description.
+  history        Shows the input history. `-g [query]` or `-G [query]` allows you to filter the output.
 
 Multi-irb (DEPRECATED)
   irb            Start a child IRB.
