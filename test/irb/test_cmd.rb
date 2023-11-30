@@ -1013,6 +1013,26 @@ module TestIRB
       EOF
       assert_empty err
     end
+
+    def test_history_grep
+      TestInputMethod.const_set("HISTORY", ["foo", "bar", <<~INPUT])
+        [].each do |x|
+          puts x
+        end
+      INPUT
+
+      out, err = without_rdoc do
+        execute_lines("hist -g each\n")
+      end
+
+      assert_include(out, <<~EOF)
+        2: [].each do |x|
+             puts x
+           ...
+      EOF
+      assert_empty err
+    end
+
   end
 
 end

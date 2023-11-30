@@ -10,11 +10,19 @@ module IRB
   module ExtendCommand
     class History < Nop
       category "IRB"
-      description "Show the input history."
+      description "Shows the input history. `-g [query]` or `-G [query]` allows you to filter the output."
 
-      def execute(*)
-        output = StringIO.new
-        irb_context.io.class::HISTORY.each_with_index.reverse_each do |input, index|
+      def self.transform_args(args)
+        if match = args&.match(/\A(?<args>.+\s|)(-g|-G)\s+(?<grep>[^\s]+)\s*\n\z/)
+          args = match[:args]
+          "#{args}#{',' unless args.chomp.empty?} grep: /#{match[:grep]}/"
+        else
+          args
+        end
+      end
+
+      def execute(*arg, grep: nil)
+        formatted_inputs = irb_context.io.class::HISTORY.each_with_index.reverse_each.map do |input, index|
           header = "#{index}: "
 
           first_line, *other_lines = input.split("\n") || [""]
@@ -27,10 +35,12 @@ module IRB
             " " * header.length + line
           end
 
-          output.puts first_line, *other_lines
+          StringIO.new.tap { |io| io.puts(first_line, *other_lines) }.string
         end
 
-        Pager.page_content(output.string)
+        formatted_inputs = formatted_inputs.grep(grep) if grep
+
+        Pager.page_content(formatted_inputs.join)
       end
     end
   end
