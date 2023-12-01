@@ -16,7 +16,7 @@ module IRB
         match = args&.match(/(-g|-G)\s+(?<grep>.+)\s*\n\z/)
         return unless match
 
-        "grep: /#{match[:grep]}/"
+        "grep: #{Regexp.new(match[:grep]).inspect}"
       end
 
       def execute(grep: nil)
