@@ -16,7 +16,8 @@ gem "reline", github: "ruby/reline" if ENV["WITH_LATEST_RELINE"] == "true"
 gem "rake"
 gem "test-unit"
 gem "test-unit-ruby-core"
-gem "debug", github: "ruby/debug"
+
+gem "debug", github: "ruby/debug", platforms: [:mri, :mswin]
 
 if RUBY_VERSION >= "3.0.0" && !is_truffleruby
   gem "repl_type_completor"
