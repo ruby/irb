@@ -13,7 +13,7 @@ module IRB
       description "Shows the input history. `-g [query]` or `-G [query]` allows you to filter the output."
 
       def self.transform_args(args)
-        match = args&.match(/(-g|-G)\s+(?<grep>[^\s]+)\s*\n\z/)
+        match = args&.match(/(-g|-G)\s+(?<grep>.+)\s*\n\z/)
         return unless match
 
         "grep: /#{match[:grep]}/"
