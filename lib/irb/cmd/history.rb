@@ -23,8 +23,8 @@ module IRB
         formatted_inputs = irb_context.io.class::HISTORY.each_with_index.reverse_each.map do |input, index|
           header = "#{index}: "
 
-          first_line, *other_lines = input.split("\n") || [""]
-          first_line.prepend header
+          first_line, *other_lines = input.split("\n")
+          first_line = "#{header}#{first_line}"
 
           truncated_lines = other_lines.slice!(1..) # Show 1 additional line (2 total)
           other_lines << "..." if truncated_lines&.any?
