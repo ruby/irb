@@ -35,7 +35,7 @@ module IRB
             " " * header.length + line
           end
 
-          StringIO.new.tap { |io| io.puts(first_line, *other_lines) }.string
+          [first_line, *other_lines].join("\n") + "\n"
         end
 
         Pager.page_content(formatted_inputs.join)
