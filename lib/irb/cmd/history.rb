@@ -20,7 +20,9 @@ module IRB
       end
 
       def execute(grep: nil)
-        formatted_inputs = irb_context.io.class::HISTORY.each_with_index.reverse_each.map do |input, index|
+        formatted_inputs = irb_context.io.class::HISTORY.each_with_index.reverse_each.filter_map do |input, index|
+          next if grep && !input.match?(grep)
+
           header = "#{index}: "
 
           first_line, *other_lines = input.split("\n")
@@ -35,8 +37,6 @@ module IRB
 
           StringIO.new.tap { |io| io.puts(first_line, *other_lines) }.string
         end
-
-        formatted_inputs = formatted_inputs.grep(grep) if grep
 
         Pager.page_content(formatted_inputs.join)
       end
