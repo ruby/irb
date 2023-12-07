@@ -595,13 +595,33 @@ module IRB
       end
     end
 
+    COMMAND_FLAG_REGEXP = /(?<cmd_flag>-[a-zA-Z]+( +\S+)*)/
+    COMMAND_ARG_REGEXP = /(?<cmd_arg>[^-]\S*)/
+    COMMAND_NAME_REGEXP = /(?<cmd_name>\S+)/
+    SIMPLE_COMMAND_REGEXP = /^#{COMMAND_NAME_REGEXP}$/
+    COMMAND_WITH_ARGS_REGEXP = /^#{COMMAND_NAME_REGEXP} +#{COMMAND_ARG_REGEXP}$/
+    COMMAND_WITH_FLAGS_REGEXP = /^#{COMMAND_NAME_REGEXP} +#{COMMAND_FLAG_REGEXP}$/
+    COMMAND_WITH_ARGS_AND_FLAGS_REGEXP = /^#{COMMAND_NAME_REGEXP} +#{COMMAND_ARG_REGEXP} +#{COMMAND_FLAG_REGEXP}$/
+
+    COMMAND_REGEXP = Regexp.union(
+      SIMPLE_COMMAND_REGEXP,
+      COMMAND_WITH_ARGS_REGEXP,
+      COMMAND_WITH_FLAGS_REGEXP,
+      COMMAND_WITH_ARGS_AND_FLAGS_REGEXP
+    )
+
     def build_statement(code)
-      code.force_encoding(@context.io.encoding)
-      command_or_alias, arg = code.split(/\s/, 2)
-      # Transform a non-identifier alias (@, $) or keywords (next, break)
-      command_name = @context.command_aliases[command_or_alias.to_sym]
-      command = command_name || command_or_alias
-      command_class = ExtendCommandBundle.load_command(command)
+      code.force_encoding(@context.io.encoding) unless code.frozen?
+      command_match = COMMAND_REGEXP.match(code.strip)
+
+      if command_match
+        command_or_alias = command_match[:cmd_name]
+        arg = [command_match[:cmd_arg], command_match[:cmd_flag]].compact.join(' ')
+        # Transform a non-identifier alias (@, $) or keywords (next, break)
+        command_name = @context.command_aliases[command_or_alias.to_sym]
+        command = command_name || command_or_alias
+        command_class = ExtendCommandBundle.load_command(command)
+      end
 
       if command_class
         Statement::Command.new(code, command, arg, command_class)
@@ -612,7 +632,9 @@ module IRB
     end
 
     def single_line_command?(code)
-      command = code.split(/\s/, 2).first
+      command_match = COMMAND_REGEXP.match(code)
+      return unless command_match
+      command = command_match[:cmd_name]
       @context.symbol_alias?(command) || @context.transform_args?(command)
     end
 
