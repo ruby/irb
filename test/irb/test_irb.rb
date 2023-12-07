@@ -738,4 +738,62 @@ module TestIRB
       IRB::Irb.new(workspace, TestInputMethod.new)
     end
   end
+
+  class InputCategorisationTest < TestCase
+    def test_irb_distinguihes_commands_and_non_commands_correctly
+      irb = build_irb
+
+      [
+        "show_source Foo#bar",
+        "show_source Foo#bar -s",
+        "show_source Foo.bar",
+        "show_source Foo.bar -s",
+        "show_source == -s",
+        "show_source =~ -s",
+        "ls foo.bar -g baz",
+        "ls -g foo",
+        "bt 4",
+        "bt"
+      ].each do |input|
+        statement = irb.build_statement(input)
+        assert_equal(IRB::Statement::Command, statement.class, "Expected #{input} to be a command")
+      end
+
+      [
+        "info + 1",
+        "info - 1",
+        "info = 1",
+        "info = -1",
+        "info = /regex/",
+        "info = a",
+        "info += a",
+        "info -= a",
+        "info *= a",
+        "info &&= a",
+        "info ||= a",
+        "info # comment",
+        "info if foo",
+        "info ? foo : bar",
+        "info ; foo",
+        "info ,other = expr"
+      ].each do |input|
+        statement = irb.build_statement(input)
+        assert_equal(IRB::Statement::Expression, statement.class, "Expected #{input} to not be a command")
+      end
+    end
+
+    private
+
+    def build_binding
+      Object.new.instance_eval { binding }
+    end
+
+    def build_irb
+      IRB.init_config(nil)
+      workspace = IRB::WorkSpace.new(build_binding)
+
+      IRB.conf[:VERBOSE] = false
+      IRB::Irb.new(workspace, TestInputMethod.new)
+    end
+  end
 end
