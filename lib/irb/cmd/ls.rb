@@ -14,12 +14,11 @@ module IRB
       category "Context"
       description "Show methods, constants, and variables. `-g [query]` or `-G [query]` allows you to filter out the output."
 
-      def self.transform_args(args)
-        if match = args&.match(/\A(?<args>.+\s|)(-g|-G)\s+(?<grep>[^\s]+)\s*\z/)
-          args = match[:args]
-          "#{args}#{',' unless args.chomp.empty?} grep: /#{match[:grep]}/"
-        else
-          args
+      class << self
+        def set_options(options, parser)
+          parser.on("-g [query]", "-G [query]", "Filter out the output with a query") do |v|
+            options[:grep] = "\/#{v}\/"
+          end
         end
       end
 

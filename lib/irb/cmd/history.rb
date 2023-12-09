@@ -12,11 +12,10 @@ module IRB
       category "IRB"
       description "Shows the input history. `-g [query]` or `-G [query]` allows you to filter the output."
 
-      def self.transform_args(args)
-        match = args&.match(/(-g|-G)\s+(?<grep>.+)\s*\n\z/)
-        return unless match
-
-        "grep: #{Regexp.new(match[:grep]).inspect}"
+      def self.set_options(options, parser)
+        parser.on("-g [query]", "-G [query]", "Filter out the output with a query") do |v|
+          options[:grep] = "\/#{v}\/"
+        end
       end
 
       def execute(grep: nil)

@@ -44,10 +44,11 @@ module IRB
     end
 
     class Command < Statement
-      def initialize(code, command, arg, command_class)
+      def initialize(code, command, arg, flags, command_class)
         @code = code
         @command = command
         @arg = arg
+        @flags = command_class.parse_flags(flags&.split || [])
         @command_class = command_class
       end
 
@@ -73,7 +74,18 @@ module IRB
           arg = @arg
         end
 
-        [@command, arg].compact.join(' ')
+        result = [@command, arg].compact.join(' ')
+
+        if @flags.any?
+          converted_flags = @flags.map do |k, v|
+            "#{k}: #{v}"
+          end
+
+          result += "," if arg
+          result += " #{converted_flags.join(' ')}"
+        end
+
+        result
       end
     end
   end

@@ -3,6 +3,7 @@
 #   nop.rb -
 #   	by Keiju ISHITSUKA(keiju@ruby-lang.org)
 #
+require "optparse"
 
 module IRB
   # :stopdoc:
@@ -22,11 +23,28 @@ module IRB
           @description
         end
 
+        def parse_flags(flags)
+          options = {}
+
+          OptionParser.new do |parser|
+            set_options(options, parser)
+          end.parse(flags)
+
+          options
+        rescue OptionParser::InvalidOption => e
+          warn e
+          options
+        end
+
         private
 
         def string_literal?(args)
           sexp = Ripper.sexp(args)
           sexp && sexp.size == 2 && sexp.last&.first&.first == :string_literal
+        end
+
+        def set_options(opts, _parser)
+          opts
         end
       end
 
