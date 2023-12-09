@@ -50,6 +50,27 @@ module TestIRB
       end
     end
 
+    def test_rc_file_loading_order
+      tmpdir = @tmpdir
+      Dir.chdir(tmpdir) do
+        # tmpdir is ENV["HOME"], so another dir is needed
+        subdir = "#{tmpdir}/mydir"
+        FileUtils.mkdir_p("#{tmpdir}/mydir")
+        Dir.chdir(subdir) do
+          ENV["XDG_CONFIG_HOME"] = "#{tmpdir}/xdg"
+          FileUtils.mkdir_p("#{tmpdir}/xdg/irb")
+          FileUtils.touch("#{tmpdir}/xdg/irb"+"/.irb#{IRB::IRBRC_EXT}")
+          # ENV["HOME"] .irbrc
+          FileUtils.touch(tmpdir+"/.irb#{IRB::IRBRC_EXT}")
+          # project level .irbrc
+          FileUtils.touch(subdir+"/.irb#{IRB::IRBRC_EXT}")
+          IRB.conf[:RC_NAME_GENERATOR] = nil
+          assert_equal(subdir+"/.irb#{IRB::IRBRC_EXT}", IRB.rc_file)
+          assert_equal(subdir+"/.irb_history", IRB.rc_file("_history"))
+        end
+      end
+    end
+
     def test_rc_file_in_subdir
       tmpdir = @tmpdir
       Dir.chdir(tmpdir) do
