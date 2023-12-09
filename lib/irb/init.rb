@@ -410,7 +410,6 @@ module IRB # :nodoc:
         @CONF[:RC_NAME_GENERATOR] ||= rcgen
         if File.exist?(rcgen.call(IRBRC_EXT))
           @CONF[:RC_NAME_GENERATOR] = rcgen
-          break
         end
       end
     end
