@@ -12,6 +12,13 @@ module IRB
       description "Show the source code of a given method or constant."
 
       class << self
+        def set_options(options, parser)
+          parser.on("-s", "show super method") do |v|
+            options[:super_level] ||= 0
+            options[:super_level] += 1
+          end
+        end
+
         def transform_args(args)
           # Return a string literal as is for backward compatibility
           if args.empty? || string_literal?(args)
@@ -22,14 +29,13 @@ module IRB
         end
       end
 
-      def execute(str = nil)
+      def execute(str = nil, super_level: nil)
         unless str.is_a?(String)
           puts "Error: Expected a string but got #{str.inspect}"
           return
         end
 
-        str, esses = str.split(" -")
-        super_level = esses ? esses.count("s") : 0
+        super_level ||= 0
         source = SourceFinder.new(@irb_context).find_source(str, super_level)
 
         if source

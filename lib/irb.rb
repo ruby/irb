@@ -616,7 +616,6 @@ module IRB
 
       if command_match
         command_or_alias = command_match[:cmd_name]
-        arg = [command_match[:cmd_arg], command_match[:cmd_flag]].compact.join(' ')
         # Transform a non-identifier alias (@, $) or keywords (next, break)
         command_name = @context.command_aliases[command_or_alias.to_sym]
         command = command_name || command_or_alias
@@ -624,7 +623,9 @@ module IRB
       end
 
       if command_class
-        Statement::Command.new(code, command, arg, command_class)
+        arg = command_match[:cmd_arg]
+        flags = command_match[:cmd_flag]
+        Statement::Command.new(code, command, arg, flags, command_class)
       else
         is_assignment_expression = @scanner.assignment_expression?(code, local_variables: @context.local_variables)
         Statement::Expression.new(code, is_assignment_expression)
