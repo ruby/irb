@@ -41,13 +41,13 @@ require_relative "irb/debug"
 # Example:
 #
 #   $ irb
-#   irb(main):001:0> File.basename(Dir.pwd)
+#   irb(main):001> File.basename(Dir.pwd)
 #   => "irb"
-#   irb(main):002:0> Dir.entries('.').size
+#   irb(main):002> Dir.entries('.').size
 #   => 25
-#   irb(main):003:1* Dir.entries('.').select do |entry|
-#   irb(main):004:1*   entry.start_with?('R')
-#   irb(main):005:0> end
+#   irb(main):003* Dir.entries('.').select do |entry|
+#   irb(main):004*   entry.start_with?('R')
+#   irb(main):005> end
 #   => ["README.md", "Rakefile"]
 #
 # The typed input may also include
@@ -57,7 +57,8 @@ require_relative "irb/debug"
 #
 # You can stop an \IRB session by typing command +exit+:
 #
-#   irb(main):005:0> exit
+#   irb(main):006> exit
+#   $
 #
 # At that point, \IRB calls any hooks found in array <tt>IRB.conf[:AT_EXIT]</tt>,
 # then exits.
@@ -107,6 +108,8 @@ require_relative "irb/debug"
 #   $ irb --noscript Foo Bar Baz
 #   irb(main):001> ARGV
 #   => ["Foo", "Bar", "Baz"]
+#   irb(main):002> exit
+#   $
 #
 # Command-line option <tt>--</tt> causes everything that follows
 # to be treated as arguments, even those that look like options:
@@ -114,6 +117,8 @@ require_relative "irb/debug"
 #   $ irb --noscript -- --noscript -- Foo Bar Baz
 #   irb(main):001> ARGV
 #   => ["--noscript", "--", "Foo", "Bar", "Baz"]
+#   irb(main):002> exit
+#   $
 #
 # === Configuration File
 #
@@ -231,7 +236,7 @@ require_relative "irb/debug"
 #
 # By default, \IRB defines several command aliases:
 #
-#   irb(main):001:0> conf.command_aliases
+#   irb(main):001> conf.command_aliases
 #   => {:"$"=>:show_source, :"@"=>:whereami, :break=>:irb_break, :catch=>:irb_catch, :next=>:irb_next}
 #
 # You can change the initial aliases in the configuration file with:
@@ -293,11 +298,11 @@ require_relative "irb/debug"
 #
 # The default initial setting is +true+:
 #
-#   irb(main):001:0> conf.auto_indent_mode
+#   irb(main):001> conf.auto_indent_mode
 #   => true
-#   irb(main):002:1* Dir.entries('.').select do |entry|
-#   irb(main):003:1*   entry.start_with?('R')
-#   irb(main):004:0> end
+#   irb(main):002* Dir.entries('.').select do |entry|
+#   irb(main):003*   entry.start_with?('R')
+#   irb(main):004> end
 #   => ["README.md", "Rakefile"]
 #
 # You can change the initial setting in the
