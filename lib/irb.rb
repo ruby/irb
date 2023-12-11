@@ -379,8 +379,8 @@ require_relative "irb/debug"
 #   which is the default;
 #   an ellipsis (<tt>...</tt> is suffixed, to indicate the truncation):
 #
-#     irb(main):001:0> x = 'abc' * 1000
-#     => "abcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcab...
+#     irb(main):001> x = 'abc' * 100
+# => "abcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabc...
 #
 # - Printed in full (regardless of the length).
 # - Suppressed (not printed at all)
@@ -422,15 +422,15 @@ require_relative "irb/debug"
 #
 # Examples:
 #
-#   rb(main):001:0> conf.inspect_mode = false
+#   irb(main):001> conf.inspect_mode = false
 #   => false
-#   irb(main):002:0> "foo\nbar"
+#   irb(main):002> "foo\nbar"
 #   =>
 #   foo
 #   bar
-#   irb(main):003:0> conf.newline_before_multiline_output = false
+#   irb(main):003> conf.newline_before_multiline_output = false
 #   => false
-#   irb(main):004:0> "foo\nbar"
+#   irb(main):004> "foo\nbar"
 #   => foo
 #   bar
 #
@@ -454,50 +454,51 @@ require_relative "irb/debug"
 #   defines method <tt>conf.eval_history</tt>,
 #   which returns the maximum size +n+ of the evaluation history:
 #
-#     irb(main):001:0> conf.eval_history
+#     irb(main):001> conf.eval_history = 5
+#     => 5
+#     irb(main):002> conf.eval_history
 #     => 5
 #
 # - Defines variable <tt>_</tt>, which contains the most recent evaluation,
 #   or +nil+ if none; same as method <tt>conf.last_value</tt>:
 #
-#     irb(main):001:0> _
-#     => nil
-#     irb(main):002:0> :foo
+#     irb(main):003> _
+#     => 5
+#     irb(main):004> :foo
 #     => :foo
-#     irb(main):003:0> :bar
+#     irb(main):005> :bar
 #     => :bar
-#     irb(main):004:0> _
+#     irb(main):006> _
 #     => :bar
-#     irb(main):005:0> _
+#     irb(main):007> _
 #     => :bar
 #
 # - Defines variable <tt>__</tt>:
 #
 #   - <tt>__</tt> unadorned: contains all evaluation history:
 #
-#       irb(main):001:0> :foo
+#       irb(main):008> :foo
 #       => :foo
-#       irb(main):002:0> :bar
+#       irb(main):009> :bar
 #       => :bar
-#       irb(main):003:0> :baz
+#       irb(main):010> :baz
 #       => :baz
-#       irb(main):004:0> :bat
+#       irb(main):011> :bat
 #       => :bat
-#       irb(main):005:0> :bam
+#       irb(main):012> :bam
 #       => :bam
-#       irb(main):006:0> __
+#       irb(main):013> __
 #       =>
-#       2 :bar
-#       3 :baz
-#       4 :bat
-#       5 :bam
-#       irb(main):007:0> __
+#       9 :bar
+#       10 :baz
+#       11 :bat
+#       12 :bam
+#       irb(main):014> __
 #       =>
-#       3 :baz
-#       4 :bat
-#       5 :bam
-#       6 ...self-history...
-#       irb(main):008:0>
+#       10 :baz
+#       11 :bat
+#       12 :bam
+#       13 ...self-history...
 #
 #     Note that when the evaluation is multiline, it is displayed differently.
 #
@@ -506,22 +507,22 @@ require_relative "irb/debug"
 #     - Positive _m_:  contains the evaluation for the given line number,
 #       or +nil+ if that line number is not in the evaluation history:
 #
-#         irb(main):008:0> __[4]
-#         => :bat
-#         irb(main):009:0> __[5]
+#         irb(main):015> __[12]
 #         => :bam
+#         irb(main):016> __[1]
+#         => nil
 #
 #     - Negative _m_: contains the +mth+-from-end evaluation,
 #       or +nil+ if that evaluation is not in the evaluation history:
 #
-#         irb(main):010:0> __[-2]
-#         => :bat
-#         irb(main):011:0> __[-2]
+#         irb(main):017> __[-3]
 #         => :bam
+#         irb(main):018> __[-13]
+#         => nil
 #
 #     - Zero _m_: contains +nil+:
 #
-#         irb(main):012:0> __[0]
+#         irb(main):019> __[0]
 #         => nil
 #
 # === Prompt and Return Formats
