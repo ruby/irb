@@ -716,7 +716,7 @@ require_relative "irb/debug"
 #
 # The initial limit is 16:
 #
-#   irb(main):008:0> conf.back_trace_limit
+#   irb(main):001> conf.back_trace_limit
 #   => 16
 #
 # You can change the initial limit with command-line option
@@ -762,7 +762,7 @@ require_relative "irb/debug"
 #
 # The default initial value is <tt>[]</tt> (load no modules):
 #
-#   irb(main):001:0> conf.load_modules
+#   irb(main):001> conf.load_modules
 #   => []
 #
 # You can set the default initial value via:
@@ -770,8 +770,8 @@ require_relative "irb/debug"
 # - Command-line option <tt>-r</tt>
 #
 #     $ irb -r csv -r json
-#     irb(main):001:0> conf.load_modules
-#     => ["csv", "json"]
+#    irb(main):001> conf.load_modules
+#    => ["csv", "json"]
 #
 # - \Hash entry <tt>IRB.conf[:LOAD_MODULES] = _array_</tt>:
 #
