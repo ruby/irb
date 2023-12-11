@@ -573,7 +573,7 @@ require_relative "irb/debug"
 #
 # \IRB has several pre-defined prompts, stored in hash <tt>IRB.conf[:PROMPT]</tt>:
 #
-#   irb(main):001:0> IRB.conf[:PROMPT].keys
+#   irb(main):001> IRB.conf[:PROMPT].keys
 #   => [:NULL, :DEFAULT, :CLASSIC, :SIMPLE, :INF_RUBY, :XMP]
 #
 # To see the full data for these, type <tt>IRB.conf[:PROMPT]</tt>.
