@@ -552,21 +552,22 @@ require_relative "irb/debug"
 # - One for most situations (as above):
 #
 #     irb(main):003> Dir
+#     => Dir
 #
 # - One for when the typed command is a statement continuation (adds trailing asterisk):
 #
-#     irb(main):003* Dir.
+#     irb(main):004* Dir.
 #
 # - One for when the typed command is a string continuation (adds trailing single-quote):
 #
-#     irb(main):003' Dir.entries('.
+#     irb(main):005' Dir.entries('.
 #
 # You can see the prompt change as you type the characters in the following:
 #
-#     irb(main):003* Dir.entries('.').select do |entry|
-#     irb(main):004*   entry.start_with?('R')
-#     irb(main):005> end
-#     => ["Rakefile", "README.md"]
+#     irb(main):001* Dir.entries('.').select do |entry|
+#     irb(main):002*   entry.start_with?('R')
+#     irb(main):003> end
+#     => ["README.md", "Rakefile"]
 #
 # ==== Pre-Defined Prompts
 #
