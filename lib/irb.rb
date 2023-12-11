@@ -798,7 +798,7 @@ require_relative "irb/debug"
 #
 # The default initial value is <tt>[]</tt> (load no extra documentation):
 #
-#   irb(main):001:0> conf.extra_doc_dirs
+#   irb(main):001> conf.extra_doc_dirs
 #   => []
 #
 # You can set the default initial value via:
@@ -806,7 +806,7 @@ require_relative "irb/debug"
 # - Command-line option <tt>--extra_doc_dir</tt>
 #
 #     $ irb --extra-doc-dir your_doc_dir --extra-doc-dir my_doc_dir
-#     irb(main):001:0> conf.extra_doc_dirs
+#     irb(main):001> conf.extra_doc_dirs
 #     => ["your_doc_dir", "my_doc_dir"]
 #
 # - \Hash entry <tt>IRB.conf[:EXTRA_DOC_DIRS] = _array_</tt>:
