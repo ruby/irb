@@ -827,7 +827,7 @@ require_relative "irb/debug"
 #
 # The default initial value is <tt>'irb'</tt>:
 #
-#   irb(main):001:0> conf.irb_name
+#   irb(main):001> conf.irb_name
 #   => "irb"
 #
 # You can set the default initial value
@@ -841,7 +841,7 @@ require_relative "irb/debug"
 #
 # The default initial value is <tt>'irb'</tt>:
 #
-#   irb(main):001:0> conf.ap_name
+#   irb(main):001> conf.ap_name
 #   => "irb"
 #
 # You can set the default initial value
