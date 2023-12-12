@@ -58,6 +58,51 @@ module TestIRB
       assert_include output, "=> \"It's a foo\""
       assert_include output, "=> \"It's a bar\""
     end
+
+    def test_errored_input_that_match_a_command_raises_a_syntax_check_reminder
+      write_ruby <<~'RUBY'
+        class Foo
+        end
+        binding.irb
+      RUBY
+
+      errored_output = run_ruby_file do
+        type "show_source Foo bar"
+        type "exit!"
+      end
+
+      # The input should cause an error as it's evaluated as Ruby code
+      assert_include errored_output, 'undefined local variable or method `bar\''
+
+      # Because it starts with the name of a command, it should also raise a warning
+      assert_include errored_output,
+        'The input `show_source Foo bar` was recognised as a Ruby expression, but it matched the name of the `show_source` command.'
+      assert_include errored_output,
+        'If you intended to run it as a command, please check if the syntax is correct.'
+
+      output = run_ruby_file do
+        type "show_source Foo"
+        type "exit!"
+      end
+
+      # The input should work as a command
+      assert_include output, "From: #{@ruby_file.path}:1"
+      # Therefore, it should not raise a warning
+      assert_not_include output,
+        'If you intended to run it as a command, please check if the syntax is correct.'
+
+      output = run_ruby_file do
+        type "show_source = 'foo'"
+        type "show_source + 'bar'"
+        type "exit!"
+      end
+
+      # The input should work as Ruby code
+      assert_include(output, '=> "foobar"')
+      # Therefore, it should not raise a warning either
+      assert_not_include output,
+        'If you intended to run it as a command, please check if the syntax is correct.'
+    end
   end
 
   class IrbIOConfigurationTest < TestCase

@@ -2,7 +2,7 @@
 
 module IRB
   class Statement
-    attr_reader :code
+    attr_reader :code, :warning
 
     def is_assignment?
       raise NotImplementedError
@@ -21,9 +21,10 @@ module IRB
     end
 
     class Expression < Statement
-      def initialize(code, is_assignment)
+      def initialize(code, is_assignment, warning: nil)
         @code = code
         @is_assignment = is_assignment
+        @warning = warning
       end
 
       def suppresses_echo?
@@ -66,6 +67,9 @@ module IRB
       end
 
       def evaluable_code
+        # Because measure command is used as a method, we need to treat it differently
+        return @code if @command == "measure"
+
         # Hook command-specific transformation to return valid Ruby code
         if @command_class.respond_to?(:transform_args)
           arg = @command_class.transform_args(@arg)
