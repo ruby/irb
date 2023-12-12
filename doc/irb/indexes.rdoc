@@ -90,9 +90,6 @@ for each entry that is pre-defined, the initial value is given:
     {
       "$": :show_source,
       "@": :whereami,
-      break: :irb_break,
-      catch: :irb_catch,
-      next: :irb_next
     }
 
 - <tt>:CONTEXT_MODE</tt>: Sets the {context mode}[rdoc-ref:IRB@Context+Mode],
