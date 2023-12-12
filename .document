@@ -1,4 +1,4 @@
 LICENSE.txt
 README.md
-doc/irb/indexes.rdoc
+doc/irb/indexes.md
 lib/**/*.rb

@@ -1,6 +1,6 @@
-== Indexes
+## Indexes
 
-=== Index of Command-Line Options
+### Index of Command-Line Options
 
 These are the \IRB command-line options, with links to explanatory text:
 
@@ -70,7 +70,7 @@ These are the \IRB command-line options, with links to explanatory text:
 - <tt>--</tt>: Separate options from {arguments}[rdoc-ref:IRB@Command-Line+Arguments]
   on the command-line.
 
-=== Index of \IRB.conf Entries
+### Index of \IRB.conf Entries
 
 These are the keys for hash \IRB.conf entries, with links to explanatory text;
 for each entry that is pre-defined, the initial value is given:
@@ -87,10 +87,10 @@ for each entry that is pre-defined, the initial value is given:
 - <tt>:COMMAND_ALIASES</tt>: Defines input {command aliases}[rdoc-ref:IRB@Command+Aliases];
   initial value:
 
-    {
-      "$": :show_source,
-      "@": :whereami,
-    }
+        {
+          "$": :show_source,
+          "@": :whereami,
+        }
 
 - <tt>:CONTEXT_MODE</tt>: Sets the {context mode}[rdoc-ref:IRB@Context+Mode],
   the type of binding to be used when evaluating statements;
@@ -115,12 +115,14 @@ for each entry that is pre-defined, the initial value is given:
   ({echoing}[rdoc-ref:IRB@Return-Value+Printing+-28Echoing-29]) return values;
   initial value: +true+.
 - <tt>:IRB_LIB_PATH</tt>: The path to the {IRB library directory}[rdoc-ref:IRB@IRB+Library+Directory]; initial value:
-  <tt>"<i>RUBY_DIR</i>/lib/ruby/gems/<i>RUBY_VER_NUM</i>/gems/irb-<i>IRB_VER_NUM</i>/lib/irb"</tt>,
-  where:
 
-  - <i>RUBY_DIR</i> is the Ruby installation dirpath.
-  - <i>RUBY_VER_NUM</i> is the Ruby version number.
-  - <i>IRB_VER_NUM</i> is the \IRB version number.
+      - <tt>"<i>RUBY_DIR</i>/lib/ruby/gems/<i>RUBY_VER_NUM</i>/gems/irb-<i>IRB_VER_NUM</i>/lib/irb"</tt>,
+
+    where:
+
+      - <i>RUBY_DIR</i> is the Ruby installation dirpath.
+      - <i>RUBY_VER_NUM</i> is the Ruby version number.
+      - <i>IRB_VER_NUM</i> is the \IRB version number.
 
 - <tt>:IRB_NAME</tt>: {IRB name}[rdoc-ref:IRB@IRB+Name];
   initial value: <tt>'irb'</tt>.
@@ -141,22 +143,22 @@ for each entry that is pre-defined, the initial value is given:
   {performance measurement}[rdoc-ref:IRB@Performance+Measurement];
   initial value:
 
-    {
-      :TIME=>#<Proc:0x0000556e271c6598 /var/lib/gems/3.0.0/gems/irb-1.8.3/lib/irb/init.rb:106>,
-      :STACKPROF=>#<Proc:0x0000556e271c6548 /var/lib/gems/3.0.0/gems/irb-1.8.3/lib/irb/init.rb:116>
-    }
+        {
+          :TIME=>#<Proc:0x0000556e271c6598 /var/lib/gems/3.0.0/gems/irb-1.8.3/lib/irb/init.rb:106>,
+          :STACKPROF=>#<Proc:0x0000556e271c6548 /var/lib/gems/3.0.0/gems/irb-1.8.3/lib/irb/init.rb:116>
+        }
 
 - <tt>:PROMPT</tt>: \Hash of {defined prompts}[rdoc-ref:IRB@Prompt+and+Return+Formats];
   initial value:
 
-    {
-      :NULL=>{:PROMPT_I=>nil, :PROMPT_S=>nil, :PROMPT_C=>nil, :RETURN=>"%s\n"},
-      :DEFAULT=>{:PROMPT_I=>"%N(%m):%03n> ", :PROMPT_S=>"%N(%m):%03n%l ", :PROMPT_C=>"%N(%m):%03n* ", :RETURN=>"=> %s\n"},
-      :CLASSIC=>{:PROMPT_I=>"%N(%m):%03n:%i> ", :PROMPT_S=>"%N(%m):%03n:%i%l ", :PROMPT_C=>"%N(%m):%03n:%i* ", :RETURN=>"%s\n"},
-      :SIMPLE=>{:PROMPT_I=>">> ", :PROMPT_S=>"%l> ", :PROMPT_C=>"?> ", :RETURN=>"=> %s\n"},
-      :INF_RUBY=>{:PROMPT_I=>"%N(%m):%03n> ", :PROMPT_S=>nil, :PROMPT_C=>nil, :RETURN=>"%s\n", :AUTO_INDENT=>true},
-      :XMP=>{:PROMPT_I=>nil, :PROMPT_S=>nil, :PROMPT_C=>nil, :RETURN=>"    ==>%s\n"}
-    }
+        {
+          :NULL=>{:PROMPT_I=>nil, :PROMPT_S=>nil, :PROMPT_C=>nil, :RETURN=>"%s\n"},
+          :DEFAULT=>{:PROMPT_I=>"%N(%m):%03n> ", :PROMPT_S=>"%N(%m):%03n%l ", :PROMPT_C=>"%N(%m):%03n* ", :RETURN=>"=> %s\n"},
+          :CLASSIC=>{:PROMPT_I=>"%N(%m):%03n:%i> ", :PROMPT_S=>"%N(%m):%03n:%i%l ", :PROMPT_C=>"%N(%m):%03n:%i* ", :RETURN=>"%s\n"},
+          :SIMPLE=>{:PROMPT_I=>">> ", :PROMPT_S=>"%l> ", :PROMPT_C=>"?> ", :RETURN=>"=> %s\n"},
+          :INF_RUBY=>{:PROMPT_I=>"%N(%m):%03n> ", :PROMPT_S=>nil, :PROMPT_C=>nil, :RETURN=>"%s\n", :AUTO_INDENT=>true},
+          :XMP=>{:PROMPT_I=>nil, :PROMPT_S=>nil, :PROMPT_C=>nil, :RETURN=>"    ==>%s\n"}
+        }
 
 - <tt>:PROMPT_MODE</tt>: Name of {current prompt}[rdoc-ref:IRB@Prompt+and+Return+Formats];
   initial value: +:DEFAULT+.
