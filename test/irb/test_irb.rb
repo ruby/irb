@@ -820,7 +820,8 @@ module TestIRB
         "info if foo",
         "info ? foo : bar",
         "info ; foo",
-        "info ,other = expr"
+        "info ,other = expr",
+        "info  -" # when an input is not a command nor Ruby code, we want to make it Ruby so it raises syntax error
       ].each do |input|
         statement = irb.build_statement(input)
         assert_equal(IRB::Statement::Expression, statement.class, "Expected #{input} to not be a command")
