@@ -60,6 +60,7 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
       - name: Install libvterm
         run: |
           sudo apt install -y libtool-bin
@@ -71,7 +72,6 @@ jobs:
           sudo make install
       - name: Install dependencies
         run: |
-          gem install bundler --no-document
           WITH_VTERM=1 bundle install
       - name: rake test_yamatanooroti
         run: WITH_VTERM=1 bundle exec rake test_yamatanooroti
