@@ -5,7 +5,7 @@
 These are the \IRB command-line options, with links to explanatory text:
 
 - `-d`: Set `$DEBUG` and {$VERBOSE}[rdoc-ref:IRB@Verbosity]
-  to +true+.
+  to `true`.
 - `-E _ex_[:_in_]`: Set initial external (ex) and internal (in)
   {encodings}[rdoc-ref:IRB@Encodings] (same as `ruby -E>`).
 - `-f`: Don't initialize from {configuration file}[rdoc-ref:IRB@Configuration+File].
@@ -19,20 +19,20 @@ These are the \IRB command-line options, with links to explanatory text:
   0=silence, 1=medium, 2=verbose (same as `ruby -W`).
 - `--autocomplete`: Use {auto-completion}[rdoc-ref:IRB@Automatic+Completion].
 - `--back-trace-limit _n_`: Set a {backtrace limit}[rdoc-ref:IRB@Tracer];
-  display at most the top +n+ and bottom +n+ entries.
+  display at most the top `n` and bottom `n` entries.
 - `--colorize`: Use {color-highlighting}[rdoc-ref:IRB@Color+Highlighting]
   for input and output.
 - `--context-mode _n_`: Select method to create Binding object
-  for new {workspace}[rdoc-ref:IRB@Commands]; +n+ in range `0..4`.
+  for new {workspace}[rdoc-ref:IRB@Commands]; `n` in range `0..4`.
 - `--echo`: Print ({echo}[rdoc-ref:IRB@Return-Value+Printing+-28Echoing-29])
   return values.
 - `--extra-doc-dir _dirpath_`:
   Add a {documentation directory}[rdoc-ref:IRB@RI+Documentation+Directories]
   for the documentation dialog.
 - `--inf-ruby-mode`: Set prompt mode to {:INF_RUBY}[rdoc-ref:IRB@Pre-Defined+Prompts]
-  (appropriate for +inf-ruby-mode+ on Emacs);
+  (appropriate for `inf-ruby-mode` on Emacs);
   suppresses --multiline and --singleline.
-- `--inspect`: Use method +inspect+ for printing ({echoing}[rdoc-ref:IRB@Return-Value+Printing+-28Echoing-29])
+- `--inspect`: Use method `inspect` for printing ({echoing}[rdoc-ref:IRB@Return-Value+Printing+-28Echoing-29])
   return values.
 - `--multiline`: Use the multiline editor as the {input method}[rdoc-ref:IRB@Input+Method].
 - `--noautocomplete`: Don't use {auto-completion}[rdoc-ref:IRB@Automatic+Completion].
@@ -42,22 +42,22 @@ These are the \IRB command-line options, with links to explanatory text:
   return values.
 - `--noecho-on-assignment`: Don't print ({echo}[rdoc-ref:IRB@Return-Value+Printing+-28Echoing-29])
   result on assignment.
-- `--noinspect`: Don't se method +inspect+ for printing ({echoing}[rdoc-ref:IRB@Return-Value+Printing+-28Echoing-29])
+- `--noinspect`: Don't se method `inspect` for printing ({echoing}[rdoc-ref:IRB@Return-Value+Printing+-28Echoing-29])
   return values.
 - `--nomultiline`: Don't use the multiline editor as the {input method}[rdoc-ref:IRB@Input+Method].
 - `--noprompt`: Don't print {prompts}[rdoc-ref:IRB@Prompt+and+Return+Formats].
 - `--noscript`:  Treat the first command-line argument as a normal
   {command-line argument}[rdoc-ref:IRB@Initialization+Script],
-  and include it in +ARGV+.
+  and include it in `ARGV`.
 - `--nosingleline`: Don't use the singleline editor as the {input method}[rdoc-ref:IRB@Input+Method].
 - `--noverbose`Don't print {verbose}[rdoc-ref:IRB@Verbosity] details.
 - `--prompt _mode_`, `--prompt-mode _mode_`:
   Set {prompt and return formats}[rdoc-ref:IRB@Prompt+and+Return+Formats];
-  +mode+ may be a {pre-defined prompt}[rdoc-ref:IRB@Pre-Defined+Prompts]
+  `mode` may be a {pre-defined prompt}[rdoc-ref:IRB@Pre-Defined+Prompts]
   or the name of a {custom prompt}[rdoc-ref:IRB@Custom+Prompts].
 - `--script`: Treat the first command-line argument as the path to an
   {initialization script}[rdoc-ref:IRB@Initialization+Script],
-  and omit it from +ARGV+.
+  and omit it from `ARGV`.
 - `--simple-prompt`, `--sample-book-mode`:
   Set prompt mode to {:SIMPLE}[rdoc-ref:IRB@Pre-Defined+Prompts].
 - `--singleline`: Use the singleline editor as the {input method}[rdoc-ref:IRB@Input+Method].
@@ -81,9 +81,9 @@ for each entry that is pre-defined, the initial value is given:
   {at exit}[rdoc-ref:IRB@IRB];
   initial value: `[]`.
 - `:AUTO_INDENT`: Whether {automatic indentation}[rdoc-ref:IRB@Automatic+Indentation]
-  is enabled; initial value: +true+.
+  is enabled; initial value: `true`.
 - `:BACK_TRACE_LIMIT`: Sets the {back trace limit}[rdoc-ref:IRB@Tracer];
-  initial value: +16+.
+  initial value: `16`.
 - `:COMMAND_ALIASES`: Defines input {command aliases}[rdoc-ref:IRB@Command+Aliases];
   initial value:
 
@@ -94,26 +94,26 @@ for each entry that is pre-defined, the initial value is given:
 
 - `:CONTEXT_MODE`: Sets the {context mode}[rdoc-ref:IRB@Context+Mode],
   the type of binding to be used when evaluating statements;
-  initial value: +4+.
+  initial value: `4`.
 - `:ECHO`: Whether to print ({echo}[rdoc-ref:IRB@Return-Value+Printing+-28Echoing-29])
   return values;
-  initial value: +nil+, which would set +conf.echo+ to +true+.
+  initial value: `nil`, which would set `conf.echo` to `true`.
 - `:ECHO_ON_ASSIGNMENT`: Whether to print ({echo}[rdoc-ref:IRB@Return-Value+Printing+-28Echoing-29])
   return values on assignment;
-  initial value: +nil+, which would set +conf.echo_on_assignment+ to +:truncate+.
+  initial value: `nil`, which would set `conf.echo_on_assignment` to `:truncate`.
 - `:EVAL_HISTORY`: How much {evaluation history}[rdoc-ref:IRB@Evaluation+History]
-  is to be stored; initial value: +nil+.
+  is to be stored; initial value: `nil`.
 - `:EXTRA_DOC_DIRS`: \Array of
   {RI documentation directories}[rdoc-ref:IRB@RI+Documentation+Directories]
   to be parsed for the documentation dialog;
   initial value: `[]`.
 - `:IGNORE_EOF`: Whether to ignore {end-of-file}[rdoc-ref:IRB@End-of-File];
-  initial value: +false+.
+  initial value: `false`.
 - `:IGNORE_SIGINT`: Whether to ignore {SIGINT}[rdoc-ref:IRB@SIGINT];
-  initial value: +true+.
-- `:INSPECT_MODE`: Whether to use method +inspect+ for printing
+  initial value: `true`.
+- `:INSPECT_MODE`: Whether to use method `inspect` for printing
   ({echoing}[rdoc-ref:IRB@Return-Value+Printing+-28Echoing-29]) return values;
-  initial value: +true+.
+  initial value: `true`.
 - `:IRB_LIB_PATH`: The path to the {IRB library directory}[rdoc-ref:IRB@IRB+Library+Directory]; initial value:
 
       - `"<i>RUBY_DIR</i>/lib/ruby/gems/<i>RUBY_VER_NUM</i>/gems/irb-<i>IRB_VER_NUM</i>/lib/irb"`,
@@ -127,7 +127,7 @@ for each entry that is pre-defined, the initial value is given:
 - `:IRB_NAME`: {IRB name}[rdoc-ref:IRB@IRB+Name];
   initial value: `'irb'`.
 - `:IRB_RC`: {Configuration monitor}[rdoc-ref:IRB@Configuration+Monitor];
-  initial value: +nil+.
+  initial value: `nil`.
 - `:LC_MESSAGES`: {Locale}[rdoc-ref:IRB@Locale];
   initial value: IRB::Locale object.
 - `:LOAD_MODULES`: deprecated.
@@ -135,7 +135,7 @@ for each entry that is pre-defined, the initial value is given:
   initial value: IRB::Context object.
 - `:MEASURE`: Whether to
   {measure performance}[rdoc-ref:IRB@Performance+Measurement];
-  initial value: +false+.
+  initial value: `false`.
 - `:MEASURE_CALLBACKS`: Callback methods for
   {performance measurement}[rdoc-ref:IRB@Performance+Measurement];
   initial value: `[]`.
@@ -161,32 +161,32 @@ for each entry that is pre-defined, the initial value is given:
         }
 
 - `:PROMPT_MODE`: Name of {current prompt}[rdoc-ref:IRB@Prompt+and+Return+Formats];
-  initial value: +:DEFAULT+.
+  initial value: `:DEFAULT`.
 - `:RC`: Whether a {configuration file}[rdoc-ref:IRB@Configuration+File]
   was found and interpreted;
-  initial value: +true+ if a configuration file was found, +false+ otherwise.
+  initial value: `true` if a configuration file was found, `false` otherwise.
 - `:RC_NAME_GENERATOR`: \Proc to generate paths of potential
   {configuration files}[rdoc-ref:IRB@Configuration+File];
   initial value: `=> #<Proc:0x000055f9bebfed80 /var/lib/gems/3.0.0/gems/irb-1.8.3/lib/irb/init.rb:401>`.
 - `:SAVE_HISTORY`: Number of commands to save in
   {input command history}[rdoc-ref:IRB@Input+Command+History];
-  initial value: +1000+.
+  initial value: `1000`.
 - `:SINGLE_IRB`: Whether command-line option `--single-irb` was given;
-  initial value: +true+ if the option was given, +false+ otherwise.
+  initial value: `true` if the option was given, `false` otherwise.
   See {Single-IRB Mode}[rdoc-ref:IRB@Single-IRB+Mode].
 - `:USE_AUTOCOMPLETE`: Whether to use
   {automatic completion}[rdoc-ref:IRB@Automatic+Completion];
-  initial value: +true+.
+  initial value: `true`.
 - `:USE_COLORIZE`: Whether to use
   {color highlighting}[rdoc-ref:IRB@Color+Highlighting];
-  initial value: +true+.
+  initial value: `true`.
 - `:USE_LOADER`: Whether to use the
-  {IRB loader}[rdoc-ref:IRB@IRB+Loader] for +require+ and +load+;
-  initial value: +false+.
+  {IRB loader}[rdoc-ref:IRB@IRB+Loader] for `require` and `load`;
+  initial value: `false`.
 - `:USE_TRACER`: Whether to use the
   {IRB tracer}[rdoc-ref:IRB@Tracer];
-  initial value: +false+.
+  initial value: `false`.
 - `:VERBOSE`: Whether to print {verbose output}[rdoc-ref:IRB@Verbosity];
-  initial value: +nil+.
+  initial value: `nil`.
 - `:__MAIN__`: The main \IRB object;
-  initial value: +main+.
+  initial value: `main`.
