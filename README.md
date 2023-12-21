@@ -246,15 +246,33 @@ IRB's default completion `IRB::RegexpCompletor` uses Regexp. IRB has another exp
 
 ### How to Enable IRB::TypeCompletor
 
-To enable IRB::TypeCompletor, run IRB with `--type-completor` option
+Install [ruby/repl_type_completor](https://github.com/ruby/repl_type_completor/) with:
+```
+$ gem install repl_type_completor
+```
+Or add these lines to your project's Gemfile.
+```ruby
+gem 'irb'
+gem 'repl_type_completor', group: :development
+```
+
+Now you can use type based completion by:
+
+Run IRB with `--type-completor` option
 ```
 $ irb --type-completor
 ```
-Or write the code below to IRB's rc-file.
+
+Or write this line to IRB's rc-file
 ```ruby
 IRB.conf[:COMPLETOR] = :type # default is :regexp
 ```
-You also need `gem repl_type_completor` to use this feature.
+
+Or use environment variable `IRB_COMPLETOR`
+```ruby
+ENV['IRB_COMPLETOR'] = 'type'
+IRB.start
+```
 
 To check if it's enabled, type `irb_info` into IRB and see the `Completion` section.
 ```
