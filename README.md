@@ -258,17 +258,17 @@ gem 'repl_type_completor', group: :development
 
 Now you can use type based completion by:
 
-Run IRB with `--type-completor` option
+Running IRB with the `--type-completor` option
 ```
 $ irb --type-completor
 ```
 
-Or write this line to IRB's rc-file
+Or writing this line to IRB's rc-file (e.g. `~/.irbrc`)
 ```ruby
 IRB.conf[:COMPLETOR] = :type # default is :regexp
 ```
 
-Or use environment variable `IRB_COMPLETOR`
+Or setting the environment variable `IRB_COMPLETOR`
 ```ruby
 ENV['IRB_COMPLETOR'] = 'type'
 IRB.start
