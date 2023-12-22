@@ -253,7 +253,7 @@ $ gem install repl_type_completor
 Or add these lines to your project's Gemfile.
 ```ruby
 gem 'irb'
-gem 'repl_type_completor', group: :development
+gem 'repl_type_completor', group: [:development, :test]
 ```
 
 Now you can use type based completion by:
