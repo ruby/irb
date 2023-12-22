@@ -225,6 +225,22 @@ module TestIRB
       assert_match(/a = "Hello"/, output)
     end
 
+    def test_up
+      write_ruby <<~'RUBY'
+        def foo; binding.irb; end
+        def bar; foo; end
+        bar
+      RUBY
+
+      output = run_ruby_file do
+        type "up"
+        type "continue"
+      end
+
+      assert_match(/irb\(main\):001> up/, output)
+      assert_match(/=>   2| def bar; foo; end/, output)
+    end
+
     def test_catch
       write_ruby <<~'RUBY'
         binding.irb

@@ -154,6 +154,10 @@ module IRB # :nodoc:
         :irb_debug_info, :Info, "cmd/info",
         [:info, NO_OVERRIDE],
       ],
+      [
+        :irb_up, :Up, "cmd/up",
+        [:up, NO_OVERRIDE],
+      ],
 
       [
         :irb_help, :Help, "cmd/help",

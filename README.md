@@ -138,6 +138,7 @@ Debugging
   finish         Start the debugger of debug.gem and run its `finish` command.
   backtrace      Start the debugger of debug.gem and run its `backtrace` command.
   info           Start the debugger of debug.gem and run its `info` command.
+  up             Start the debugger of debug.gem and run its `up` command.
 
 Misc
   edit           Open a file with the editor command defined with `ENV["VISUAL"]` or `ENV["EDITOR"]`.
