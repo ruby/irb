@@ -15,6 +15,10 @@ The `irb` command from your shell will start the interpreter.
 - [Debugging with IRB](#debugging-with-irb)
   - [More about `debug.gem`](#more-about-debuggem)
   - [Advantages Over `debug.gem`'s Console](#advantages-over-debuggems-console)
+- [Type Based Completion](#type-based-completion)
+  - [How to Enable IRB::TypeCompletor](#how-to-enable-irbtypecompletor)
+  - [Advantage over Default IRB::RegexpCompletor](#advantage-over-default-irbregexpcompletor)
+  - [Difference between Steep's Completion](#difference-between-steeps-completion)
 - [Configuration](#configuration)
   - [Environment Variables](#environment-variables)
 - [Documentation](#documentation)
@@ -242,15 +246,33 @@ IRB's default completion `IRB::RegexpCompletor` uses Regexp. IRB has another exp
 
 ### How to Enable IRB::TypeCompletor
 
-To enable IRB::TypeCompletor, run IRB with `--type-completor` option
+Install [ruby/repl_type_completor](https://github.com/ruby/repl_type_completor/) with:
+```
+$ gem install repl_type_completor
+```
+Or add these lines to your project's Gemfile.
+```ruby
+gem 'irb'
+gem 'repl_type_completor', group: [:development, :test]
+```
+
+Now you can use type based completion by:
+
+Running IRB with the `--type-completor` option
 ```
 $ irb --type-completor
 ```
-Or write the code below to IRB's rc-file.
+
+Or writing this line to IRB's rc-file (e.g. `~/.irbrc`)
 ```ruby
 IRB.conf[:COMPLETOR] = :type # default is :regexp
 ```
-You also need `gem repl_type_completor` to use this feature.
+
+Or setting the environment variable `IRB_COMPLETOR`
+```ruby
+ENV['IRB_COMPLETOR'] = 'type'
+IRB.start
+```
 
 To check if it's enabled, type `irb_info` into IRB and see the `Completion` section.
 ```
