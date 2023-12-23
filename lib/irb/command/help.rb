@@ -6,18 +6,9 @@ module IRB
       category "Help"
       description "List all available commands. Use `help <command>` to get information about a specific command."
 
-      class << self
-        def transform_args(args)
-          # Return a string literal as is for backward compatibility
-          if args.empty? || string_literal?(args)
-            args
-          else # Otherwise, consider the input as a String for convenience
-            args.strip.dump
-          end
-        end
-      end
-
-      def execute(command_name = nil)
+      def execute(arg)
+        # Accept string literal for backward compatibility
+        command_name = unwrap_string_literal(arg)
         content =
           if command_name
             if command_class = ExtendCommandBundle.load_command(command_name)
