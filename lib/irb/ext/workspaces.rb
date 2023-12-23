@@ -40,9 +40,7 @@ module IRB # :nodoc:
 
       workspaces.push @workspace
       @workspace = WorkSpace.new(@workspace.binding, _main[0])
-      if !(class<<main;ancestors;end).include?(ExtendCommandBundle)
-        main.extend ExtendCommandBundle
-      end
+      @workspace.load_helper_methods_to_main
     end
 
     # Removes the last element from the current #workspaces stack and returns

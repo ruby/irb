@@ -30,10 +30,7 @@ module IRB # :nodoc:
       end
 
       @workspace = WorkSpace.new(_main[0])
-
-      if !(class<<main;ancestors;end).include?(ExtendCommandBundle)
-        main.extend ExtendCommandBundle
-      end
+      @workspace.load_helper_methods_to_main
     end
   end
 end
