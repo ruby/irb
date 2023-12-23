@@ -373,17 +373,19 @@ module TestIRB
         }
       }
       out, err = execute_lines(
-        "measure :foo",
-        "measure :on, :bar",
-        "3\n",
+        "measure :foo\n",
+        "1\n",
+        "measure :on, :bar\n",
+        "2\n",
         "measure :off, :foo\n",
-        "measure :off, :bar\n",
         "3\n",
+        "measure :off, :bar\n",
+        "4\n",
         conf: conf
       )
 
       assert_empty err
-      assert_match(/\AFOO is added\.\n=> nil\nfoo\nBAR is added\.\n=> nil\nbar\nfoo\n=> 3\nbar\nfoo\n=> nil\nbar\n=> nil\n=> 3\n/, out)
+      assert_match(/\AFOO is added\.\n=> nil\nfoo\n=> 1\nBAR is added\.\n=> nil\nbar\nfoo\n=> 2\n=> nil\nbar\n=> 3\n=> nil\n=> 4\n/, out)
     end
 
     def test_measure_with_proc_warning
@@ -402,7 +404,6 @@ module TestIRB
       out, err = execute_lines(
         "3\n",
         "measure do\n",
-        "end\n",
         "3\n",
         conf: conf,
         main: c
@@ -554,7 +555,8 @@ module TestIRB
       out, err = execute_lines(
         "pushws Foo.new\n",
         "popws\n",
-        "cwws.class",
+        "cwws\n",
+        "_.class",
       )
       assert_empty err
       assert_include(out, "=> #{self.class}")
@@ -573,7 +575,8 @@ module TestIRB
     def test_chws_replaces_the_current_workspace
       out, err = execute_lines(
         "chws #{self.class}::Foo.new\n",
-        "cwws.class",
+        "cwws\n",
+        "_.class",
       )
       assert_empty err
       assert_include(out, "=> #{self.class}::Foo")
@@ -582,7 +585,8 @@ module TestIRB
     def test_chws_does_nothing_when_receiving_no_argument
       out, err = execute_lines(
         "chws\n",
-        "cwws.class",
+        "cwws\n",
+        "_.class",
       )
       assert_empty err
       assert_include(out, "=> #{self.class}")
@@ -730,18 +734,18 @@ module TestIRB
     def test_ls_grep_empty
       out, err = execute_lines("ls\n")
       assert_empty err
-      assert_match(/whereami/, out)
-      assert_match(/show_source/, out)
+      assert_match(/assert/, out)
+      assert_match(/refute/, out)
 
       [
-        "ls grep: /whereami/\n",
-        "ls -g whereami\n",
-        "ls -G whereami\n",
+        "ls grep: /assert/\n",
+        "ls -g assert\n",
+        "ls -G assert\n",
       ].each do |line|
         out, err = execute_lines(line)
         assert_empty err
-        assert_match(/whereami/, out)
-        assert_not_match(/show_source/, out)
+        assert_match(/assert/, out)
+        assert_not_match(/refute/, out)
       end
     end
 
