@@ -197,6 +197,12 @@ module IRB # :nodoc:
         :irb_history, :History, "cmd/history",
         [:history, NO_OVERRIDE],
         [:hist, NO_OVERRIDE],
+      ],
+
+      [
+        :irb_exit_program, :ExitProgram, 'cmd/exit_program',
+        [:exit_program, NO_OVERRIDE],
+        [:quit_program, NO_OVERRIDE],
       ]
     ]
 
