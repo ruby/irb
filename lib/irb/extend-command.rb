@@ -285,7 +285,7 @@ module IRB # :nodoc:
 
       if override == OVERRIDE_ALL or
           (override == OVERRIDE_PRIVATE_ONLY) && !respond_to?(to) or
-          (override == NO_OVERRIDE) &&  !respond_to?(to, true)
+          (override == NO_OVERRIDE) && !respond_to?(to, true)
         target = self
         (class << self; self; end).instance_eval{
           if target.respond_to?(to, true) &&
