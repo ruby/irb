@@ -66,7 +66,7 @@ module TestIRB
       end
     end
 
-    def test_recovery_sigint
+    def test_sigint_restore_default
       pend "This test gets stuck on Solaris for unknown reason; contribution is welcome" if RUBY_PLATFORM =~ /solaris/
       bundle_exec = ENV.key?('BUNDLE_GEMFILE') ? ['-rbundler/setup'] : []
       # IRB should restore SIGINT handler
@@ -74,6 +74,12 @@ module TestIRB
       Process.kill("SIGKILL", status.pid) if !status.exited? && !status.stopped? && !status.signaled?
     end
 
+    def test_sigint_restore_block
+      bundle_exec = ENV.key?('BUNDLE_GEMFILE') ? ['-rbundler/setup'] : []
+      # IRB should restore SIGINT handler
+      status = assert_in_out_err(bundle_exec + %w[-W0 -rirb -e x=false;Signal.trap("SIGINT"){x=true};binding.irb;loop{Process.kill("SIGINT",$$);if(x);break;end} -- -f --], "exit\n", //, //)
+      Process.kill("SIGKILL", status.pid) if !status.exited? && !status.stopped? && !status.signaled?
+    end
 
     def test_no_color_environment_variable
       orig_no_color = ENV['NO_COLOR']
