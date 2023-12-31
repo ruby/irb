@@ -59,6 +59,8 @@ module IRB
           append_history = true
         end
 
+        FileUtils.mkdir_p(File.dirname(history_file)) unless File.exist?(history_file)
+        
         File.open(history_file, (append_history ? 'a' : 'w'), 0o600, encoding: IRB.conf[:LC_MESSAGES]&.encoding) do |f|
           hist = history.map{ |l| l.scrub.split("\n").join("\\\n") }
           unless append_history
