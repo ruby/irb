@@ -109,21 +109,22 @@ Hello World
 
 The following commands are available on IRB. You can get the same output from the `show_cmds` command.
 
-```
-Workspace
-  cwws           Show the current workspace.
-  chws           Change the current workspace to an object.
-  workspaces     Show workspaces.
-  pushws         Push an object to the workspace stack.
-  popws          Pop a workspace from the workspace stack.
-
+```txt
 IRB
+  exit           Exit the current irb session.
   irb_load       Load a Ruby file.
   irb_require    Require a Ruby file.
   source         Loads a given file in the current session.
   irb_info       Show information about IRB.
   show_cmds      List all available commands and their description.
   history        Shows the input history. `-g [query]` or `-G [query]` allows you to filter the output.
+
+Workspace
+  cwws           Show the current workspace.
+  chws           Change the current workspace to an object.
+  workspaces     Show workspaces.
+  pushws         Push an object to the workspace stack.
+  popws          Pop a workspace from the workspace stack.
 
 Multi-irb (DEPRECATED)
   irb            Start a child IRB.
@@ -153,6 +154,10 @@ Context
   ls             Show methods, constants, and variables. `-g [query]` or `-G [query]` allows you to filter out the output.
   show_source    Show the source code of a given method or constant.
   whereami       Show the source code around binding.irb again.
+
+Aliases
+  $              Alias for `show_source`
+  @              Alias for `whereami`
 ```
 
 ## Debugging with IRB
