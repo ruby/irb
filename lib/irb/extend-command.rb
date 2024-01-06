@@ -21,8 +21,10 @@ module IRB # :nodoc:
     # +ret+ is the optional signal or message to send to Context#exit
     #
     # Same as <code>IRB.CurrentContext.exit</code>.
-    def irb_exit(ret = 0)
-      irb_context.exit(ret)
+    def irb_exit(*)
+      IRB.irb_exit
+    rescue UncaughtThrowError
+      Kernel.exit
     end
 
     # Displays current configuration.
