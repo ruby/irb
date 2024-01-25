@@ -384,7 +384,7 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/ruby/i
 
 ### Run integration tests
 
-If your changes affect component rendering, such as the autocompletion's dialog/dropdown, you may need to run IRB's integration tests, known as `yamatanarroroti`.
+If your changes affect component rendering, such as the autocompletion's dialog/dropdown, you may need to run IRB's integration tests, known as `yamatanooroti`.
 
 Before running these tests, ensure that you have `libvterm` installed. If you're using Homebrew, you can install it by running:
 
