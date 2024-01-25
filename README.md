@@ -25,6 +25,8 @@ The `irb` command from your shell will start the interpreter.
 - [Extending IRB](#extending-irb)
 - [Development](#development)
 - [Contributing](#contributing)
+  - [Set up the environment](#set-up-the-environment)
+  - [Run integration tests](#run-integration-tests)
 - [Releasing](#releasing)
 - [License](#license)
 
