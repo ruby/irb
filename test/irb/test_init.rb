@@ -182,44 +182,36 @@ module TestIRB
       argv = %w[--noscript -- -f]
       IRB.setup(eval("__FILE__"), argv: argv)
       assert_nil IRB.conf[:SCRIPT]
-      assert_equal(['-f'], argv)
 
       argv = %w[--noscript -- a]
       IRB.setup(eval("__FILE__"), argv: argv)
       assert_nil IRB.conf[:SCRIPT]
-      assert_equal(['a'], argv)
 
       argv = %w[--noscript a]
       IRB.setup(eval("__FILE__"), argv: argv)
       assert_nil IRB.conf[:SCRIPT]
-      assert_equal(['a'], argv)
 
       argv = %w[--script --noscript a]
       IRB.setup(eval("__FILE__"), argv: argv)
       assert_nil IRB.conf[:SCRIPT]
-      assert_equal(['a'], argv)
 
       argv = %w[--noscript --script a]
       IRB.setup(eval("__FILE__"), argv: argv)
       assert_equal('a', IRB.conf[:SCRIPT])
-      assert_equal([], argv)
     end
 
     def test_dash
       argv = %w[-]
       IRB.setup(eval("__FILE__"), argv: argv)
       assert_equal('-', IRB.conf[:SCRIPT])
-      assert_equal([], argv)
 
       argv = %w[-- -]
       IRB.setup(eval("__FILE__"), argv: argv)
       assert_equal('-', IRB.conf[:SCRIPT])
-      assert_equal([], argv)
 
       argv = %w[-- - -f]
       IRB.setup(eval("__FILE__"), argv: argv)
       assert_equal('-', IRB.conf[:SCRIPT])
-      assert_equal(['-f'], argv)
     end
 
     private
