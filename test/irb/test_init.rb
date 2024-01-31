@@ -172,6 +172,12 @@ module TestIRB
       IRB.conf[:COMPLETOR] = orig_completor_conf
     end
 
+    def test_setup_holds_a_copy_of_argv
+      argv = %w[--noinspect -w -- any number of arguments]
+      IRB.setup(eval("__FILE__"), argv: argv)
+      assert_equal(argv, IRB.conf[:ARGV])
+    end
+
     def test_noscript
       argv = %w[--noscript -- -f]
       IRB.setup(eval("__FILE__"), argv: argv)
