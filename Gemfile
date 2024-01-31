@@ -17,6 +17,8 @@ gem "rake"
 gem "test-unit"
 gem "test-unit-ruby-core"
 
+gem "rubocop"
+
 gem "debug", github: "ruby/debug", platforms: [:mri, :mswin]
 
 if RUBY_VERSION >= "3.0.0" && !is_truffleruby
