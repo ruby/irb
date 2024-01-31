@@ -112,7 +112,7 @@ EOF
       main.extend ExtendCommandBundle
     end
 
-    # Evaluate the given +statements+ within the  context of this workspace.
+    # Evaluate the given +statements+ within the context of this workspace.
     def evaluate(statements, file = __FILE__, line = __LINE__)
       eval(statements, @binding, file, line)
     end

@@ -43,9 +43,9 @@ module IRB # :nodoc:
 
   # initialize config
   def IRB.setup(ap_path, argv: ::ARGV)
-    IRB.init_config(ap_path)
+    IRB.init_config(ap_path, argv: argv)
     IRB.init_error
-    IRB.parse_opts(argv: argv)
+    IRB.parse_opts
     IRB.run_config
     IRB.load_modules
 
@@ -55,7 +55,7 @@ module IRB # :nodoc:
   end
 
   # @CONF default setting
-  def IRB.init_config(ap_path)
+  def IRB.init_config(ap_path, argv: ::ARGV)
     # class instance variables
     @TRACER_INITIALIZED = false
 
@@ -68,6 +68,7 @@ module IRB # :nodoc:
 
     @CONF[:IRB_NAME] = "irb"
     @CONF[:IRB_LIB_PATH] = File.dirname(__FILE__)
+    @CONF[:ARGV] = argv.dup
 
     @CONF[:RC] = true
     @CONF[:LOAD_MODULES] = []
@@ -244,7 +245,8 @@ module IRB # :nodoc:
   end
 
   # option analyzing
-  def IRB.parse_opts(argv: ::ARGV)
+  def IRB.parse_opts
+    argv = @CONF[:ARGV].dup || []
     load_path = []
     while opt = argv.shift
       case opt
