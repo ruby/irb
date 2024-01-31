@@ -53,6 +53,10 @@ module IRB
           raise
         end
 
+        if !File.exist?(history_file)
+          warn "Warning: The path for the HISTORY_FILE does not exist."
+        end
+
         if File.exist?(history_file) &&
            File.mtime(history_file) != @loaded_history_mtime
           history = history[@loaded_history_lines..-1] if @loaded_history_lines
