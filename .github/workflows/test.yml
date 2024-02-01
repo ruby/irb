@@ -12,7 +12,17 @@ jobs:
     with:
       engine: cruby-truffleruby
       min_version: 2.7
-
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+      - name: Run rubocop
+        run: bundle exec rubocop
   irb:
     needs: ruby-versions
     name: rake test ${{ matrix.ruby }} ${{ matrix.with_latest_reline && '(latest reline)' || '' }}
