@@ -61,7 +61,7 @@ module IRB
 
         pathname = Pathname.new(history_file)
         unless Dir.exist?(pathname.dirname)
-          warn "Warning: The path to save IRB history does not exist. Please, set the env var IRB.conf[:HISTORY_FILE] with a valid path."
+          warn "Warning: The directory to save IRB's history file does not exist. Please double check `IRB.conf[:HISTORY_FILE]`'s value."
           return
         end
 
