@@ -249,169 +249,26 @@ module IRB # :nodoc:
     @CONF[:LC_MESSAGES].load("irb/error.rb")
   end
 
-  # option analyzing
-  def IRB.parse_opts(argv: ::ARGV)
-    load_path = []
-    while opt = argv.shift
-      case opt
-      when "-f"
-        @CONF[:RC] = false
-      when "-d"
-        $DEBUG = true
-        $VERBOSE = true
-      when "-w"
-        Warning[:deprecated] = $VERBOSE = true
-      when /^-W(.+)?/
-        opt = $1 || argv.shift
-        case opt
-        when "0"
-          $VERBOSE = nil
-        when "1"
-          $VERBOSE = false
-        else
-          Warning[:deprecated] = $VERBOSE = true
-        end
-      when /^-r(.+)?/
-        opt = $1 || argv.shift
-        @CONF[:LOAD_MODULES].push opt if opt
-      when /^-I(.+)?/
-        opt = $1 || argv.shift
-        load_path.concat(opt.split(File::PATH_SEPARATOR)) if opt
-      when '-U'
-        set_encoding("UTF-8", "UTF-8")
-      when /^-E(.+)?/, /^--encoding(?:=(.+))?/
-        opt = $1 || argv.shift
-        set_encoding(*opt.split(':', 2))
-      when "--inspect"
-        if /^-/ !~ argv.first
-          @CONF[:INSPECT_MODE] = argv.shift
-        else
-          @CONF[:INSPECT_MODE] = true
-        end
-      when "--noinspect"
-        @CONF[:INSPECT_MODE] = false
-      when "--no-pager"
-        @CONF[:USE_PAGER] = false
-      when "--singleline", "--readline", "--legacy"
-        @CONF[:USE_SINGLELINE] = true
-      when "--nosingleline", "--noreadline"
-        @CONF[:USE_SINGLELINE] = false
-      when "--multiline", "--reidline"
-        if opt == "--reidline"
-          warn <<~MSG.strip
-            --reidline is deprecated, please use --multiline instead.
-          MSG
-        end
-
-        @CONF[:USE_MULTILINE] = true
-      when "--nomultiline", "--noreidline"
-        if opt == "--noreidline"
-          warn <<~MSG.strip
-            --noreidline is deprecated, please use --nomultiline instead.
-          MSG
-        end
-
-        @CONF[:USE_MULTILINE] = false
-      when /^--extra-doc-dir(?:=(.+))?/
-        opt = $1 || argv.shift
-        @CONF[:EXTRA_DOC_DIRS] << opt
-      when "--echo"
-        @CONF[:ECHO] = true
-      when "--noecho"
-        @CONF[:ECHO] = false
-      when "--echo-on-assignment"
-        @CONF[:ECHO_ON_ASSIGNMENT] = true
-      when "--noecho-on-assignment"
-        @CONF[:ECHO_ON_ASSIGNMENT] = false
-      when "--truncate-echo-on-assignment"
-        @CONF[:ECHO_ON_ASSIGNMENT] = :truncate
-      when "--verbose"
-        @CONF[:VERBOSE] = true
-      when "--noverbose"
-        @CONF[:VERBOSE] = false
-      when "--colorize"
-        @CONF[:USE_COLORIZE] = true
-      when "--nocolorize"
-        @CONF[:USE_COLORIZE] = false
-      when "--autocomplete"
-        @CONF[:USE_AUTOCOMPLETE] = true
-      when "--noautocomplete"
-        @CONF[:USE_AUTOCOMPLETE] = false
-      when "--regexp-completor"
-        @CONF[:COMPLETOR] = :regexp
-      when "--type-completor"
-        @CONF[:COMPLETOR] = :type
-      when /^--prompt-mode(?:=(.+))?/, /^--prompt(?:=(.+))?/
-        opt = $1 || argv.shift
-        prompt_mode = opt.upcase.tr("-", "_").intern
-        @CONF[:PROMPT_MODE] = prompt_mode
-      when "--noprompt"
-        @CONF[:PROMPT_MODE] = :NULL
-      when "--script"
-        noscript = false
-      when "--noscript"
-        noscript = true
-      when "--inf-ruby-mode"
-        @CONF[:PROMPT_MODE] = :INF_RUBY
-      when "--sample-book-mode", "--simple-prompt"
-        @CONF[:PROMPT_MODE] = :SIMPLE
-      when "--tracer"
-        @CONF[:USE_TRACER] = true
-      when /^--back-trace-limit(?:=(.+))?/
-        @CONF[:BACK_TRACE_LIMIT] = ($1 || argv.shift).to_i
-      when /^--context-mode(?:=(.+))?/
-        @CONF[:CONTEXT_MODE] = ($1 || argv.shift).to_i
-      when "--single-irb"
-        @CONF[:SINGLE_IRB] = true
-      when "-v", "--version"
-        print IRB.version, "\n"
-        exit 0
-      when "-h", "--help"
-        require_relative "help"
-        IRB.print_usage
-        exit 0
-      when "--"
-        if !noscript && (opt = argv.shift)
-          @CONF[:SCRIPT] = opt
-          $0 = opt
-        end
-        break
-      when /^-./
-        fail UnrecognizedSwitch, opt
-      else
-        if noscript
-          argv.unshift(opt)
-        else
-          @CONF[:SCRIPT] = opt
-          $0 = opt
-        end
-        break
-      end
-    end
-
-    load_path.collect! do |path|
-      /\A\.\// =~ path ? path : File.expand_path(path)
-    end
-    $LOAD_PATH.unshift(*load_path)
-  end
-
   require 'optparse'
   # option analyzing
   def IRB.parse_opts_with_option_parser(argv: ::ARGV)
     load_path = []
-    parser = OptionParser.new
+
+    parser = OptionParser.new(
+      "Usage:  irb.rb [options] [programfile] [arguments]", # Banner
+    )
 
     parser.on("-f", "Don't initialize from configuration file.") do
       @CONF[:RC] = false
     end
-    parser.on("-d", "Set $DEBUG to true (same as `ruby -d`).") do
+    parser.on("-d", "Set $DEBUG and $VERBOSE to true (same as `ruby -d`).") do
       $DEBUG = true
       $VERBOSE = true
     end
-    parser.on("-w", "Enable warnings (same as `ruby -w`).") do
+    parser.on("-w", "Suppress warnings (same as `ruby -w`).") do
       Warning[:deprecated] = $VERBOSE = true
     end
-    parser.on("-WLEVEL", "Set warning level; 0=silence, 1=normal, 2=verbose") do |value|
+    parser.on("-W[level=2]", "Set warning level; 0=silence, 1=normal, 2=verbose", "(same as 'ruby -W').") do |value|
       case value
       when "0"
         $VERBOSE = nil
@@ -421,16 +278,16 @@ module IRB # :nodoc:
         Warning[:deprecated] = $VERBOSE = true
       end
     end
-    parser.on("-r LIBRARY", "Require the library, before executing your script.") do |value|
+    parser.on("-r load-module", "Require load-module (same as 'ruby -r').") do |value|
       @CONF[:LOAD_MODULES].push value
     end
-    parser.on("-I DIR", "Specify $LOAD_PATH directory (same as 'ruby -I').") do |value|
+    parser.on("-I path", "Specify $LOAD_PATH directory (same as 'ruby -I').") do |value|
       load_path.concat(value.split(File::PATH_SEPARATOR))
     end
-    parser.on("-U", "Set the default external and internal encoding to UTF-8.") do
+    parser.on("-U", "Set external and internal encoding to UTF-8.") do
       set_encoding("UTF-8", "UTF-8")
     end
-    parser.on("-E EXTERNAL[:INTERNAL]", "--encoding=EXTERNAL[:INTERNAL]]", "Specify the default external (ex) and internal (in) encodings (same as 'ruby -E').") do |value|
+    parser.on("-E ex[:in]", "--encoding=ex[:in]", "Specify the default external (ex) and internal (in) encodings", "(same as 'ruby -E').") do |value|
       set_encoding(*value.split(':', 2))
     end
     parser.on("--inspect", "Use 'inspect' for output.") do
