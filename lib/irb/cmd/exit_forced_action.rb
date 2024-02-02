@@ -8,12 +8,12 @@ module IRB
   module ExtendCommand
     class ExitForcedAction < Nop
       category "IRB"
-      description "Exit the current irb session with exit!."
+      description "Exit the current process."
 
       def execute(*)
         IRB.irb_exit!
       rescue UncaughtThrowError
-        Kernel.exit
+        Kernel.exit(0)
       end
     end
   end

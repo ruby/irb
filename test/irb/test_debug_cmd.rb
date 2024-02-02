@@ -257,12 +257,12 @@ module TestIRB
 
     def test_forced_exit
       write_ruby <<~'ruby'
-        puts "first line"
+        puts "First line"
+        puts "Second line"
         binding.irb
-        puts "second line"
+        puts "Third line"
         binding.irb
-        puts "third"
-        binding.irb
+        puts "Fourth line"
       ruby
 
       output = run_ruby_file do
@@ -271,10 +271,12 @@ module TestIRB
         type "exit!"
       end
 
+      assert_match(/First line\r\n/, output)
+      assert_match(/Second line\r\n/, output)
       assert_match(/irb\(main\):001> 123/, output)
       assert_match(/irb\(main\):002> 456/, output)
-      assert_match(/irb\(main\):003> exit!/, output)
-      output.end_with?("003> exit!")
+      refute_match(/Third line\r\n/, output)
+      refute_match(/Fourth line\r\n/, output)
     end
 
     def test_quit

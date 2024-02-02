@@ -886,11 +886,11 @@ module IRB
 
   # Quits irb
   def IRB.irb_exit(*)
-    throw :IRB_EXIT
+    throw :IRB_EXIT, false
   end
 
   def IRB.irb_exit!(*)
-    throw :IRB_EXIT!
+    throw :IRB_EXIT, true
   end
 
   # Aborts then interrupts irb.
@@ -984,21 +984,18 @@ module IRB
       end
 
       begin
-        @forced_exit = false
+        forced_exit = false
 
-        catch(:IRB_EXIT) do
-          catch(:IRB_EXIT!) do
-            eval_input
-          end
-          @forced_exit = true
+        forced_exit = catch(:IRB_EXIT) do
+          eval_input
         end
       ensure
         trap("SIGINT", prev_trap)
         conf[:AT_EXIT].each{|hook| hook.call}
 
-        if @forced_exit
+        if forced_exit
           context.io.save_history if supports_history_saving
-          Kernel.exit!
+          Kernel.exit!(0)
         else
           context.io.save_history if save_history
         end
