@@ -401,17 +401,17 @@ module IRB # :nodoc:
     load_path = []
     parser = OptionParser.new
 
-    parser.on('-f', "Don't initialize from configuration file.") do |value|
+    parser.on("-f", "Don't initialize from configuration file.") do
       @CONF[:RC] = false
     end
-    parser.on('-d', "Set $DEBUG to true (same as `ruby -d`).") do |value|
+    parser.on("-d", "Set $DEBUG to true (same as `ruby -d`).") do
       $DEBUG = true
       $VERBOSE = true
     end
-    parser.on('-w', "Enable warnings (same as `ruby -w`).") do |value|
+    parser.on("-w", "Enable warnings (same as `ruby -w`).") do
       Warning[:deprecated] = $VERBOSE = true
     end
-    parser.on('-WLEVEL', "Set warning level; 0=silence, 1=normal, 2=verbose") do |value|
+    parser.on("-WLEVEL", "Set warning level; 0=silence, 1=normal, 2=verbose") do |value|
       case value
       when "0"
         $VERBOSE = nil
@@ -421,111 +421,125 @@ module IRB # :nodoc:
         Warning[:deprecated] = $VERBOSE = true
       end
     end
-    parser.on('-r LIBRARY', "Require the library, before executing your script.") do |value|
+    parser.on("-r LIBRARY", "Require the library, before executing your script.") do |value|
       @CONF[:LOAD_MODULES].push value
     end
-    parser.on('-I DIR', "Specify $LOAD_PATH directory (same as 'ruby -I').") do |value|
+    parser.on("-I DIR", "Specify $LOAD_PATH directory (same as 'ruby -I').") do |value|
       load_path.concat(value.split(File::PATH_SEPARATOR))
     end
-    parser.on('-U', "Set the default external and internal encoding to UTF-8.") do |value|
+    parser.on("-U", "Set the default external and internal encoding to UTF-8.") do
       set_encoding("UTF-8", "UTF-8")
     end
-    parser.on('-E EXTERNAL[:INTERNAL]', "--encoding=EXTERNAL[:INTERNAL]]", "Specify the default external (ex) and internal (in) encodings (same as 'ruby -E').") do |value|
+    parser.on("-E EXTERNAL[:INTERNAL]", "--encoding=EXTERNAL[:INTERNAL]]", "Specify the default external (ex) and internal (in) encodings (same as 'ruby -E').") do |value|
       set_encoding(*value.split(':', 2))
     end
+    parser.on("--inspect", "Use 'inspect' for output.") do
+      @CONF[:INSPECT_MODE] = true
+    end
+    parser.on("--noinspect", "Don't use 'inspect' for output.") do
+      @CONF[:INSPECT_MODE] = false
+    end
+    parser.on("--no-pager", "Don't use pager.") do
+      @CONF[:USE_PAGER] = false
+    end
+    parser.on("--singleline', '--readline', '--legacy", "Use single line editor module.") do
+      @CONF[:USE_SINGLELINE] = true
+    end
+    parser.on("--nosingleline', '--noreadline", "Don't use single line editor module (default).") do
+      @CONF[:USE_SINGLELINE] = false
+    end
+    parser.on("--multiline", "Use multiline editor module (default).") do
+      @CONF[:USE_MULTILINE] = true
+    end
+    parser.on("--reidline", "Use multiline editor module (default).") do
+      warn <<~MSG.strip
+        --reidline is deprecated, please use --multiline instead.
+      MSG
+      @CONF[:USE_MULTILINE] = true
+    end
+    parser.on("--extra-doc-dir[=DIR]", "Add an extra doc dir for the doc dialog.") do |value|
+      @CONF[:EXTRA_DOC_DIRS] << value
+    end
+    parser.on("--echo", "Show result (default).") do
+      @CONF[:ECHO] = true
+    end
+    parser.on("--noecho", "Don't show result.") do
+      @CONF[:ECHO] = false
+    end
+    parser.on("--echo-on-assignment", "Show result on assignment.") do
+      @CONF[:ECHO_ON_ASSIGNMENT] = true
+    end
+    parser.on("--noecho-on-assignment", "Don't show result on assignment.") do
+      @CONF[:ECHO_ON_ASSIGNMENT] = false
+    end
+    parser.on("--truncate-echo-on-assignment", "Show truncated result on assignment (default).") do
+      @CONF[:ECHO_ON_ASSIGNMENT] = :truncate
+    end
+    parser.on("--verbose", "Show details.") do
+      @CONF[:VERBOSE] = true
+    end
+    parser.on("--noverbose", "Don't show details.") do
+      @CONF[:VERBOSE] = false
+    end
+    parser.on("--colorize", "Use color-highlighting (default).") do
+      @CONF[:USE_COLORIZE] = true
+    end
+    parser.on("--nocolorize", "Don't use color-highlighting.") do
+      @CONF[:USE_COLORIZE] = false
+    end
+    parser.on("--autocomplete", "Use auto-completion (default).") do
+      @CONF[:USE_AUTOCOMPLETE] = true
+    end
+    parser.on("--noautocomplete", "Don't use auto-completion.") do
+      @CONF[:USE_AUTOCOMPLETE] = false
+    end
+    parser.on("--regexp-completor", "Use Regexp based completion (default).") do
+      @CONF[:COMPLETOR] = :regexp
+    end
+    parser.on("--type-completor", "Use type based completion.") do
+      @CONF[:COMPLETOR] = :type
+    end
+    parser.on("--prompt-mode MODE', '--prompt MODE", "Set prompt mode. Pre-defined prompt modes are:", "'default', 'classic', 'simple', 'inf-ruby', 'xmp', 'null'.") do |value|
+      prompt_mode = value.upcase.tr("-", "_").intern
+      @CONF[:PROMPT_MODE] = prompt_mode
+    end
+    parser.on("--noprompt", "Don't output prompt.") do
+      @CONF[:PROMPT_MODE] = :NULL
+    end
+    parser.on("--script", "Script mode (default, treat first argument as script).") do
+      noscript = false
+    end
+    parser.on("--noscript", "No script mode (leave arguments in argv).") do
+      noscript = true
+    end
+    parser.on("--inf-ruby-mode", "Use prompt appropriate for inf-ruby-mode on emacs.", "Suppresses --multiline and --singleline.") do
+      @CONF[:PROMPT_MODE] = :INF_RUBY
+    end
+    parser.on("--sample-book-mode', '--simple-prompt", "Set prompt mode to 'simple'.") do
+      @CONF[:PROMPT_MODE] = :SIMPLE
+    end
+    parser.on("--tracer", "Show stack trace for each command.") do
+      @CONF[:USE_TRACER] = true
+    end
+    parser.on("--back-trace-limit[=N]", "Display backtrace top n and bottom n.") do |value|
+      @CONF[:BACK_TRACE_LIMIT] = value.to_i
+    end
+    parser.on("--context-mode[=N]", "Set n[0-4] to method to create Binding Object,", "when new workspace was created.") do |value|
+      @CONF[:CONTEXT_MODE] = value.to_i
+    end
+    parser.on("--single-irb", "Share self with sub-irb.") do
+      @CONF[:SINGLE_IRB] = true
+    end
+    parser.on("-v', '--version", "Print the version of irb.") do
+      print IRB.version, "\n"
+      exit 0
+    end
 
-    parser.parse!(argv)
+    options = { "back-trace-limit": 16 }
+    parser.parse!(argv, into: options)
 
     while opt = argv.shift
       case opt
-      when "--inspect"
-        if /^-/ !~ argv.first
-          @CONF[:INSPECT_MODE] = argv.shift
-        else
-          @CONF[:INSPECT_MODE] = true
-        end
-      when "--noinspect"
-        @CONF[:INSPECT_MODE] = false
-      when "--no-pager"
-        @CONF[:USE_PAGER] = false
-      when "--singleline", "--readline", "--legacy"
-        @CONF[:USE_SINGLELINE] = true
-      when "--nosingleline", "--noreadline"
-        @CONF[:USE_SINGLELINE] = false
-      when "--multiline", "--reidline"
-        if opt == "--reidline"
-          warn <<~MSG.strip
-            --reidline is deprecated, please use --multiline instead.
-          MSG
-        end
-
-        @CONF[:USE_MULTILINE] = true
-      when "--nomultiline", "--noreidline"
-        if opt == "--noreidline"
-          warn <<~MSG.strip
-            --noreidline is deprecated, please use --nomultiline instead.
-          MSG
-        end
-
-        @CONF[:USE_MULTILINE] = false
-      when /^--extra-doc-dir(?:=(.+))?/
-        opt = $1 || argv.shift
-        @CONF[:EXTRA_DOC_DIRS] << opt
-      when "--echo"
-        @CONF[:ECHO] = true
-      when "--noecho"
-        @CONF[:ECHO] = false
-      when "--echo-on-assignment"
-        @CONF[:ECHO_ON_ASSIGNMENT] = true
-      when "--noecho-on-assignment"
-        @CONF[:ECHO_ON_ASSIGNMENT] = false
-      when "--truncate-echo-on-assignment"
-        @CONF[:ECHO_ON_ASSIGNMENT] = :truncate
-      when "--verbose"
-        @CONF[:VERBOSE] = true
-      when "--noverbose"
-        @CONF[:VERBOSE] = false
-      when "--colorize"
-        @CONF[:USE_COLORIZE] = true
-      when "--nocolorize"
-        @CONF[:USE_COLORIZE] = false
-      when "--autocomplete"
-        @CONF[:USE_AUTOCOMPLETE] = true
-      when "--noautocomplete"
-        @CONF[:USE_AUTOCOMPLETE] = false
-      when "--regexp-completor"
-        @CONF[:COMPLETOR] = :regexp
-      when "--type-completor"
-        @CONF[:COMPLETOR] = :type
-      when /^--prompt-mode(?:=(.+))?/, /^--prompt(?:=(.+))?/
-        opt = $1 || argv.shift
-        prompt_mode = opt.upcase.tr("-", "_").intern
-        @CONF[:PROMPT_MODE] = prompt_mode
-      when "--noprompt"
-        @CONF[:PROMPT_MODE] = :NULL
-      when "--script"
-        noscript = false
-      when "--noscript"
-        noscript = true
-      when "--inf-ruby-mode"
-        @CONF[:PROMPT_MODE] = :INF_RUBY
-      when "--sample-book-mode", "--simple-prompt"
-        @CONF[:PROMPT_MODE] = :SIMPLE
-      when "--tracer"
-        @CONF[:USE_TRACER] = true
-      when /^--back-trace-limit(?:=(.+))?/
-        @CONF[:BACK_TRACE_LIMIT] = ($1 || argv.shift).to_i
-      when /^--context-mode(?:=(.+))?/
-        @CONF[:CONTEXT_MODE] = ($1 || argv.shift).to_i
-      when "--single-irb"
-        @CONF[:SINGLE_IRB] = true
-      when "-v", "--version"
-        print IRB.version, "\n"
-        exit 0
-      when "-h", "--help"
-        require_relative "help"
-        IRB.print_usage
-        exit 0
       when "--"
         if !noscript && (opt = argv.shift)
           @CONF[:SCRIPT] = opt
