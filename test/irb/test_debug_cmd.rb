@@ -255,7 +255,7 @@ module TestIRB
       assert_match(/irb\(main\):001> next/, output)
     end
 
-    def test_forced_exit
+    def test_forced_exit_finishes_process_when_nested_sessions
       write_ruby <<~'ruby'
         puts "First line"
         puts "Second line"
@@ -277,6 +277,23 @@ module TestIRB
       assert_match(/irb\(main\):002> 456/, output)
       refute_match(/Third line\r\n/, output)
       refute_match(/Fourth line\r\n/, output)
+    end
+
+    def test_forced_exit
+      write_ruby <<~'ruby'
+        puts "Hello"
+        binding.irb
+      ruby
+
+      output = run_ruby_file do
+        type "123"
+        type "456"
+        type "exit!"
+      end
+
+      assert_match(/Hello\r\n/, output)
+      assert_match(/irb\(main\):001> 123/, output)
+      assert_match(/irb\(main\):002> 456/, output)
     end
 
     def test_quit
