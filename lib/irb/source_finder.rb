@@ -5,9 +5,10 @@ require_relative "ruby-lex"
 module IRB
   class SourceFinder
     Source = Struct.new(
-      :file,       # @param [String] - file name
-      :first_line, # @param [String] - first line
-      :last_line,  # @param [String] - last line
+      :file,       # @param [String]  - file name
+      :first_line, # @param [Integer] - first line (unless binary file)
+      :last_line,  # @param [Integer] - last line (if available from file)
+      :content,    # @param [String]  - source (if available from AST)
       keyword_init: true,
     )
     private_constant :Source
@@ -27,16 +28,28 @@ module IRB
         owner = eval(Regexp.last_match[:owner], context_binding)
         method = Regexp.last_match[:method]
         return unless owner.respond_to?(:instance_method)
-        file, line = method_target(owner, super_level, method, "owner")
+        method = method_target(owner, super_level, method, "owner")
+        file, line = method&.source_location
       when /\A((?<receiver>.+)(\.|::))?(?<method>[^ :.]+)\z/ # method, receiver.method, receiver::method
         receiver = eval(Regexp.last_match[:receiver] || 'self', context_binding)
         method = Regexp.last_match[:method]
         return unless receiver.respond_to?(method, true)
-        file, line = method_target(receiver, super_level, method, "receiver")
+        method = method_target(receiver, super_level, method, "receiver")
+        file, line = method&.source_location
       end
-      # If the line is zero, it means that the target's source is probably in a binary file, which we should ignore.
-      if file && line && !line.zero? && File.exist?(file)
-        Source.new(file: file, first_line: line, last_line: find_end(file, line))
+      return unless file && line
+
+      if File.exist?(file)
+        if line.zero?
+          # If the line is zero, it means that the target's source is probably in a binary file.
+          Source.new(file: file)
+        else
+          Source.new(file: file, first_line: line, last_line: find_end(file, line))
+        end
+      elsif method
+        # Method defined with eval, probably in IRB session
+        source = RubyVM::AbstractSyntaxTree.of(method)&.source rescue nil
+        Source.new(file: file, first_line: line, content: source)
       end
     end
 
@@ -71,7 +84,7 @@ module IRB
       super_level.times do |s|
         target_method = target_method.super_method if target_method
       end
-      target_method.nil? ? nil : target_method.source_location
+      target_method
     rescue NameError
       nil
     end
