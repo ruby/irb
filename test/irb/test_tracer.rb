@@ -10,6 +10,8 @@ module TestIRB
     def setup
       super
 
+      omit "Tracer gem is not available when running on TruffleRuby" if RUBY_ENGINE == "truffleruby"
+
       @envs.merge!("NO_COLOR" => "true")
     end
 

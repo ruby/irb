@@ -25,19 +25,17 @@ jobs:
         run: bundle exec rubocop
   irb:
     needs: ruby-versions
-    name: rake test ${{ matrix.ruby }} ${{ matrix.with_latest_reline && '(latest reline)' || '' }} ${{ matrix.with_tracer && '(with tracer)' || '' }}
+    name: rake test ${{ matrix.ruby }} ${{ matrix.with_latest_reline && '(latest reline)' || '' }}
     strategy:
       matrix:
         ruby: ${{ fromJson(needs.ruby-versions.outputs.versions) }}
         with_latest_reline: [true, false]
-        with_tracer: [true, false]
         exclude:
           - ruby: truffleruby
       fail-fast: false
     runs-on: ubuntu-latest
     env:
       WITH_LATEST_RELINE: ${{matrix.with_latest_reline}}
-      WITH_TRACER: ${{matrix.with_tracer}}
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
