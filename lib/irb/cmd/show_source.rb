@@ -45,11 +45,13 @@ module IRB
       private
 
       def show_source(source)
-        if source.content
-          code = IRB::Color.colorize_code(source.content)
-        elsif source.first_line && source.last_line
-          file_content = IRB::Color.colorize_code(File.read(source.file))
+        if source.file_content
+          # Colorizing partial code `source.content` sometimes fails.
+          # Instead, we need to colorize `source.file_content` and extract the relevant lines.
+          file_content = IRB::Color.colorize_code(source.file_content)
           code = file_content.lines[(source.first_line - 1)...source.last_line].join
+        elsif source.content
+          code = IRB::Color.colorize_code(source.content)
         elsif source.first_line
           code = 'Source not available'
         else

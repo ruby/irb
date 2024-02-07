@@ -5,10 +5,11 @@ require_relative "ruby-lex"
 module IRB
   class SourceFinder
     Source = Struct.new(
-      :file,       # @param [String]  - file name
-      :first_line, # @param [Integer] - first line (unless binary file)
-      :last_line,  # @param [Integer] - last line (if available from file)
-      :content,    # @param [String]  - source (if available from AST)
+      :file,         # @param [String]  - file name
+      :first_line,   # @param [Integer] - first line (unless binary file)
+      :last_line,    # @param [Integer] - last line (if available from file)
+      :content,      # @param [String]  - source (if available from file or AST)
+      :file_content, # @param [String]  - whole file content
       keyword_init: true,
     )
     private_constant :Source
@@ -44,7 +45,11 @@ module IRB
           # If the line is zero, it means that the target's source is probably in a binary file.
           Source.new(file: file)
         else
-          Source.new(file: file, first_line: line, last_line: find_end(file, line))
+          code = File.read(file)
+          file_lines = code.lines
+          last_line = find_end(file_lines, line)
+          content = file_lines[line..last_line].join
+          Source.new(file: file, first_line: line, last_line: last_line, content: content, file_content: code)
         end
       elsif method
         # Method defined with eval, probably in IRB session
@@ -55,9 +60,9 @@ module IRB
 
     private
 
-    def find_end(file, first_line)
+    def find_end(file_lines, first_line)
       lex = RubyLex.new
-      lines = File.read(file).lines[(first_line - 1)..-1]
+      lines = file_lines[(first_line - 1)..-1]
       tokens = RubyLex.ripper_lex_without_warning(lines.join)
       prev_tokens = []
 
