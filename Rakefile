@@ -17,7 +17,7 @@ task :test_in_isolation do
     ENV["TEST"] = test_file
     begin
       Rake::Task["test"].execute
-    rescue => e
+    rescue
       failed = true
       msg = "Test '#{test_file}' failed when being executed in isolation. Please make sure 'rake test TEST=#{test_file}' passes."
       separation_line = '=' * msg.length
