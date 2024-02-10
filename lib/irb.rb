@@ -889,10 +889,6 @@ module IRB
     throw :IRB_EXIT, false
   end
 
-  def IRB.irb_exit!(*)
-    throw :IRB_EXIT, true
-  end
-
   # Aborts then interrupts irb.
   #
   # Will raise an Abort exception, or the given +exception+.
