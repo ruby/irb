@@ -112,6 +112,7 @@ The following commands are available on IRB. You can get the same output from th
 ```txt
 IRB
   exit           Exit the current irb session.
+  exit!          Exit the current process.
   irb_load       Load a Ruby file.
   irb_require    Require a Ruby file.
   source         Loads a given file in the current session.
