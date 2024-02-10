@@ -995,7 +995,7 @@ module IRB
 
         if forced_exit
           context.io.save_history if supports_history_saving
-          Kernel.exit!(0)
+          Kernel.exit(0)
         else
           context.io.save_history if save_history
         end
