@@ -392,8 +392,20 @@ module IRB # :nodoc:
       exit 0
     end
 
-    options = { "back-trace-limit": 16 }
-    parser.parse!(argv, into: options)
+    noscript = false
+    options = { "back-trace-limit": 16, "regexp-completor": true, "script": true }
+
+    # so that OptionParser does not try to parse arguments after --
+    # ownargv, passdown = argv.split("--")
+    ownargv = argv
+    passdown = []
+    if(index_of_double_dash = argv.index("--"))
+      # if index_of_dd == 0
+      ownargv = argv[0..(index_of_double_dash-1)]
+      passdown = argv[index_of_double_dash..-1]
+    end
+
+    parser.parse!(ownargv, into: options)
 
     while opt = argv.shift
       case opt
