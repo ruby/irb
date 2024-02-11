@@ -555,9 +555,12 @@ module IRB
         IRB.set_measure_callback
       end
 
+      # We need to use differente path to distinguish source_location of method defined in the actual file and method defined in irb session.
+      eval_path = File.exist?(irb_path) ? "#{irb_path}(#{IRB.conf[:IRB_NAME]})" : irb_path
+
       if IRB.conf[:MEASURE] && !IRB.conf[:MEASURE_CALLBACKS].empty?
         last_proc = proc do
-          result = @workspace.evaluate(line, irb_path, line_no)
+          result = @workspace.evaluate(line, eval_path, line_no)
         end
         IRB.conf[:MEASURE_CALLBACKS].inject(last_proc) do |chain, item|
           _name, callback, arg = item
@@ -568,7 +571,7 @@ module IRB
           end
         end.call
       else
-        result = @workspace.evaluate(line, irb_path, line_no)
+        result = @workspace.evaluate(line, eval_path, line_no)
       end
 
       set_last_value(result)

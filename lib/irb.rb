@@ -1531,8 +1531,6 @@ class Binding
     debugger_irb = IRB.instance_variable_get(:@debugger_irb)
 
     irb_path = File.expand_path(source_location[0])
-    # We need to change the irb_path to distinguish source_location of method defined in the actual file and method defined in irb session.
-    irb_path = "#{irb_path}(#{IRB.conf[:IRB_NAME]})" if File.exist?(irb_path)
 
     if debugger_irb
       # If we're already in a debugger session, set the workspace and irb_path for the original IRB instance
