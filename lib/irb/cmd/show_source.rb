@@ -45,26 +45,18 @@ module IRB
       private
 
       def show_source(source)
-        if source.file_content
-          # Colorizing partial code `source.content` sometimes fails.
-          # Instead, we need to colorize `source.file_content` and extract the relevant lines.
-          file_content = IRB::Color.colorize_code(source.file_content)
-          code = file_content.lines[(source.first_line - 1)...source.last_line].join
-        elsif source.content
-          code = IRB::Color.colorize_code(source.content)
-        elsif source.first_line
-          code = 'Source not available'
-        else
+        if source.binary_file?
           content = "\n#{bold('Defined in binary file')}: #{source.file}\n\n"
+        else
+          code = source.colorized_content || 'Source not available'
+          content = <<~CONTENT
+
+            #{bold("From")}: #{source.file}:#{source.line}
+
+            #{code.chomp}
+
+          CONTENT
         end
-        content ||= <<~CONTENT
-
-          #{bold("From")}: #{source.file}:#{source.first_line}
-
-          #{code.chomp}
-
-        CONTENT
-
         Pager.page_content(content)
       end
 

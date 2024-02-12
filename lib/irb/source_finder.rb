@@ -4,14 +4,58 @@ require_relative "ruby-lex"
 
 module IRB
   class SourceFinder
-    Source = Struct.new(
-      :file,         # @param [String]  - file name
-      :first_line,   # @param [Integer] - first line (unless binary file)
-      :last_line,    # @param [Integer] - last line (if available from file)
-      :content,      # @param [String]  - source (if available from file or AST)
-      :file_content, # @param [String]  - whole file content
-      keyword_init: true,
-    )
+    class Source
+      attr_reader :file, :line
+      def initialize(file, line, ast_source = nil)
+        @file = file
+        @line = line
+        @ast_source = ast_source
+      end
+
+      def file_exist?
+        File.exist?(@file)
+      end
+
+      def binary_file?
+        # If the line is zero, it means that the target's source is probably in a binary file.
+        @line.zero?
+      end
+
+      def file_content
+        @file_content ||= File.read(@file)
+      end
+
+      def colorized_content
+        if !binary_file? && file_exist?
+          end_line = Source.find_end(file_content, @line)
+          # To correctly colorize, we need to colorize full content and extract the relevant lines.
+          colored = IRB::Color.colorize_code(file_content)
+          colored.lines[@line - 1...end_line].join
+        elsif @ast_source
+          IRB::Color.colorize_code(@ast_source)
+        end
+      end
+
+      def self.find_end(code, first_line)
+        lex = RubyLex.new
+        lines = code.lines[(first_line - 1)..-1]
+        tokens = RubyLex.ripper_lex_without_warning(lines.join)
+        prev_tokens = []
+
+        # chunk with line number
+        tokens.chunk { |tok| tok.pos[0] }.each do |lnum, chunk|
+          code = lines[0..lnum].join
+          prev_tokens.concat chunk
+          continue = lex.should_continue?(prev_tokens)
+          syntax = lex.check_code_syntax(code, local_variables: [])
+          if !continue && syntax == :valid
+            return first_line + lnum
+          end
+        end
+        first_line
+      end
+    end
+
     private_constant :Source
 
     def initialize(irb_context)
@@ -41,43 +85,15 @@ module IRB
       return unless file && line
 
       if File.exist?(file)
-        if line.zero?
-          # If the line is zero, it means that the target's source is probably in a binary file.
-          Source.new(file: file)
-        else
-          code = File.read(file)
-          file_lines = code.lines
-          last_line = find_end(file_lines, line)
-          content = file_lines[line..last_line].join
-          Source.new(file: file, first_line: line, last_line: last_line, content: content, file_content: code)
-        end
+        Source.new(file, line)
       elsif method
         # Method defined with eval, probably in IRB session
         source = RubyVM::AbstractSyntaxTree.of(method)&.source rescue nil
-        Source.new(file: file, first_line: line, content: source)
+        Source.new(file, line, source)
       end
     end
 
     private
-
-    def find_end(file_lines, first_line)
-      lex = RubyLex.new
-      lines = file_lines[(first_line - 1)..-1]
-      tokens = RubyLex.ripper_lex_without_warning(lines.join)
-      prev_tokens = []
-
-      # chunk with line number
-      tokens.chunk { |tok| tok.pos[0] }.each do |lnum, chunk|
-        code = lines[0..lnum].join
-        prev_tokens.concat chunk
-        continue = lex.should_continue?(prev_tokens)
-        syntax = lex.check_code_syntax(code, local_variables: [])
-        if !continue && syntax == :valid
-          return first_line + lnum
-        end
-      end
-      first_line
-    end
 
     def method_target(owner_receiver, super_level, method, type)
       case type

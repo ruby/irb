@@ -37,8 +37,7 @@ module IRB
               # in this case, we should just ignore the error
             end
 
-          # Ignore `source.file == "(irb)"` and `source.first_line == nil` (binary file)
-          if source && File.exist?(source.file) && source.first_line
+          if source&.file_exist? && !source.binary_file?
             path = source.file
           else
             puts "Can not find file: #{path}"
