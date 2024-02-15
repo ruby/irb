@@ -9,7 +9,7 @@ require_relative "command/base"
 module IRB # :nodoc:
   module Command; end
   ExtendCommand = Command
-  deprecate_constant :ExtendCommand
+
   # Installs the default irb extensions command bundle.
   module ExtendCommandBundle
     EXCB = ExtendCommandBundle # :nodoc:

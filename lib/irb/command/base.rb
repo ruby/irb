@@ -49,7 +49,6 @@ module IRB
     end
 
     Nop = Base
-    deprecate_constant :Nop
   end
 
   # :startdoc:
