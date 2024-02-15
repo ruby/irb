@@ -7,7 +7,7 @@ require_relative "../pager"
 module IRB
   # :stopdoc:
 
-  module ExtendCommand
+  module Command
     class History < Nop
       category "IRB"
       description "Shows the input history. `-g [query]` or `-G [query]` allows you to filter the output."

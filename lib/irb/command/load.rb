@@ -10,7 +10,7 @@ require_relative "../ext/loader"
 module IRB
   # :stopdoc:
 
-  module ExtendCommand
+  module Command
     class LoaderCommand < Nop
       include IrbLoader
 

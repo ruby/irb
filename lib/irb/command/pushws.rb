@@ -10,7 +10,7 @@ require_relative "../ext/workspaces"
 module IRB
   # :stopdoc:
 
-  module ExtendCommand
+  module Command
     class Workspaces < Nop
       category "Workspace"
       description "Show workspaces."

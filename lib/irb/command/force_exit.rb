@@ -5,15 +5,15 @@ require_relative "nop"
 module IRB
   # :stopdoc:
 
-  module ExtendCommand
-    class Exit < Nop
+  module Command
+    class ForceExit < Nop
       category "IRB"
-      description "Exit the current irb session."
+      description "Exit the current process."
 
       def execute(*)
-        IRB.irb_exit
+        throw :IRB_EXIT, true
       rescue UncaughtThrowError
-        Kernel.exit
+        Kernel.exit!
       end
     end
   end

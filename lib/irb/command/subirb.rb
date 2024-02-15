@@ -9,7 +9,7 @@ require_relative "nop"
 module IRB
   # :stopdoc:
 
-  module ExtendCommand
+  module Command
     class MultiIRBCommand < Nop
       def execute(*args)
         extend_irb_context

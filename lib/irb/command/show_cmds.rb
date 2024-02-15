@@ -7,7 +7,7 @@ require_relative "../pager"
 module IRB
   # :stopdoc:
 
-  module ExtendCommand
+  module Command
     class ShowCmds < Nop
       category "IRB"
       description "List all available commands and their description."

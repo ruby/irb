@@ -9,7 +9,7 @@ require_relative "../color"
 module IRB
   # :stopdoc:
 
-  module ExtendCommand
+  module Command
     class Ls < Nop
       category "Context"
       description "Show methods, constants, and variables. `-g [query]` or `-G [query]` allows you to filter out the output."

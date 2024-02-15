@@ -3,7 +3,7 @@
 require_relative "nop"
 
 module IRB
-  module ExtendCommand
+  module Command
     class ShowDoc < Nop
       class << self
         def transform_args(args)

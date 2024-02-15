@@ -7,7 +7,7 @@
 module IRB
   # :stopdoc:
 
-  module ExtendCommand
+  module Command
     class CommandArgumentError < StandardError; end
 
     class Nop

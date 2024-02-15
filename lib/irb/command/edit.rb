@@ -5,7 +5,7 @@ require_relative "../source_finder"
 module IRB
   # :stopdoc:
 
-  module ExtendCommand
+  module Command
     class Edit < Nop
       category "Misc"
       description 'Open a file with the editor command defined with `ENV["VISUAL"]` or `ENV["EDITOR"]`.'

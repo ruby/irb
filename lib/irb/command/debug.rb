@@ -4,7 +4,7 @@ require_relative "../debug"
 module IRB
   # :stopdoc:
 
-  module ExtendCommand
+  module Command
     class Debug < Nop
       category "Debugging"
       description "Start the debugger of debug.gem."

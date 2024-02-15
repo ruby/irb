@@ -5,7 +5,7 @@ require_relative "nop"
 module IRB
   # :stopdoc:
 
-  module ExtendCommand
+  module Command
     class Whereami < Nop
       category "Context"
       description "Show the source code around binding.irb again."

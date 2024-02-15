@@ -6,7 +6,7 @@ require_relative "../pager"
 require_relative "../color"
 
 module IRB
-  module ExtendCommand
+  module Command
     class ShowSource < Nop
       category "Context"
       description "Show the source code of a given method or constant."

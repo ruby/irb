@@ -3,7 +3,7 @@ require_relative "nop"
 module IRB
   # :stopdoc:
 
-  module ExtendCommand
+  module Command
     class Measure < Nop
       category "Misc"
       description "`measure` enables the mode to measure processing time. `measure :off` disables it."

@@ -5,7 +5,7 @@ require_relative "nop"
 module IRB
   # :stopdoc:
 
-  module ExtendCommand
+  module Command
     class IrbInfo < Nop
       category "IRB"
       description "Show information about IRB."
