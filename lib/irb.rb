@@ -1025,6 +1025,9 @@ module IRB
           rescue Interrupt, Exception => exc
             handle_exception(exc)
             @context.workspace.local_variable_set(:_, exc)
+            if statement.warning
+              warn statement.warning
+            end
           end
         end
       end
@@ -1091,24 +1094,52 @@ module IRB
       end
     end
 
-    def build_statement(code)
-      code.force_encoding(@context.io.encoding)
-      command_or_alias, arg = code.split(/\s/, 2)
-      # Transform a non-identifier alias (@, $) or keywords (next, break)
-      command_name = @context.command_aliases[command_or_alias.to_sym]
-      command = command_name || command_or_alias
-      command_class = ExtendCommandBundle.load_command(command)
+    COMMAND_FLAG_REGEXP = /(?<cmd_flag>-[a-zA-Z]+( +\S+)*)/
+    COMMAND_ARG_REGEXP = /(?<cmd_arg>[^- ]\S*)/
+    COMMAND_NAME_REGEXP = /(?<cmd_name>\S+)/
+    SIMPLE_COMMAND_REGEXP = /^#{COMMAND_NAME_REGEXP}\z/
+    COMMAND_WITH_ARGS_REGEXP = /^#{COMMAND_NAME_REGEXP} +#{COMMAND_ARG_REGEXP}\z/
+    COMMAND_WITH_FLAGS_REGEXP = /^#{COMMAND_NAME_REGEXP} +#{COMMAND_FLAG_REGEXP}\z/
+    COMMAND_WITH_ARGS_AND_FLAGS_REGEXP = /^#{COMMAND_NAME_REGEXP} +#{COMMAND_ARG_REGEXP} +#{COMMAND_FLAG_REGEXP}\z/
 
-      if command_class
-        Statement::Command.new(code, command, arg, command_class)
+    COMMAND_REGEXP = Regexp.union(
+      SIMPLE_COMMAND_REGEXP,
+      COMMAND_WITH_ARGS_REGEXP,
+      COMMAND_WITH_FLAGS_REGEXP,
+      COMMAND_WITH_ARGS_AND_FLAGS_REGEXP
+    )
+
+    def build_statement(code)
+      code.force_encoding(@context.io.encoding) unless code.frozen?
+
+      possible_command_or_alias = code.split.first
+
+      possible_command_name = @context.command_aliases[possible_command_or_alias.to_sym]
+      possible_command_name = possible_command_name || possible_command_or_alias
+      command_class = ExtendCommandBundle.load_command(possible_command_name)
+
+      command_syntax_match = COMMAND_REGEXP.match(code.strip)
+
+      if command_class && command_syntax_match
+        arg = [command_syntax_match[:cmd_arg], command_syntax_match[:cmd_flag]].compact.join(' ')
+        Statement::Command.new(code, possible_command_name, arg, command_class)
       else
+        if command_class
+          warning_msg = <<~MSG
+            The input `#{code.strip}` was recognised as a Ruby expression, but it matched the name of the `#{possible_command_name}` command.
+            If you intended to run it as a command, please check if the syntax is correct.
+          MSG
+        end
+
         is_assignment_expression = @scanner.assignment_expression?(code, local_variables: @context.local_variables)
-        Statement::Expression.new(code, is_assignment_expression)
+        Statement::Expression.new(code, is_assignment_expression, warning: warning_msg)
       end
     end
 
     def single_line_command?(code)
-      command = code.split(/\s/, 2).first
+      command_match = COMMAND_REGEXP.match(code)
+      return unless command_match
+      command = command_match[:cmd_name]
       @context.symbol_alias?(command) || @context.transform_args?(command)
     end
 

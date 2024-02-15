@@ -6,7 +6,7 @@ require "tmpdir"
 require_relative "helper"
 
 module TestIRB
-  class DebugCommandTest < IntegrationTestCase
+  class DebugIntegrationTest < IntegrationTestCase
     def setup
       super
 
@@ -433,6 +433,23 @@ module TestIRB
 
       assert_match(/irb\(main\):001> next/, output)
       assert_include(output, "Multi-IRB commands are not available when the debugger is enabled.")
+    end
+
+    def test_locals_assignment_not_being_treated_as_debugging_command
+      write_ruby <<~'ruby'
+        binding.irb
+      ruby
+
+      output = run_ruby_file do
+        type "info = 4"
+        type "info + 1"
+        type "quit"
+      end
+
+      assert_match(/=> 5/, output)
+      # Since neither `info = <val>` nor `info + <val>` are debugging commands, debugger should not be activated in this
+      # session.
+      assert_not_match(/irb:rdbg/, output)
     end
   end
 end
