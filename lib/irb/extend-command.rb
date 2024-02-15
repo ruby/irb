@@ -196,6 +196,12 @@ module IRB # :nodoc:
         :irb_history, :History, "cmd/history",
         [:history, NO_OVERRIDE],
         [:hist, NO_OVERRIDE],
+      ],
+
+      [
+        :irb_exit_program, :ExitProgram, 'cmd/exit_program',
+        [:exit_program, NO_OVERRIDE],
+        [:quit_program, NO_OVERRIDE],
       ]
     ]
 
@@ -284,7 +290,7 @@ module IRB # :nodoc:
 
       if override == OVERRIDE_ALL or
           (override == OVERRIDE_PRIVATE_ONLY) && !respond_to?(to) or
-          (override == NO_OVERRIDE) &&  !respond_to?(to, true)
+          (override == NO_OVERRIDE) && !respond_to?(to, true)
         target = self
         (class << self; self; end).instance_eval{
           if target.respond_to?(to, true) &&

@@ -190,8 +190,9 @@ module IRB # :nodoc:
 
     @CONF[:COMMAND_ALIASES] = {
       # Symbol aliases
-      :'$' => :show_source,
-      :'@' => :whereami,
+      :'$'   => :show_source,
+      :'@'   => :whereami,
+      :'!!!' => :exit_program,
     }
   end
 
