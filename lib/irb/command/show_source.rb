@@ -1,13 +1,12 @@
 # frozen_string_literal: true
 
-require_relative "nop"
 require_relative "../source_finder"
 require_relative "../pager"
 require_relative "../color"
 
 module IRB
   module Command
-    class ShowSource < Nop
+    class ShowSource < Base
       category "Context"
       description "Show the source code of a given method or constant."
 

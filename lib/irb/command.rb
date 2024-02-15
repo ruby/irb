@@ -4,6 +4,8 @@
 #   	by Keiju ISHITSUKA(keiju@ruby-lang.org)
 #
 
+require_relative "command/base"
+
 module IRB # :nodoc:
   module Command; end
   ExtendCommand = Command

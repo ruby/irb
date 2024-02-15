@@ -10,7 +10,7 @@ module IRB
   module Command
     class CommandArgumentError < StandardError; end
 
-    class Nop
+    class Base
       class << self
         def category(category = nil)
           @category = category if category
@@ -47,6 +47,9 @@ module IRB
         #nop
       end
     end
+
+    Nop = Base
+    deprecate_constant :Nop
   end
 
   # :startdoc:

@@ -3,8 +3,6 @@
 #   change-ws.rb -
 #   	by Keiju ISHITSUKA(keiju@ruby-lang.org)
 #
-
-require_relative "nop"
 require_relative "../ext/change-ws"
 
 module IRB
@@ -12,7 +10,7 @@ module IRB
 
   module Command
 
-    class CurrentWorkingWorkspace < Nop
+    class CurrentWorkingWorkspace < Base
       category "Workspace"
       description "Show the current workspace."
 
@@ -21,7 +19,7 @@ module IRB
       end
     end
 
-    class ChangeWorkspace < Nop
+    class ChangeWorkspace < Base
       category "Workspace"
       description "Change the current workspace to an object."
 

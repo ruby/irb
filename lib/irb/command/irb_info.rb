@@ -1,12 +1,10 @@
 # frozen_string_literal: false
 
-require_relative "nop"
-
 module IRB
   # :stopdoc:
 
   module Command
-    class IrbInfo < Nop
+    class IrbInfo < Base
       category "IRB"
       description "Show information about IRB."
 

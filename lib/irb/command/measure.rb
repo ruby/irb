@@ -1,10 +1,8 @@
-require_relative "nop"
-
 module IRB
   # :stopdoc:
 
   module Command
-    class Measure < Nop
+    class Measure < Base
       category "Misc"
       description "`measure` enables the mode to measure processing time. `measure :off` disables it."
 

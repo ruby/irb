@@ -1,12 +1,10 @@
 # frozen_string_literal: true
 
-require_relative "nop"
-
 module IRB
   # :stopdoc:
 
   module Command
-    class Whereami < Nop
+    class Whereami < Base
       category "Context"
       description "Show the source code around binding.irb again."
 
