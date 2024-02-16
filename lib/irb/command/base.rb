@@ -33,6 +33,10 @@ module IRB
           sexp = Ripper.sexp(args)
           sexp && sexp.size == 2 && sexp.last&.first&.first == :string_literal
         end
+
+        def highlight(text)
+          Color.colorize(text, [:BOLD, :BLUE])
+        end
       end
 
       def self.execute(irb_context, *opts, **kwargs, &block)
