@@ -107,9 +107,12 @@ Hello World
 
 ## Commands
 
-The following commands are available on IRB. You can get the same output from the `show_cmds` command.
+The following commands are available on IRB. You can get the same output from the `help` command.
 
 ```txt
+Help
+  help           List all available commands. Use `help <command>` to get information about a specific command.
+
 IRB
   exit           Exit the current irb session.
   exit!          Exit the current process.
@@ -117,7 +120,6 @@ IRB
   irb_require    Require a Ruby file.
   source         Loads a given file in the current session.
   irb_info       Show information about IRB.
-  show_cmds      List all available commands and their description.
   history        Shows the input history. `-g [query]` or `-G [query]` allows you to filter the output.
 
 Workspace
@@ -146,13 +148,12 @@ Debugging
   info           Start the debugger of debug.gem and run its `info` command.
 
 Misc
-  edit           Open a file with the editor command defined with `ENV["VISUAL"]` or `ENV["EDITOR"]`.
+  edit           Open a file or source location.
   measure        `measure` enables the mode to measure processing time. `measure :off` disables it.
 
 Context
-  help           [DEPRECATED] Enter the mode to look up RI documents.
   show_doc       Enter the mode to look up RI documents.
-  ls             Show methods, constants, and variables. `-g [query]` or `-G [query]` allows you to filter out the output.
+  ls             Show methods, constants, and variables.
   show_source    Show the source code of a given method or constant.
   whereami       Show the source code around binding.irb again.
 
@@ -228,7 +229,7 @@ end
 
 To learn about these features, please refer to `debug.gem`'s [commands list](https://github.com/ruby/debug#debug-command-on-the-debug-console).
 
-In the `irb:rdbg` session, the `show_cmds` command will also display all commands from `debug.gem`.
+In the `irb:rdbg` session, the `help` command will also display all commands from `debug.gem`.
 
 ### Advantages Over `debug.gem`'s Console
 

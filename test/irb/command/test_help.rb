@@ -21,7 +21,7 @@ module TestIRB
         type "exit"
       end
 
-      assert_match(/List all available commands and their description/, out)
+      assert_match(/List all available commands/, out)
       assert_match(/Start the debugger of debug\.gem/, out)
     end
 
@@ -31,7 +31,7 @@ module TestIRB
         type "exit"
       end
 
-      assert_match(/Show methods, constants, and variables\./, out)
+      assert_match(/Usage: ls \[obj\]/, out)
     end
 
     def test_command_help_not_found
@@ -45,11 +45,11 @@ module TestIRB
 
     def test_show_cmds
       out = run_ruby_file do
-        type "show_cmds"
+        type "help"
         type "exit"
       end
 
-      assert_match(/List all available commands and their description/, out)
+      assert_match(/List all available commands/, out)
       assert_match(/Start the debugger of debug\.gem/, out)
     end
 
