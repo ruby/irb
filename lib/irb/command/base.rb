@@ -22,6 +22,11 @@ module IRB
           @description
         end
 
+        def banner(banner = nil)
+          @banner = banner if banner
+          @banner
+        end
+
         private
 
         def string_literal?(args)

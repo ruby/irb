@@ -12,7 +12,34 @@ module IRB
       category "IRB"
       description "List all available commands and their description."
 
-      def execute(*args)
+      class << self
+        def transform_args(args)
+          # Return a string literal as is for backward compatibility
+          if args.empty? || string_literal?(args)
+            args
+          else # Otherwise, consider the input as a String for convenience
+            args.strip.dump
+          end
+        end
+      end
+
+      def execute(command_name = nil)
+        content =
+          if command_name
+            if command_class = ExtendCommandBundle.load_command(command_name)
+              command_class.banner || command_class.description
+            else
+              "Can't find command `#{command_name}`. Please check the command name and try again.\n\n"
+            end
+          else
+            help_message
+          end
+        Pager.page_content(content)
+      end
+
+      private
+
+      def help_message
         commands_info = IRB::ExtendCommandBundle.all_commands_info
         commands_grouped_by_categories = commands_info.group_by { |cmd| cmd[:category] }
 
@@ -50,7 +77,7 @@ module IRB
           output.puts DEBUGGER__.help
         end
 
-        Pager.page_content(output.string)
+        output.string
       end
     end
   end
