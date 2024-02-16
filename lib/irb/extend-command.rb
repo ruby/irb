@@ -4,6 +4,8 @@
 #   	by Keiju ISHITSUKA(keiju@ruby-lang.org)
 #
 
+require "irb/helper_method"
+
 module IRB # :nodoc:
   # Installs the default irb extensions command bundle.
   module ExtendCommandBundle
@@ -16,18 +18,7 @@ module IRB # :nodoc:
     # See #install_alias_method.
     OVERRIDE_ALL = 0x02
 
-    # Displays current configuration.
-    #
-    # Modifying the configuration is achieved by sending a message to IRB.conf.
-    def irb_context
-      IRB.CurrentContext
-    end
-
-    @ALIASES = [
-      [:context, :irb_context, NO_OVERRIDE],
-      [:conf, :irb_context, NO_OVERRIDE],
-    ]
-
+    @ALIASES = []
 
     @EXTEND_COMMANDS = [
       [
@@ -312,6 +303,27 @@ module IRB # :nodoc:
         end
       end
     end
+
+    def self.install_helper_methods
+      HelperMethod.helper_methods.each do |name, helper_method_class|
+        define_method name do |*args, **opts, &block|
+          verbose, $VERBOSE = $VERBOSE, nil
+          helper_ivar = "@_helper_method_#{name}".to_sym
+          helper = instance_variable_get(helper_ivar)
+
+          unless helper
+            helper = helper_method_class.new
+            instance_variable_set(helper_ivar, helper)
+          end
+
+          helper.execute(*args, **opts, &block)
+        ensure
+          $VERBOSE = verbose
+        end
+      end
+    end
+
+    install_helper_methods
 
     install_extend_commands
   end

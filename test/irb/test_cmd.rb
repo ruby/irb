@@ -632,6 +632,15 @@ module TestIRB
       assert_match(/\$\s+Alias for `show_source`/, out)
       assert_match(/@\s+Alias for `whereami`/, out)
     end
+
+    def test_show_cmds_list_helper_methods
+      out, err = execute_lines(
+        "show_cmds\n"
+      )
+
+      assert_empty err
+      assert_match(/Helper methods\n\s+conf\s+Returns the current context/, out)
+    end
   end
 
   class LsTest < CommandTestCase

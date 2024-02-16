@@ -16,6 +16,9 @@ module IRB
         commands_info = IRB::ExtendCommandBundle.all_commands_info
         commands_grouped_by_categories = commands_info.group_by { |cmd| cmd[:category] }
 
+        helper_methods_info = IRB::HelperMethod.all_helper_methods_info
+        commands_grouped_by_categories["Helper methods"] = helper_methods_info
+
         user_aliases = irb_context.instance_variable_get(:@user_aliases)
 
         commands_grouped_by_categories["Aliases"] = user_aliases.map do |alias_name, target|
