@@ -210,6 +210,52 @@ module TestIRB
     end
   end
 
+  class ExtendCommandBundleCompatibilityTest < CommandTestCase
+    class FooBarCommand < IRB::Command::Base
+      category 'FooBarCategory'
+      description 'foobar_description'
+      def execute(_arg)
+        puts "FooBar executed"
+      end
+    end
+
+    def setup
+      super
+      execute_lines("show_cmds\n") # To ensure command initialization is done
+      @EXTEND_COMMANDS_backup = IRB::ExtendCommandBundle.instance_variable_get(:@EXTEND_COMMANDS).dup
+      @cvars_backup = IRB::ExtendCommandBundle.class_variables.to_h do |cvar|
+        [cvar, IRB::ExtendCommandBundle.class_variable_get(cvar)]
+      end
+      IRB::Command.const_set :FooBarCommand, FooBarCommand
+    end
+
+    def teardown
+      super
+      IRB::ExtendCommandBundle.instance_variable_set(:@EXTEND_COMMANDS, @EXTEND_COMMANDS_backup)
+      @cvars_backup.each do |cvar, value|
+        IRB::ExtendCommandBundle.class_variable_set(cvar, value)
+      end
+      IRB::Command.send(:remove_const, :FooBarCommand)
+    end
+
+    def test_def_extend_command
+      command = [:foobar, :FooBarCommand, nil, [:fbalias, IRB::ExtendCommandBundle::OVERRIDE_ALL]]
+      IRB::ExtendCommandBundle.instance_variable_get(:@EXTEND_COMMANDS).push(command)
+      IRB::ExtendCommandBundle.def_extend_command(*command)
+      out, err = execute_lines("foobar\n")
+      assert_empty err
+      assert_include(out, "FooBar executed")
+
+      out, err = execute_lines("fbalias\n")
+      assert_empty err
+      assert_include(out, "FooBar executed")
+
+      out, err = execute_lines("show_cmds\n")
+      assert_include(out, "FooBarCategory")
+      assert_include(out, "foobar_description")
+    end
+  end
+
   class MeasureTest < CommandTestCase
     def test_measure
       conf = {
