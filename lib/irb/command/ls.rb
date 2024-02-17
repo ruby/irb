@@ -14,11 +14,11 @@ module IRB
       category "Context"
       description "Show methods, constants, and variables."
 
-      banner <<~BANNER
+      help_message <<~HELP_MESSAGE
         Usage: ls [obj] [-g [query]]
 
           -g [query]  Filter the output with a query.
-      BANNER
+      HELP_MESSAGE
 
       def self.transform_args(args)
         if match = args&.match(/\A(?<args>.+\s|)(-g|-G)\s+(?<grep>[^\s]+)\s*\n\z/)

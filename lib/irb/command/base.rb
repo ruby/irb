@@ -22,9 +22,9 @@ module IRB
           @description
         end
 
-        def banner(banner = nil)
-          @banner = banner if banner
-          @banner
+        def help_message(help_message = nil)
+          @help_message = help_message if help_message
+          @help_message
         end
 
         private

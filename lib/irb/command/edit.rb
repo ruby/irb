@@ -9,7 +9,7 @@ module IRB
     class Edit < Base
       category "Misc"
       description 'Open a file or source location.'
-      banner <<~BANNER
+      help_message <<~HELP_MESSAGE
         Usage: edit [FILE or constant or method signature]
 
         Open a file in the editor specified in #{highlight('ENV["VISUAL"]')} or #{highlight('ENV["EDITOR"]')}
@@ -24,7 +24,7 @@ module IRB
           edit foo.rb
           edit Foo
           edit Foo#bar
-      BANNER
+      HELP_MESSAGE
 
       class << self
         def transform_args(args)
