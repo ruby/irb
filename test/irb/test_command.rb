@@ -555,12 +555,26 @@ module TestIRB
     end
 
     def test_pushws_extends_the_new_workspace_with_command_bundle
+      IRB::ExtendCommandBundle.module_eval do
+        def foobar; end
+      end
       out, err = execute_lines(
         "pushws Object.new",
         "self.singleton_class.ancestors"
       )
       assert_empty err
       assert_include(out, "IRB::ExtendCommandBundle")
+    ensure
+      IRB::ExtendCommandBundle.remove_method :foobar
+    end
+
+    def test_pushws_does_not_extend_command_bundle_by_default
+      out, err = execute_lines(
+        "pushws Object.new\n",
+        "self.singleton_class.ancestors"
+      )
+      assert_empty err
+      assert_not_include(out, "IRB::ExtendCommandBundle")
     end
 
     def test_pushws_prints_workspace_stack_when_no_arg_is_given
@@ -1001,4 +1015,28 @@ module TestIRB
 
   end
 
+  class HelperMethodInsallTest < CommandTestCase
+    def test_extend_command_bundle_not_installed_by_default
+      out, err = execute_lines("self.singleton_class.ancestors")
+      assert_empty err
+      assert_not_include(out, 'IRB::ExtendCommandBundle')
+    end
+
+    def test_helper_method_install
+      IRB::ExtendCommandBundle.module_eval do
+        def foobar
+          "test_helper_method_foobar"
+        end
+      end
+      out, err = execute_lines("self.singleton_class.ancestors")
+      assert_empty err
+      assert_include(out, "IRB::ExtendCommandBundle")
+
+      out, err = execute_lines("foobar.upcase")
+      assert_empty err
+      assert_include(out, '=> "TEST_HELPER_METHOD_FOOBAR"')
+    ensure
+      IRB::ExtendCommandBundle.remove_method :foobar
+    end
+  end
 end
