@@ -322,14 +322,11 @@ module IRB # :nodoc:
 
     @EXTEND_COMMANDS = [
       [:eval_history=, "ext/eval_history.rb"],
-      [:use_loader=, "ext/use-loader.rb"],
     ]
 
     # Installs the default context extensions as irb commands:
     #
     # Context#eval_history=::   +irb/ext/history.rb+
-    # Context#use_tracer=::     +irb/ext/tracer.rb+
-    # Context#use_loader=::     +irb/ext/use-loader.rb+
     def self.install_extend_commands
       for args in @EXTEND_COMMANDS
         def_extend_command(*args)

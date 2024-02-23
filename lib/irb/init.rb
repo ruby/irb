@@ -82,7 +82,6 @@ module IRB # :nodoc:
     @CONF[:COMPLETOR] = ENV.fetch("IRB_COMPLETOR", "regexp").to_sym
     @CONF[:INSPECT_MODE] = true
     @CONF[:USE_TRACER] = false
-    @CONF[:USE_LOADER] = false
     @CONF[:IGNORE_SIGINT] = true
     @CONF[:IGNORE_EOF] = false
     @CONF[:USE_PAGER] = true
