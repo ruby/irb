@@ -16,7 +16,7 @@ module IRB
       raise NotImplementedError
     end
 
-    def evaluable_code
+    def execute(context, line_no)
       raise NotImplementedError
     end
 
@@ -38,8 +38,8 @@ module IRB
         ""
       end
 
-      def evaluable_code
-        code
+      def execute(context, line_no)
+        nil
       end
     end
 
@@ -61,17 +61,16 @@ module IRB
         @is_assignment
       end
 
-      def evaluable_code
-        @code
+      def execute(context, line_no)
+        context.evaluate(@code, line_no)
       end
     end
 
     class Command < Statement
-      def initialize(code, command, arg, command_class)
-        @code = code
-        @command = command
-        @arg = arg
+      def initialize(original_code, command_class, arg)
         @command_class = command_class
+        @arg = arg
+        @code = original_code
       end
 
       def is_assignment?
@@ -87,15 +86,9 @@ module IRB
         IRB::Command::DebugCommand > @command_class
       end
 
-      def evaluable_code
-        # Hook command-specific transformation to return valid Ruby code
-        if @command_class.respond_to?(:transform_args)
-          arg = @command_class.transform_args(@arg)
-        else
-          arg = @arg
-        end
-
-        [@command, arg].compact.join(' ')
+      def execute(context, line_no)
+        ret = @command_class.execute(context, @arg)
+        context.set_last_value(ret)
       end
     end
   end
