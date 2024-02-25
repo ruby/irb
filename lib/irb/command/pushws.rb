@@ -15,7 +15,7 @@ module IRB
       description "Show workspaces."
 
       def execute(*obj)
-        irb_context.workspaces.collect{|ws| ws.main}
+        irb_context.instance_variable_get(:@workspace_stack)[0..-2]&.collect{|ws| ws.main}
       end
     end
 

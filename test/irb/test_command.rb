@@ -557,7 +557,7 @@ module TestIRB
         "popws\n",
       )
       assert_empty err
-      assert_match(/workspace stack empty/, out)
+      assert_match(/Can't pop the last workspace on the stack/, out)
     end
   end
 
