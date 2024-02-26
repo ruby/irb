@@ -880,7 +880,7 @@ module IRB
   #     irb
   #     irb(main):001:0> IRB.CurrentContext.irb_name = "foo"
   #     foo(main):002:0> IRB.conf[:MAIN_CONTEXT].irb_name #=> "foo"
-  def IRB.CurrentContext
+  def IRB.CurrentContext # :nodoc:
     IRB.conf[:MAIN_CONTEXT]
   end
 
@@ -900,14 +900,14 @@ module IRB
   end
 
   # Quits irb
-  def IRB.irb_exit(*)
+  def IRB.irb_exit(*) # :nodoc:
     throw :IRB_EXIT, false
   end
 
   # Aborts then interrupts irb.
   #
   # Will raise an Abort exception, or the given `exception`.
-  def IRB.irb_abort(irb, exception = Abort)
+  def IRB.irb_abort(irb, exception = Abort) # :nodoc:
     irb.context.thread.raise exception, "abort then interrupt!"
   end
 
