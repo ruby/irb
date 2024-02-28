@@ -17,7 +17,7 @@ module IRB # :nodoc:
           print "No other workspace\n"
         else
           # swap the top two workspaces
-          previous_workspace, current_workspace = @workspace_stack.pop
+          previous_workspace, current_workspace = @workspace_stack.pop(2)
           @workspace_stack.push current_workspace, previous_workspace
         end
       else

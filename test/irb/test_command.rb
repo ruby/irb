@@ -493,11 +493,13 @@ module TestIRB
   class PushwsTest < WorkspaceCommandTestCase
     def test_pushws_switches_to_new_workspace_and_pushes_the_current_one_to_the_stack
       out, err = execute_lines(
-        "pushws #{self.class}::Foo.new\n",
-        "cwws.class",
+        "pushws #{self.class}::Foo.new",
+        "self.class",
+        "popws",
+        "self.class"
       )
       assert_empty err
-      assert_include(out, "#{self.class}::Foo")
+      assert_match(/=> #{self.class}::Foo\s+=> \[\]\s+=> #{self.class}/, out)
     end
 
     def test_pushws_extends_the_new_workspace_with_command_bundle
@@ -515,6 +517,17 @@ module TestIRB
       )
       assert_empty err
       assert_match(/No other workspace/, out)
+    end
+
+    def test_pushws_without_argument_swaps_the_top_two_workspaces
+      out, err = execute_lines(
+        "pushws #{self.class}::Foo.new",
+        "self.class",
+        "pushws",
+        "self.class"
+      )
+      assert_empty err
+      assert_match(/=> #{self.class}::Foo\s+=> \[#\<#{self.class}::Foo.*\>\]\s+=> #{self.class}/, out)
     end
   end
 
