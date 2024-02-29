@@ -482,7 +482,8 @@ module TestIRB
   class CwwsTest < WorkspaceCommandTestCase
     def test_cwws_returns_the_current_workspace_object
       out, err = execute_lines(
-        "cwws.class",
+        "cwws",
+        "self.class"
       )
 
       assert_empty err
@@ -499,24 +500,26 @@ module TestIRB
         "self.class"
       )
       assert_empty err
-      assert_match(/=> #{self.class}::Foo\s+=> \[\]\s+=> #{self.class}/, out)
+
+      assert_match(/=> #{self.class}::Foo\n/, out)
+      assert_match(/=> #{self.class}\n$/, out)
     end
 
     def test_pushws_extends_the_new_workspace_with_command_bundle
       out, err = execute_lines(
-        "pushws Object.new\n",
+        "pushws Object.new",
         "self.singleton_class.ancestors"
       )
       assert_empty err
       assert_include(out, "IRB::ExtendCommandBundle")
     end
 
-    def test_pushws_prints_help_message_when_no_arg_is_given
+    def test_pushws_prints_workspace_stack_when_no_arg_is_given
       out, err = execute_lines(
-        "pushws\n",
+        "pushws",
       )
       assert_empty err
-      assert_match(/No other workspace/, out)
+      assert_include(out, "[#<TestIRB::PushwsTe...>]")
     end
 
     def test_pushws_without_argument_swaps_the_top_two_workspaces
@@ -527,30 +530,20 @@ module TestIRB
         "self.class"
       )
       assert_empty err
-      assert_match(/=> #{self.class}::Foo\s+=> \[#\<#{self.class}::Foo.*\>\]\s+=> #{self.class}/, out)
+      assert_match(/=> #{self.class}::Foo\n/, out)
+      assert_match(/=> #{self.class}\n$/, out)
     end
   end
 
   class WorkspacesTest < WorkspaceCommandTestCase
-    def test_workspaces_returns_the_array_of_non_main_workspaces
+    def test_workspaces_returns_the_stack_of_workspaces
       out, err = execute_lines(
         "pushws #{self.class}::Foo.new\n",
-        "workspaces.map { |w| w.class.name }",
+        "workspaces",
       )
 
       assert_empty err
-      # self.class::Foo would be the current workspace
-      # self.class would be the old workspace that's pushed to the stack
-      assert_include(out, "=> [\"#{self.class}\"]")
-    end
-
-    def test_workspaces_returns_empty_array_when_no_workspaces_were_added
-      out, err = execute_lines(
-        "workspaces.map(&:to_s)",
-      )
-
-      assert_empty err
-      assert_include(out, "=> []")
+      assert_match(/\[#<TestIRB::Workspac...>, #<TestIRB::Workspac...>]\n/, out)
     end
   end
 
@@ -570,7 +563,7 @@ module TestIRB
         "popws\n",
       )
       assert_empty err
-      assert_match(/Can't pop the last workspace on the stack/, out)
+      assert_match(/\[#<TestIRB::PopwsTes...>\]\n/, out)
     end
   end
 

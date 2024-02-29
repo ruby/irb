@@ -13,9 +13,7 @@ module IRB # :nodoc:
     # information.
     def push_workspace(*_main)
       if _main.empty?
-        if @workspace_stack.size == 1
-          print "No other workspace\n"
-        else
+        if @workspace_stack.size > 1
           # swap the top two workspaces
           previous_workspace, current_workspace = @workspace_stack.pop(2)
           @workspace_stack.push current_workspace, previous_workspace
@@ -26,8 +24,6 @@ module IRB # :nodoc:
           main.extend ExtendCommandBundle
         end
       end
-
-      nil
     end
 
     # Removes the last element from the current #workspaces stack and returns
@@ -35,13 +31,7 @@ module IRB # :nodoc:
     #
     # Also, see #push_workspace.
     def pop_workspace
-      if @workspace_stack.size == 1
-        print "Can't pop the last workspace on the stack\n"
-      else
-        @workspace_stack.pop
-      end
-
-      nil
+      @workspace_stack.pop if @workspace_stack.size > 1
     end
   end
 end
