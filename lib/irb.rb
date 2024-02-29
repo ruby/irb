@@ -1,5 +1,6 @@
 # frozen_string_literal: true
-#
+
+# :markup: markdown
 #   irb.rb - irb main module
 #       by Keiju ISHITSUKA(keiju@ruby-lang.org)
 #
