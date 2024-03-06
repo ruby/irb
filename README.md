@@ -30,7 +30,7 @@ The `irb` command from your shell will start the interpreter.
 
 ## Installation
 
-> **Note**
+> [!Note]
 >
 > IRB is a default gem of Ruby so you shouldn't need to install it separately.
 >
@@ -56,7 +56,7 @@ $ gem install irb
 
 ## Usage
 
-> **Note**
+> [!Note]
 >
 > We're working hard to match Pry's variety of powerful features in IRB, and you can track our progress or find contribution ideas in [this document](https://github.com/ruby/irb/blob/master/COMPARED_WITH_PRY.md).
 
