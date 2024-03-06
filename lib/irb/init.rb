@@ -412,21 +412,21 @@ module IRB # :nodoc:
   end
 
   def IRB.rc_files(ext = IRBRC_EXT)
-    if !@CONF[:RC_NAME_GENERATOR]
-      @CONF[:RC_NAME_GENERATOR] ||= []
+    unless @CONF[:RC_NAME_GENERATOR] && @CONF[:RC_NAME_GENERATOR][ext]
+      @CONF[:RC_NAME_GENERATOR] ||= Hash.new([])
       existing_rc_file_generators = []
 
       rc_file_generators do |rcgen|
-        @CONF[:RC_NAME_GENERATOR] << rcgen
+        @CONF[:RC_NAME_GENERATOR][ext] << rcgen
         existing_rc_file_generators << rcgen if File.exist?(rcgen.call(ext))
       end
 
       if existing_rc_file_generators.any?
-        @CONF[:RC_NAME_GENERATOR] = existing_rc_file_generators
+        @CONF[:RC_NAME_GENERATOR][ext] = existing_rc_file_generators
       end
     end
 
-    @CONF[:RC_NAME_GENERATOR].map do |rc|
+    @CONF[:RC_NAME_GENERATOR][ext].map do |rc|
       rc_file = rc.call(ext)
       fail IllegalRCNameGenerator unless rc_file.is_a?(String)
       rc_file

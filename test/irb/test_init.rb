@@ -164,6 +164,21 @@ module TestIRB
       end
     end
 
+    def test_rc_file_in_project_dir_does_not_have_history_in_project_dir
+      tmpdir = @tmpdir
+      ENV["HOME"] = "#{tmpdir}/home"
+
+      FileUtils.mkdir_p("#{tmpdir}/.irbrc")
+      FileUtils.mkdir_p(ENV["HOME"])
+
+      Dir.chdir(tmpdir) do
+        IRB.conf[:RC_NAME_GENERATOR] = nil
+        assert_includes IRB.rc_files, tmpdir+"/.irbrc"
+        assert_not_include IRB.rc_files("_history").first, tmpdir+"/.irb_history"
+        assert_includes IRB.rc_files("_history").first, ENV["HOME"]+"/.irb_history"
+      end
+    end
+
     def test_sigint_restore_default
       pend "This test gets stuck on Solaris for unknown reason; contribution is welcome" if RUBY_PLATFORM =~ /solaris/
       bundle_exec = ENV.key?('BUNDLE_GEMFILE') ? ['-rbundler/setup'] : []
