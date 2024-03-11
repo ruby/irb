@@ -11,8 +11,6 @@ module IRB
       def execute(*)
         ::Binding.define_method(:irb) {}
         IRB.irb_exit
-      rescue UncaughtThrowError
-        Kernel.exit
       end
     end
   end
