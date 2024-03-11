@@ -388,7 +388,7 @@ module IRB
 
         if doc_namespace
           rec_class = rec.is_a?(Module) ? rec : rec.class
-          "#{rec_class.name}#{sep}#{candidates.find{ |i| i == message }}"
+          "#{rec_class.name}#{sep}#{candidates.find{ |i| i == message }}" rescue nil
         else
           select_message(receiver, message, candidates, sep)
         end
