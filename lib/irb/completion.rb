@@ -418,7 +418,7 @@ module IRB
           vars = (bind.local_variables | bind.eval_instance_variables).collect{|m| m.to_s}
           perfect_match_var = vars.find{|m| m.to_s == input}
           if perfect_match_var
-            eval("#{perfect_match_var}.class.name", bind)
+            eval("#{perfect_match_var}.class.name", bind) rescue nil
           else
             candidates = (bind.eval_methods | bind.eval_private_methods | bind.local_variables | bind.eval_instance_variables | bind.eval_class_constants).collect{|m| m.to_s}
             candidates |= ReservedWords
