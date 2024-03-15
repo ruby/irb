@@ -405,24 +405,30 @@ module IRB # :nodoc:
 
   IRBRC_EXT = "rc"
 
-  def IRB.prepare_rc_name_generator
-    return if @CONF[:RC_NAME_GENERATOR]
+  def IRB.prepare_rc_name_generators
+    return if @existing_rc_name_generators
 
-    @CONF[:RC_NAME_GENERATOR] = []
+    @existing_rc_name_generators = []
+    @irbrc_files = []
     rc_file_generators do |rcgen|
-      @CONF[:RC_NAME_GENERATOR] << rcgen if File.exist?(rcgen.call(IRBRC_EXT))
+      irbrc = rcgen.call(IRBRC_EXT)
+      if File.exist?(irbrc)
+        @irbrc_files << irbrc
+        @existing_rc_name_generators << rcgen
+      end
     end
-    @current_dir_irbrc_files = generate_current_dir_irbrc_files
+    generate_current_dir_irbrc_files.each do |irbrc|
+      @irbrc_files << irbrc if File.exist?(irbrc)
+    end
+    @irbrc_files.uniq!
   end
 
   def IRB.rc_file(ext)
-    prepare_rc_name_generator
+    prepare_rc_name_generators
 
     # When irbrc exist in default location
-    if (rcgen = @CONF[:RC_NAME_GENERATOR].first)
-      file = rcgen.call(ext)
-      fail IllegalRCNameGenerator unless file.is_a?(String)
-      return file
+    if (rcgen = @existing_rc_name_generators.first)
+      return rcgen.call(ext)
     end
 
     # When irbrc does not exist in default location
@@ -435,13 +441,8 @@ module IRB # :nodoc:
   end
 
   def IRB.irbrc_files
-    prepare_rc_name_generator
-    files = @CONF[:RC_NAME_GENERATOR].filter_map do |rc|
-      file = rc.call(IRBRC_EXT)
-      fail IllegalRCNameGenerator unless file.is_a?(String)
-      file if File.exist?(file)
-    end + @current_dir_irbrc_files
-    files.uniq
+    prepare_rc_name_generators
+    @irbrc_files
   end
 
   # enumerate possible rc-file base name generators
@@ -466,8 +467,7 @@ module IRB # :nodoc:
   # possible irbrc files in current directory
   def IRB.generate_current_dir_irbrc_files
     current_dir = Dir.pwd
-    files = %w[.irbrc irbrc _irbrc $irbrc].map { |file| "#{current_dir}/#{file}" }
-    files.select { |file| File.exist?(file) }
+    %w[.irbrc irbrc _irbrc $irbrc].map { |file| "#{current_dir}/#{file}" }
   end
 
   # loading modules

@@ -17,11 +17,11 @@ module TestIRB
       @backup_irbrc = ENV.delete("IRBRC")
       @backup_default_external = Encoding.default_external
       ENV["HOME"] = @tmpdir
-      IRB.conf[:RC_NAME_GENERATOR] = nil
+      IRB.instance_variable_set(:@existing_rc_name_generators, nil)
     end
 
     def teardown
-      IRB.conf[:RC_NAME_GENERATOR] = nil
+      IRB.instance_variable_set(:@existing_rc_name_generators, nil)
       ENV["HOME"] = @backup_home
       ENV["XDG_CONFIG_HOME"] = @backup_xdg_config_home
       ENV["IRBRC"] = @backup_irbrc
