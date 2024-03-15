@@ -15,7 +15,7 @@ Usage:  irb.rb [options] [programfile] [arguments]
   --echo            Show result (default).
   --noecho          Don't show result.
   --echo-on-assignment
-                    Show result on assignment.
+                    Show result on assignment (default).
   --noecho-on-assignment
                     Don't show result on assignment.
   --truncate-echo-on-assignment
