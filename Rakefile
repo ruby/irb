@@ -1,5 +1,6 @@
 require "bundler/gem_tasks"
 require "rake/testtask"
+require "rdoc/task"
 
 Rake::TestTask.new(:test) do |t|
   t.libs << "test" << "test/lib"
@@ -42,3 +43,11 @@ Rake::TestTask.new(:test_yamatanooroti) do |t|
 end
 
 task :default => :test
+
+RDoc::Task.new do |rdoc|
+  rdoc.title = "IRB"
+  rdoc.rdoc_files.include("*.md", "lib/**/*.rb")
+  rdoc.rdoc_files.exclude("lib/irb/xmp.rb")
+  rdoc.rdoc_dir = "docs"
+  rdoc.options.push("--copy-files", "LICENSE.txt")
+end
