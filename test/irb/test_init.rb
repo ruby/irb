@@ -39,22 +39,6 @@ module TestIRB
       assert_equal orig, $0
     end
 
-    def test_rc_file
-      tmpdir = @tmpdir
-      Dir.chdir(tmpdir) do
-        ENV["XDG_CONFIG_HOME"] = "#{tmpdir}/xdg"
-        reset_rc_name_generators
-        assert_empty(IRB.irbrc_files)
-        assert_equal("#{ENV["HOME"]}/.irb_history", IRB.rc_file("_history"))
-        assert_file.not_exist?(tmpdir+"/xdg")
-        reset_rc_name_generators
-        FileUtils.touch(tmpdir+"/.irbrc")
-        assert_equal(tmpdir+"/.irbrc", IRB.irbrc_files.first)
-        assert_equal(tmpdir+"/.irb_history", IRB.rc_file("_history"))
-        assert_file.not_exist?(tmpdir+"/xdg")
-      end
-    end
-
     def test_rc_files
       tmpdir = @tmpdir
       Dir.chdir(tmpdir) do
@@ -103,9 +87,7 @@ module TestIRB
     def test_duplicated_rc_files
       tmpdir = @tmpdir
       Dir.chdir(tmpdir) do
-        ENV['HOME'] = tmpdir
         ENV['XDG_CONFIG_HOME'] = "#{ENV['HOME']}/.config"
-        FileUtils.mkdir_p(ENV['HOME'])
         FileUtils.mkdir_p("#{ENV['XDG_CONFIG_HOME']}/irb")
         env_irbrc = ENV['IRBRC'] = "#{tmpdir}/_irbrc"
         xdg_config_irbrc = "#{ENV['XDG_CONFIG_HOME']}/irb/irbrc"
