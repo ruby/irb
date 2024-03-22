@@ -152,6 +152,7 @@ module IRB
     end
 
     private def term_interactive?
+      return true if ENV['TEST_IRB_FORCE_INTERACTIVE']
       STDIN.tty? && ENV['TERM'] != 'dumb'
     end
 
