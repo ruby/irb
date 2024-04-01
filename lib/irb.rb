@@ -1124,7 +1124,7 @@ module IRB
     COMMAND_LIKE_ASSIGN_REGEXP = /\A[a-z_]\w* #{Regexp.union(ASSIGN_OPERATORS)}( |$)/
 
     def parse_command(code)
-      command_name, arg = code.strip.split(/\s/, 2)
+      command_name, arg = code.strip.split(/\s+/, 2)
       return unless code.lines.size == 1 && command_name
       return if COMMAND_LIKE_ASSIGN_REGEXP.match?(code)
 

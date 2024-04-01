@@ -210,7 +210,62 @@ module TestIRB
     end
   end
 
-  class ExtendCommandBundleCompatibilityTest < CommandTestCase
+  class CustomCommandTestCase < CommandTestCase
+    def setup
+      super
+      execute_lines("show_cmds\n") # To ensure command initialization is done
+      @EXTEND_COMMANDS_backup = IRB::ExtendCommandBundle.instance_variable_get(:@EXTEND_COMMANDS).dup
+      @cvars_backup = IRB::ExtendCommandBundle.class_variables.to_h do |cvar|
+        [cvar, IRB::ExtendCommandBundle.class_variable_get(cvar)]
+      end
+    end
+
+    def teardown
+      super
+      IRB::ExtendCommandBundle.instance_variable_set(:@EXTEND_COMMANDS, @EXTEND_COMMANDS_backup)
+      @cvars_backup.each do |cvar, value|
+        IRB::ExtendCommandBundle.class_variable_set(cvar, value)
+      end
+    end
+  end
+
+  class CommandArgTest < CustomCommandTestCase
+    class PrintArgCommand < IRB::Command::Base
+      category 'CommandTest'
+      description 'print_command_arg'
+      def execute(arg)
+        puts "arg=#{arg.inspect}"
+      end
+    end
+
+    def test_arg
+      IRB::Command.const_set :PrintArgCommand, PrintArgCommand
+      IRB::ExtendCommandBundle.def_extend_command(:print_arg, :PrintArgCommand, nil, [:pa, IRB::ExtendCommandBundle::OVERRIDE_ALL])
+      out, err = execute_lines("print_arg\n")
+      assert_empty err
+      assert_include(out, 'arg=""')
+
+      out, err = execute_lines("print_arg  \n")
+      assert_empty err
+      assert_include(out, 'arg=""')
+
+      out, err = execute_lines("print_arg a r  g\n")
+      assert_empty err
+      assert_include(out, 'arg="a r  g"')
+
+      out, err = execute_lines("print_arg  a r  g  \n")
+      assert_empty err
+      assert_include(out, 'arg="a r  g"')
+
+      out, err = execute_lines("pa  a r  g  \n")
+      assert_empty err
+      assert_include(out, 'arg="a r  g"')
+    ensure
+      IRB::Command.send(:remove_const, :PrintArgCommand)
+    end
+  end
+
+  class ExtendCommandBundleCompatibilityTest < CustomCommandTestCase
     class FooBarCommand < IRB::Command::Base
       category 'FooBarCategory'
       description 'foobar_description'
@@ -221,20 +276,11 @@ module TestIRB
 
     def setup
       super
-      execute_lines("show_cmds\n") # To ensure command initialization is done
-      @EXTEND_COMMANDS_backup = IRB::ExtendCommandBundle.instance_variable_get(:@EXTEND_COMMANDS).dup
-      @cvars_backup = IRB::ExtendCommandBundle.class_variables.to_h do |cvar|
-        [cvar, IRB::ExtendCommandBundle.class_variable_get(cvar)]
-      end
       IRB::Command.const_set :FooBarCommand, FooBarCommand
     end
 
     def teardown
       super
-      IRB::ExtendCommandBundle.instance_variable_set(:@EXTEND_COMMANDS, @EXTEND_COMMANDS_backup)
-      @cvars_backup.each do |cvar, value|
-        IRB::ExtendCommandBundle.class_variable_set(cvar, value)
-      end
       IRB::Command.send(:remove_const, :FooBarCommand)
     end
 
