@@ -6,18 +6,17 @@ module IRB
       category "Help"
       description "List all available commands. Use `help <command>` to get information about a specific command."
 
-      def execute(arg)
+      def execute(command_name)
         # Accept string literal for backward compatibility
-        command_name = unwrap_string_literal(arg)
         content =
-          if command_name
+          if command_name.empty?
+            help_message
+          else
             if command_class = ExtendCommandBundle.load_command(command_name)
               command_class.help_message || command_class.description
             else
               "Can't find command `#{command_name}`. Please check the command name and try again.\n\n"
             end
-          else
-            help_message
           end
         Pager.page_content(content)
       end
