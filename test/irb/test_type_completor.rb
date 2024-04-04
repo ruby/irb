@@ -9,9 +9,7 @@ rescue LoadError
   return
 end
 
-require 'irb/context'
-require 'irb/command'
-require 'irb/completion'
+require 'irb'
 require 'tempfile'
 require_relative './helper'
 
