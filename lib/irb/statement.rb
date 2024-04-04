@@ -37,10 +37,6 @@ module IRB
       def code
         ""
       end
-
-      def execute(context, line_no)
-        nil
-      end
     end
 
     class Expression < Statement
@@ -60,17 +56,15 @@ module IRB
       def is_assignment?
         @is_assignment
       end
-
-      def execute(context, line_no)
-        context.evaluate(@code, line_no)
-      end
     end
 
     class Command < Statement
+      attr_reader :command_class, :arg
+
       def initialize(original_code, command_class, arg)
+        @code = original_code
         @command_class = command_class
         @arg = arg
-        @code = original_code
       end
 
       def is_assignment?
@@ -84,11 +78,6 @@ module IRB
       def should_be_handled_by_debugger?
         require_relative 'command/debug'
         IRB::Command::DebugCommand > @command_class
-      end
-
-      def execute(context, line_no)
-        ret = @command_class.execute(context, @arg)
-        context.set_last_value(ret)
       end
     end
   end

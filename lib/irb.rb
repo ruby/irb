@@ -1028,7 +1028,15 @@ module IRB
               return statement.code
             end
 
-            statement.execute(@context, line_no)
+            case statement
+            when Statement::EmptyInput
+              # Do nothing
+            when Statement::Expression
+              @context.evaluate(statement.code, line_no)
+            when Statement::Command
+              ret = statement.command_class.execute(@context, statement.arg)
+              @context.set_last_value(ret)
+            end
 
             if @context.echo? && !statement.suppresses_echo?
               if statement.is_assignment?
