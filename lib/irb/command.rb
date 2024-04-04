@@ -198,14 +198,14 @@ module IRB # :nodoc:
       end.to_h
     end
 
-    def self.execute_as_command?(name, public_method:, private_method:, local_variable:)
+    def self.execute_as_command?(name, public_method:, private_method:)
       case command_override_policies[name]
       when OVERRIDE_ALL
         true
       when OVERRIDE_PRIVATE_ONLY
-        !public_method && !local_variable
+        !public_method
       when NO_OVERRIDE
-        !public_method && !private_method && !local_variable
+        !public_method && !private_method
       end
     end
 

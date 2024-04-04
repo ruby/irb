@@ -1128,13 +1128,9 @@ module IRB
       end
     end
 
-    ASSIGN_OPERATORS = %w[= += -= *= /= %= **= &= |= &&= ||= ^= <<= >>=]
-    COMMAND_LIKE_ASSIGN_REGEXP = /\A[a-z_]\w* #{Regexp.union(ASSIGN_OPERATORS)}( |$)/
-
     def parse_command(code)
       command_name, arg = code.strip.split(/\s+/, 2)
       return unless code.lines.size == 1 && command_name
-      return if COMMAND_LIKE_ASSIGN_REGEXP.match?(code)
 
       arg ||= ''
       command = command_name.to_sym
@@ -1144,15 +1140,9 @@ module IRB
       end
 
       # Check visibility
-      local_variable = @context.local_variables.include?(command)
       public_method = !!Kernel.instance_method(:public_method).bind_call(@context.main, command) rescue false
       private_method = !public_method && !!Kernel.instance_method(:method).bind_call(@context.main, command) rescue false
-      if ExtendCommandBundle.execute_as_command?(
-        command,
-        public_method: public_method,
-        private_method: private_method,
-        local_variable: local_variable
-      )
+      if ExtendCommandBundle.execute_as_command?(command, public_method: public_method, private_method: private_method)
         [command, arg]
       end
     end
