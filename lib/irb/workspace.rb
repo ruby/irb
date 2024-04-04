@@ -109,7 +109,7 @@ EOF
     attr_reader :main
 
     def load_helper_methods_to_main
-      if ExtendCommandBundle.has_helper_method? && !(class<<main;ancestors;end).include?(ExtendCommandBundle)
+      if !(class<<main;ancestors;end).include?(ExtendCommandBundle)
         main.extend ExtendCommandBundle
       end
     end
