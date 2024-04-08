@@ -16,10 +16,6 @@ module IRB
       raise NotImplementedError
     end
 
-    def execute(context, line_no)
-      raise NotImplementedError
-    end
-
     class EmptyInput < Statement
       def is_assignment?
         false

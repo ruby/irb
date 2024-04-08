@@ -209,10 +209,6 @@ module IRB # :nodoc:
       end
     end
 
-    def self.has_helper_method?
-      IRB::ExtendCommandBundle.instance_methods.any?
-    end
-
     def self.command_names
       command_override_policies.keys.map(&:to_s)
     end

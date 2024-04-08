@@ -213,7 +213,7 @@ module TestIRB
   class CustomCommandTestCase < CommandTestCase
     def setup
       super
-      execute_lines("show_cmds\n") # To ensure command initialization is done
+      execute_lines("help\n") # To ensure command initialization is done
       @EXTEND_COMMANDS_backup = IRB::ExtendCommandBundle.instance_variable_get(:@EXTEND_COMMANDS).dup
       @cvars_backup = IRB::ExtendCommandBundle.class_variables.to_h do |cvar|
         [cvar, IRB::ExtendCommandBundle.class_variable_get(cvar)]

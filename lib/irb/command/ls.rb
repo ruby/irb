@@ -21,11 +21,11 @@ module IRB
       HELP_MESSAGE
 
       def execute(arg)
-        if match = arg.match(/\A(?<args>.+\s|)(-g|-G)\s+(?<grep>.+)$/)
-          if match[:args].empty?
+        if match = arg.match(/\A(?<target>.+\s|)(-g|-G)\s+(?<grep>.+)$/)
+          if match[:target].empty?
             use_main = true
           else
-            obj = @irb_context.workspace.binding.eval(match[:args])
+            obj = @irb_context.workspace.binding.eval(match[:target])
           end
           grep = Regexp.new(match[:grep])
         else
