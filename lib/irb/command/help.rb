@@ -7,7 +7,6 @@ module IRB
       description "List all available commands. Use `help <command>` to get information about a specific command."
 
       def execute(command_name)
-        # Accept string literal for backward compatibility
         content =
           if command_name.empty?
             help_message
