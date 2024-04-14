@@ -8,6 +8,8 @@ module IRB
 
   module Command
     class Edit < Base
+      include IRB::Command::RubyArgsExtractor
+
       category "Misc"
       description 'Open a file or source location.'
       help_message <<~HELP_MESSAGE
