@@ -8,7 +8,7 @@ module IRB
 
   module Command
     class Edit < Base
-      include IRB::Command::RubyArgsExtractor
+      include RubyArgsExtractor
 
       category "Misc"
       description 'Open a file or source location.'
