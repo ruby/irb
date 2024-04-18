@@ -48,6 +48,29 @@ jobs:
         run: bundle exec rake test
       - name: Run tests in isolation
         run: bundle exec rake test_in_isolation
+  debug-test:
+    name: Debug compatibility test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.3
+      - name: Install dependencies
+        run: bundle install
+      - name: Install IRB
+        run: |
+          rake install
+      - name: Download ruby/debug
+        run: |
+          git clone https://github.com/ruby/debug
+      - name: Run debug tests
+        working-directory: ./debug
+        run: |
+          bundle install
+          bundle exec rake
   vterm-yamatanooroti:
     needs: ruby-versions
     name: >-
