@@ -898,7 +898,7 @@ module IRB
     else
       irb = Irb.new
     end
-    irb.run(@CONF)
+    irb.run
   end
 
   # Quits irb
@@ -989,10 +989,10 @@ module IRB
       input
     end
 
-    def run(conf = IRB.conf)
+    def run
+      conf = IRB.conf
       in_nested_session = !!conf[:MAIN_CONTEXT]
       conf[:IRB_RC].call(context) if conf[:IRB_RC]
-      conf[:MAIN_CONTEXT] = context
 
       save_history = !in_nested_session && conf[:SAVE_HISTORY] && context.io.support_history_saving?
 
@@ -1025,6 +1025,8 @@ module IRB
 
     # Evaluates input for this session.
     def eval_input
+      prev_context = IRB.conf[:MAIN_CONTEXT]
+      IRB.conf[:MAIN_CONTEXT] = @context
       configure_io
 
       each_top_level_statement do |statement, line_no|
@@ -1055,6 +1057,8 @@ module IRB
           end
         end
       end
+    ensure
+      IRB.conf[:MAIN_CONTEXT] = prev_context
     end
 
     def read_input(prompt)
@@ -1585,7 +1589,7 @@ class Binding
       # workspace
       binding_irb = IRB::Irb.new(workspace)
       binding_irb.context.irb_path = irb_path
-      binding_irb.run(IRB.conf)
+      binding_irb.run
       binding_irb.debug_break
     end
   end
