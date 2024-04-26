@@ -31,7 +31,7 @@ class Greet < IRB::Command::Base
   end
 end
 
-IRB::Command.register("greet", Greet)
+IRB::Command.register(:greet, Greet)
 ```
 
 As long as the above code is loaded before the IRB session is started, such as in a loaded library or a user's `.irbrc` file, `greet` will be accessible to the user.
