@@ -137,6 +137,7 @@ class IRB::RenderingTest < Yamatanooroti::TestCase
       a
        .a
        .b
+      .itself
     EOC
     close
     assert_screen(<<~EOC)
@@ -153,9 +154,10 @@ class IRB::RenderingTest < Yamatanooroti::TestCase
       irb(main):008>
       irb(main):009> a
       irb(main):010>  .a
-      irb(main):011> .b
+      irb(main):011>  .b
+      irb(main):012> .itself
       => true
-      irb(main):012>
+      irb(main):013>
     EOC
   end
 
@@ -181,7 +183,6 @@ class IRB::RenderingTest < Yamatanooroti::TestCase
       (a)
         &.b()
 
-
       class A def b; self; end; def c; true; end; end;
       a = A.new
       a
@@ -190,6 +191,7 @@ class IRB::RenderingTest < Yamatanooroti::TestCase
         .c
       (a)
         &.b()
+      .itself
     EOC
     close
     assert_screen(<<~EOC)
@@ -214,17 +216,17 @@ class IRB::RenderingTest < Yamatanooroti::TestCase
       irb(main):015>   &.b()
       => #<A>
       irb(main):016>
-      irb(main):017>
-      irb(main):018> class A def b; self; end; def c; true; end; end;
-      irb(main):019> a = A.new
+      irb(main):017> class A def b; self; end; def c; true; end; end;
+      irb(main):018> a = A.new
       => #<A>
-      irb(main):020> a
-      irb(main):021>   .b
-      irb(main):022>   # aaa
-      irb(main):023>   .c
+      irb(main):019> a
+      irb(main):020>   .b
+      irb(main):021>   # aaa
+      irb(main):022>   .c
       => true
-      irb(main):024> (a)
-      irb(main):025> &.b()
+      irb(main):023> (a)
+      irb(main):024>   &.b()
+      irb(main):025> .itself
       => #<A>
       irb(main):026>
     EOC
@@ -254,9 +256,9 @@ class IRB::RenderingTest < Yamatanooroti::TestCase
     start_terminal(3, 50, %W{ruby -I#{@pwd}/lib #{@pwd}/exe/irb}, startup_message: 'start IRB')
     write("{}.__id_")
     write("\C-i")
+    sleep 0.2
     close
     screen = result.join("\n").sub(/\n*\z/, "\n")
-    # This assertion passes whether showdoc dialog completed or not.
     assert_match(/start\ IRB\nirb\(main\):001> {}\.__id__\n                }\.__id__(?:Press )?/, screen)
   end
 
@@ -276,6 +278,7 @@ class IRB::RenderingTest < Yamatanooroti::TestCase
     start_terminal(4, 19, %W{ruby -I#{@pwd}/lib #{@pwd}/exe/irb}, startup_message: 'start IRB')
     write("IR")
     write("\C-i")
+    sleep 0.2
     close
 
     # This is because on macOS we display different shortcut for displaying the full doc
@@ -313,6 +316,7 @@ class IRB::RenderingTest < Yamatanooroti::TestCase
     start_terminal(4, 12, %W{ruby -I#{@pwd}/lib #{@pwd}/exe/irb}, startup_message: 'start IRB')
     write("IR")
     write("\C-i")
+    sleep 0.2
     close
     assert_screen(<<~EOC)
       start IRB

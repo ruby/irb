@@ -6,27 +6,16 @@ module IRB
       category "Help"
       description "List all available commands. Use `help <command>` to get information about a specific command."
 
-      class << self
-        def transform_args(args)
-          # Return a string literal as is for backward compatibility
-          if args.empty? || string_literal?(args)
-            args
-          else # Otherwise, consider the input as a String for convenience
-            args.strip.dump
-          end
-        end
-      end
-
-      def execute(command_name = nil)
+      def execute(command_name)
         content =
-          if command_name
-            if command_class = ExtendCommandBundle.load_command(command_name)
+          if command_name.empty?
+            help_message
+          else
+            if command_class = Command.load_command(command_name)
               command_class.help_message || command_class.description
             else
               "Can't find command `#{command_name}`. Please check the command name and try again.\n\n"
             end
-          else
-            help_message
           end
         Pager.page_content(content)
       end
@@ -34,8 +23,10 @@ module IRB
       private
 
       def help_message
-        commands_info = IRB::ExtendCommandBundle.all_commands_info
+        commands_info = IRB::Command.all_commands_info
+        helper_methods_info = IRB::HelperMethod.all_helper_methods_info
         commands_grouped_by_categories = commands_info.group_by { |cmd| cmd[:category] }
+        commands_grouped_by_categories["Helper methods"] = helper_methods_info
 
         user_aliases = irb_context.instance_variable_get(:@user_aliases)
 

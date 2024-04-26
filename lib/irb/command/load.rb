@@ -10,6 +10,7 @@ module IRB
 
   module Command
     class LoaderCommand < Base
+      include RubyArgsExtractor
       include IrbLoader
 
       def raise_cmd_argument_error
@@ -21,7 +22,12 @@ module IRB
       category "IRB"
       description "Load a Ruby file."
 
-      def execute(file_name = nil, priv = nil)
+      def execute(arg)
+        args, kwargs = ruby_args(arg)
+        execute_internal(*args, **kwargs)
+      end
+
+      def execute_internal(file_name = nil, priv = nil)
         raise_cmd_argument_error unless file_name
         irb_load(file_name, priv)
       end
@@ -30,7 +36,13 @@ module IRB
     class Require < LoaderCommand
       category "IRB"
       description "Require a Ruby file."
-      def execute(file_name = nil)
+
+      def execute(arg)
+        args, kwargs = ruby_args(arg)
+        execute_internal(*args, **kwargs)
+      end
+
+      def execute_internal(file_name = nil)
         raise_cmd_argument_error unless file_name
 
         rex = Regexp.new("#{Regexp.quote(file_name)}(\.o|\.rb)?")
@@ -63,7 +75,12 @@ module IRB
       category "IRB"
       description "Loads a given file in the current session."
 
-      def execute(file_name = nil)
+      def execute(arg)
+        args, kwargs = ruby_args(arg)
+        execute_internal(*args, **kwargs)
+      end
+
+      def execute_internal(file_name = nil)
         raise_cmd_argument_error unless file_name
 
         source_file(file_name)

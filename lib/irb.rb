@@ -10,7 +10,7 @@ require "reline"
 
 require_relative "irb/init"
 require_relative "irb/context"
-require_relative "irb/command"
+require_relative "irb/default_commands"
 
 require_relative "irb/ruby-lex"
 require_relative "irb/statement"
@@ -145,7 +145,6 @@ require_relative "irb/pager"
 # *   The value of variable `$XDG_CONFIG_HOME/irb/irbrc`, if defined.
 # *   File `$HOME/.irbrc`, if it exists.
 # *   File `$HOME/.config/irb/irbrc`, if it exists.
-# *   File `.config/irb/irbrc` in the current directory, if it exists.
 # *   File `.irbrc` in the current directory, if it exists.
 # *   File `irb.rc` in the current directory, if it exists.
 # *   File `_irbrc` in the current directory, if it exists.
@@ -660,8 +659,10 @@ require_relative "irb/pager"
 # *   `%m`: the value of `self.to_s`.
 # *   `%M`: the value of `self.inspect`.
 # *   `%l`: an indication of the type of string; one of `"`, `'`, `/`, `]`.
-# *   `*NN*i`: Indentation level.
-# *   `*NN*n`: Line number.
+# *   `%NNi`: Indentation level. NN is a 2-digit number that specifies the number
+#             of digits of the indentation level (03 will result in 001).
+# *   `%NNn`: Line number. NN is a 2-digit number that specifies the number
+#             of digits of the line number (03 will result in 001).
 # *   `%%`: Literal `%`.
 #
 #
@@ -933,7 +934,7 @@ module IRB
     # Creates a new irb session
     def initialize(workspace = nil, input_method = nil)
       @context = Context.new(self, workspace, input_method)
-      @context.workspace.load_commands_to_main
+      @context.workspace.load_helper_methods_to_main
       @signal_status = :IN_IRB
       @scanner = RubyLex.new
       @line_no = 1
@@ -954,7 +955,7 @@ module IRB
     def debug_readline(binding)
       workspace = IRB::WorkSpace.new(binding)
       context.replace_workspace(workspace)
-      context.workspace.load_commands_to_main
+      context.workspace.load_helper_methods_to_main
       @line_no += 1
 
       # When users run:
@@ -964,19 +965,25 @@ module IRB
       #
       # Irb#eval_input will simply return the input, and we need to pass it to the
       # debugger.
-      input = if IRB.conf[:SAVE_HISTORY] && context.io.support_history_saving?
-        # Previous IRB session's history has been saved when `Irb#run` is exited We need
-        # to make sure the saved history is not saved again by resetting the counter
-        context.io.reset_history_counter
+      input = nil
+      forced_exit = catch(:IRB_EXIT) do
+        if IRB.conf[:SAVE_HISTORY] && context.io.support_history_saving?
+          # Previous IRB session's history has been saved when `Irb#run` is exited We need
+          # to make sure the saved history is not saved again by resetting the counter
+          context.io.reset_history_counter
 
-        begin
-          eval_input
-        ensure
-          context.io.save_history
+          begin
+            input = eval_input
+          ensure
+            context.io.save_history
+          end
+        else
+          input = eval_input
         end
-      else
-        eval_input
+        false
       end
+
+      Kernel.exit if forced_exit
 
       if input&.include?("\n")
         @line_no += input.count("\n") - 1
@@ -1032,7 +1039,7 @@ module IRB
               return statement.code
             end
 
-            @context.evaluate(statement.evaluable_code, line_no)
+            @context.evaluate(statement, line_no)
 
             if @context.echo? && !statement.suppresses_echo?
               if statement.is_assignment?
@@ -1088,10 +1095,7 @@ module IRB
         end
 
         code << line
-
-        # Accept any single-line input for symbol aliases or commands that transform
-        # args
-        return code if single_line_command?(code)
+        return code if command?(code)
 
         tokens, opens, terminated = @scanner.check_code_state(code, local_variables: @context.local_variables)
         return code if terminated
@@ -1118,23 +1122,36 @@ module IRB
       end
 
       code.force_encoding(@context.io.encoding)
-      command_or_alias, arg = code.split(/\s/, 2)
-      # Transform a non-identifier alias (@, $) or keywords (next, break)
-      command_name = @context.command_aliases[command_or_alias.to_sym]
-      command = command_name || command_or_alias
-      command_class = ExtendCommandBundle.load_command(command)
-
-      if command_class
-        Statement::Command.new(code, command, arg, command_class)
+      if (command, arg = parse_command(code))
+        command_class = Command.load_command(command)
+        Statement::Command.new(code, command_class, arg)
       else
         is_assignment_expression = @scanner.assignment_expression?(code, local_variables: @context.local_variables)
         Statement::Expression.new(code, is_assignment_expression)
       end
     end
 
-    def single_line_command?(code)
-      command = code.split(/\s/, 2).first
-      @context.symbol_alias?(command) || @context.transform_args?(command)
+    def parse_command(code)
+      command_name, arg = code.strip.split(/\s+/, 2)
+      return unless code.lines.size == 1 && command_name
+
+      arg ||= ''
+      command = command_name.to_sym
+      # Command aliases are always command. example: $, @
+      if (alias_name = @context.command_aliases[command])
+        return [alias_name, arg]
+      end
+
+      # Check visibility
+      public_method = !!Kernel.instance_method(:public_method).bind_call(@context.main, command) rescue false
+      private_method = !public_method && !!Kernel.instance_method(:method).bind_call(@context.main, command) rescue false
+      if Command.execute_as_command?(command, public_method: public_method, private_method: private_method)
+        [command, arg]
+      end
+    end
+
+    def command?(code)
+      !!parse_command(code)
     end
 
     def configure_io
@@ -1152,9 +1169,7 @@ module IRB
               false
             end
           else
-            # Accept any single-line input for symbol aliases or commands that transform
-            # args
-            next true if single_line_command?(code)
+            next true if command?(code)
 
             _tokens, _opens, terminated = @scanner.check_code_state(code, local_variables: @context.local_variables)
             terminated
@@ -1226,6 +1241,13 @@ module IRB
         irb_bug = true
       else
         irb_bug = false
+        # This is mostly to make IRB work nicely with Rails console's backtrace filtering, which patches WorkSpace#filter_backtrace
+        # In such use case, we want to filter the exception's backtrace before its displayed through Exception#full_message
+        # And we clone the exception object in order to avoid mutating the original exception
+        # TODO: introduce better API to expose exception backtrace externally
+        backtrace = exc.backtrace.map { |l| @context.workspace.filter_backtrace(l) }.compact
+        exc = exc.clone
+        exc.set_backtrace(backtrace)
       end
 
       if RUBY_VERSION < '3.0.0'
@@ -1250,7 +1272,6 @@ module IRB
           lines = m.split("\n").reverse
         end
         unless irb_bug
-          lines = lines.map { |l| @context.workspace.filter_backtrace(l) }.compact
           if lines.size > @context.back_trace_limit
             omit = lines.size - @context.back_trace_limit
             lines = lines[0..(@context.back_trace_limit - 1)]
@@ -1445,7 +1466,7 @@ module IRB
     end
 
     def format_prompt(format, ltype, indent, line_no) # :nodoc:
-      format.gsub(/%([0-9]+)?([a-zA-Z])/) do
+      format.gsub(/%([0-9]+)?([a-zA-Z%])/) do
         case $2
         when "N"
           @context.irb_name
@@ -1478,7 +1499,7 @@ module IRB
             line_no.to_s
           end
         when "%"
-          "%"
+          "%" unless $1
         end
       end
     end

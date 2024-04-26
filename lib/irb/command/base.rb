@@ -10,6 +10,10 @@ module IRB
   module Command
     class CommandArgumentError < StandardError; end
 
+    def self.extract_ruby_args(*args, **kwargs)
+      throw :EXTRACT_RUBY_ARGS, [args, kwargs]
+    end
+
     class Base
       class << self
         def category(category = nil)
@@ -29,19 +33,13 @@ module IRB
 
         private
 
-        def string_literal?(args)
-          sexp = Ripper.sexp(args)
-          sexp && sexp.size == 2 && sexp.last&.first&.first == :string_literal
-        end
-
         def highlight(text)
           Color.colorize(text, [:BOLD, :BLUE])
         end
       end
 
-      def self.execute(irb_context, *opts, **kwargs, &block)
-        command = new(irb_context)
-        command.execute(*opts, **kwargs, &block)
+      def self.execute(irb_context, arg)
+        new(irb_context).execute(arg)
       rescue CommandArgumentError => e
         puts e.message
       end
@@ -52,7 +50,7 @@ module IRB
 
       attr_reader :irb_context
 
-      def execute(*opts)
+      def execute(arg)
         #nop
       end
     end

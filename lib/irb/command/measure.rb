@@ -3,6 +3,8 @@ module IRB
 
   module Command
     class Measure < Base
+      include RubyArgsExtractor
+
       category "Misc"
       description "`measure` enables the mode to measure processing time. `measure :off` disables it."
 
@@ -10,15 +12,19 @@ module IRB
         super(*args)
       end
 
-      def execute(type = nil, arg = nil)
-        # Please check IRB.init_config in lib/irb/init.rb that sets
-        # IRB.conf[:MEASURE_PROC] to register default "measure" methods,
-        # "measure :time" (abbreviated as "measure") and "measure :stackprof".
-
-        if block_given?
+      def execute(arg)
+        if arg&.match?(/^do$|^do[^\w]|^\{/)
           warn 'Configure IRB.conf[:MEASURE_PROC] to add custom measure methods.'
           return
         end
+        args, kwargs = ruby_args(arg)
+        execute_internal(*args, **kwargs)
+      end
+
+      def execute_internal(type = nil, arg = nil)
+        # Please check IRB.init_config in lib/irb/init.rb that sets
+        # IRB.conf[:MEASURE_PROC] to register default "measure" methods,
+        # "measure :time" (abbreviated as "measure") and "measure :stackprof".
 
         case type
         when :off
