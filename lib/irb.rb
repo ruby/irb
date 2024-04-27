@@ -1109,6 +1109,7 @@ module IRB
 
     def each_top_level_statement
       loop do
+        IRB.conf[:MAIN_CONTEXT] = @context
         code = readmultiline
         break unless code
         yield build_statement(code), @line_no
