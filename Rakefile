@@ -49,5 +49,6 @@ RDoc::Task.new do |rdoc|
   rdoc.rdoc_files.include("*.md", "lib/**/*.rb")
   rdoc.rdoc_files.exclude("lib/irb/xmp.rb")
   rdoc.rdoc_dir = "docs"
+  rdoc.main = "README.md"
   rdoc.options.push("--copy-files", "LICENSE.txt")
 end
