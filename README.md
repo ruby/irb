@@ -351,7 +351,7 @@ irb(main):002> a.first. # Completes Integer methods
 
 ## Documentation
 
-https://docs.ruby-lang.org/en/master/IRB.html
+https://ruby.github.io/irb/
 
 ## Extending IRB
 
