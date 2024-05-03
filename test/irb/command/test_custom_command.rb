@@ -126,7 +126,6 @@ module TestIRB
 
     def test_no_meta_command_also_works
       write_ruby <<~RUBY
-        require "irb"
         require "irb/command"
 
         class NoMetaCommand < IRB::Command::Base
