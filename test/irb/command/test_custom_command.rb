@@ -142,6 +142,7 @@ module TestIRB
       end
 
       assert_include(output, "This command does not override meta attributes")
+      assert_include(output, "No description provided.")
       assert_not_include(output, "Maybe IRB bug")
     end
   end
