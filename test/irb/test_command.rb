@@ -413,6 +413,18 @@ module TestIRB
       assert_match(/\A=> 3\n=> nil\n=> 3\n/, out)
       assert_empty(c.class_variables)
     end
+
+    def test_error_call
+      out, err = execute_lines("measure raise 'foo'+'bar'+'error'\n")
+      assert_empty err
+      assert_include(out, 'foobarerror')
+      assert_not_include(out, 'Maybe IRB bug')
+
+      out, err = execute_lines("measure = 1\n")
+      assert_empty err
+      assert_include(out, 'Invalid IRB::Command argument: "= 1"')
+      assert_not_include(out, 'Maybe IRB bug')
+    end
   end
 
   class IrbSourceTest < CommandTestCase
