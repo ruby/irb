@@ -204,19 +204,9 @@ module IRB # :nodoc:
         added = [type_sym, IRB.conf[:MEASURE_PROC][type_sym], arg]
       end
     elsif IRB.conf[:MEASURE_PROC][:CUSTOM]
-      added = [:CUSTOM, IRB.conf[:MEASURE_PROC][:CUSTOM], arg]
-    elsif block_given?
-      added = [:BLOCK, block, arg]
-      found = IRB.conf[:MEASURE_CALLBACKS].find{ |m| m[0] == added[0] && m[2] == added[2] }
-      if found
-        found[1] = block
-        return added
-      else
-        IRB.conf[:MEASURE_CALLBACKS] << added
-        return added
-      end
+      added = [:CUSTOM, IRB.conf[:MEASURE_PROC][:CUSTOM], nil]
     else
-      added = [:TIME, IRB.conf[:MEASURE_PROC][:TIME], arg]
+      added = [:TIME, IRB.conf[:MEASURE_PROC][:TIME], nil]
     end
     if added
       IRB.conf[:MEASURE] = true
