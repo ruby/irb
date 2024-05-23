@@ -235,11 +235,11 @@ module TestIRB
       out, err = execute_lines(
         "measure\n",
         "3\n",
-        "measure :off\n",
+        "measure off\n",
         "3\n",
-        "measure :on\n",
+        "measure on\n",
         "3\n",
-        "measure :off\n",
+        "measure off\n",
         "3\n",
         conf: conf,
         main: c
@@ -292,7 +292,7 @@ module TestIRB
 
       out, err = execute_lines(
         "3\n",
-        "measure :off\n",
+        "measure off\n",
         "3\n",
         conf: conf,
       )
@@ -317,7 +317,7 @@ module TestIRB
 
       out, err = execute_lines(
         "3\n",
-        "measure :off\n",
+        "measure off\n",
         "3\n",
         conf: conf,
       )
@@ -342,7 +342,7 @@ module TestIRB
         "3\n",
         "measure\n",
         "3\n",
-        "measure :off\n",
+        "measure off\n",
         "3\n",
         conf: conf
       )
@@ -368,19 +368,19 @@ module TestIRB
         }
       }
       out, err = execute_lines(
-        "measure :foo, :arg\n",
+        "measure foo arg\n",
         "1\n",
-        "measure :on, :bar\n",
+        "measure on bar\n",
         "2\n",
-        "measure :off, :foo\n",
+        "measure off foo\n",
         "3\n",
-        "measure :off, :bar\n",
+        "measure off bar\n",
         "4\n",
         conf: conf
       )
 
       assert_empty err
-      assert_match(/\AFOO is added\.\n=> nil\nfoo\(:arg\)\n=> 1\nBAR is added\.\n=> nil\nbar\(nil\)\nfoo\(:arg\)\n=> 2\n=> nil\nbar\(nil\)\n=> 3\n=> nil\n=> 4\n/, out)
+      assert_match(/\AFOO is added\.\n=> nil\nfoo\("arg"\)\n=> 1\nBAR is added\.\n=> nil\nbar\(nil\)\nfoo\("arg"\)\n=> 2\n=> nil\nbar\(nil\)\n=> 3\n=> nil\n=> 4\n/, out)
     end
 
     def test_measure_with_proc_warning
@@ -407,6 +407,32 @@ module TestIRB
       assert_match(/to add custom measure/, err)
       assert_match(/\A=> 3\n=> nil\n=> 3\n/, out)
       assert_empty(c.class_variables)
+    end
+
+    def test_legacy_measure_warning
+      conf = {
+        MEASURE_PROC: {
+          FOO: proc {},
+          BAR: proc {},
+        }
+      }
+      out, err = execute_lines(
+        "measure :foo\n",
+        "measure :on, :bar\n",
+        conf: conf
+      )
+      assert_match(/FOO is added/, out)
+      assert_match(/BAR is added/, out)
+      assert_match(/`measure :foo` is deprecated. Please use `measure foo`/, err)
+      assert_match(/`measure :on, :bar` is deprecated. Please use `measure on bar`/, err)
+    end
+
+    def test_unknown_method
+      out, err = execute_lines("measure foo\n", "measure on bar\n")
+      assert_empty(err)
+      assert_match(/`foo` not found/, out)
+      assert_match(/`bar` not found/, out)
+      assert_match(/time stackprof/, out)
     end
   end
 
