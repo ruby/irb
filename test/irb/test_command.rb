@@ -208,6 +208,13 @@ module TestIRB
   end
 
   class MeasureTest < CommandTestCase
+    CUSTOM_MEASURE_PROC = proc { |context, line, line_no, &block|
+      raise 'Wrong argument' unless IRB::Context === context && String === line && Integer === line_no
+      time = Time.now
+      result = block.()
+      puts 'custom processing time: %fs' % (Time.now - time) if IRB.conf[:MEASURE]
+      result
+    }
     def test_measure
       conf = {
         PROMPT: {
@@ -292,12 +299,6 @@ module TestIRB
     end
 
     def test_measure_enabled_by_rc_with_custom
-      measuring_proc = proc { |line, line_no, &block|
-        time = Time.now
-        result = block.()
-        puts 'custom processing time: %fs' % (Time.now - time) if IRB.conf[:MEASURE]
-        result
-      }
       conf = {
         PROMPT: {
           DEFAULT: {
@@ -308,7 +309,7 @@ module TestIRB
         },
         PROMPT_MODE: :DEFAULT,
         MEASURE: true,
-        MEASURE_PROC: { CUSTOM: measuring_proc }
+        MEASURE_PROC: { CUSTOM: CUSTOM_MEASURE_PROC }
       }
 
       out, err = execute_lines(
@@ -322,12 +323,6 @@ module TestIRB
     end
 
     def test_measure_with_custom
-      measuring_proc = proc { |line, line_no, &block|
-        time = Time.now
-        result = block.()
-        puts 'custom processing time: %fs' % (Time.now - time) if IRB.conf[:MEASURE]
-        result
-      }
       conf = {
         PROMPT: {
           DEFAULT: {
@@ -338,7 +333,7 @@ module TestIRB
         },
         PROMPT_MODE: :DEFAULT,
         MEASURE: false,
-        MEASURE_PROC: { CUSTOM: measuring_proc }
+        MEASURE_PROC: { CUSTOM: CUSTOM_MEASURE_PROC }
       }
       out, err = execute_lines(
         "3\n",
@@ -365,12 +360,12 @@ module TestIRB
         PROMPT_MODE: :DEFAULT,
         MEASURE: false,
         MEASURE_PROC: {
-          FOO: proc { |&block| puts 'foo'; block.call },
-          BAR: proc { |&block| puts 'bar'; block.call }
+          FOO: proc { |ctx, line, line_no, arg, &block| puts "foo(#{arg.inspect})"; block.call },
+          BAR: proc { |ctx, line, line_no, arg, &block| puts "bar(#{arg.inspect})"; block.call }
         }
       }
       out, err = execute_lines(
-        "measure :foo\n",
+        "measure :foo, :arg\n",
         "1\n",
         "measure :on, :bar\n",
         "2\n",
@@ -382,7 +377,7 @@ module TestIRB
       )
 
       assert_empty err
-      assert_match(/\AFOO is added\.\nfoo\n=> 1\nBAR is added\.\nbar\nfoo\n=> 2\nbar\n=> 3\n=> 4\n/, out)
+      assert_match(/\AFOO is added\.\nfoo\(:arg\)\n=> 1\nBAR is added\.\nbar\(nil\)\nfoo\(:arg\)\n=> 2\nbar\(nil\)\n=> 3\n=> 4\n/, out)
     end
 
     def test_measure_with_proc_warning
