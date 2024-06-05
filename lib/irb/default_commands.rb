@@ -3,6 +3,7 @@
 require_relative "command"
 require_relative "command/internal_helpers"
 require_relative "command/context"
+require_relative "command/disable_irb"
 require_relative "command/exit"
 require_relative "command/force_exit"
 require_relative "command/chws"
@@ -234,6 +235,10 @@ module IRB
     _register_with_aliases(:irb_history, Command::History,
       [:history, NO_OVERRIDE],
       [:hist, NO_OVERRIDE]
+    )
+
+    _register_with_aliases(:irb_disable_irb, Command::DisableIrb,
+      [:disable_irb, NO_OVERRIDE]
     )
   end
 
