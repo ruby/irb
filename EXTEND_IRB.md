@@ -4,6 +4,17 @@ From v1.13.0, IRB provides official APIs to extend its functionality. This featu
 customize and enhance their users' IRB sessions by adding new commands and helper methods tailored for
 the libraries.
 
+## Helper Methods vs. Commands
+
+- Use a helper method if the operation is meant to return a Ruby object that interacts with the application.
+  - For example, an `admin_user` helper method that returns `User.where(admin: true).first`, which can then be used like `login_as(admin_user)`.
+- Use a command if the operation fits one of the following:
+  - A utility operation that performs non-Ruby related tasks, such as IRB's `edit` command.
+  - Displays information, like the `show_source` command.
+  - If the operation requires non-Ruby syntax arguments, like `ls -g pattern`.
+
+If you don't know what to pick, go with commands first. Commands are generally safer as they can handle a wider variety of inputs and use cases.
+
 ## Commands
 
 Commands are designed to complete certain tasks or display information for the user, similar to shell commands.
