@@ -40,6 +40,44 @@ module TestIRB
       assert_match(/irb\(Foo\):006>/, out)
     end
 
+    def test_dash_switches_between_the_last_two_contexts
+      out = run_ruby_file do
+        type "cd Foo"
+        type "cd Bar"
+        type "cd -"
+        type "cd -"
+        type "cd"
+        type "cd -"
+        type "cd -"
+        type "exit"
+      end
+
+      assert_match(/irb\(Foo::Bar\):003>/, out)
+      assert_match(/irb\(Foo\):004>/, out)
+      assert_match(/irb\(Foo::Bar\):005>/, out)
+      assert_match(/irb\(main\):006>/, out)
+      assert_match(/irb\(Foo::Bar\):007>/, out)
+      assert_match(/irb\(main\):008>/, out)
+
+      out = run_ruby_file do
+        type "cd -"
+        type "cd Foo"
+        type "cd -"
+        type "cd -"
+        type "cd Bar"
+        type "cd .."
+        type "cd -"
+        type "exit"
+      end
+
+      assert_match(/irb\(Foo\):003>/, out)
+      assert_match(/irb\(main\):004>/, out)
+      assert_match(/irb\(Foo\):005>/, out)
+      assert_match(/irb\(Foo::Bar\):006>/, out)
+      assert_match(/irb\(Foo\):007>/, out)
+      assert_match(/irb\(Foo::Bar\):008>/, out)
+    end
+
     def test_cd_moves_top_level_with_no_args
       out = run_ruby_file do
         type "cd Foo"

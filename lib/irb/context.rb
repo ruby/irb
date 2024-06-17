@@ -28,6 +28,8 @@ module IRB
       else
         @workspace_stack << WorkSpace.new
       end
+      # for cd command's `-` argument
+      @previous_workspace = workspace
       @thread = Thread.current
 
       # copy of default configuration
@@ -240,6 +242,8 @@ module IRB
     def workspace
       @workspace_stack.last
     end
+
+    attr_accessor :previous_workspace
 
     # Replace the current workspace with the given +workspace+.
     def replace_workspace(workspace)
