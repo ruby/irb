@@ -149,7 +149,7 @@ Debugging
 
 Misc
   edit           Open a file or source location.
-  measure        `measure` enables the mode to measure processing time. `measure :off` disables it.
+  measure        `measure` enables the mode to measure processing time. `measure off` disables it.
 
 Context
   show_doc       Enter the mode to look up RI documents.
