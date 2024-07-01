@@ -33,6 +33,8 @@ module IRB
       yield
     ]
 
+    HELP_COMMAND_PREPOSING = /\Ahelp\s+/
+
     def completion_candidates(preposing, target, postposing, bind:)
       raise NotImplementedError
     end
@@ -86,8 +88,8 @@ module IRB
         )
     end
 
-    def command_completions(preposing, target)
-      if preposing.empty? && !target.empty?
+    def command_candidates(target)
+      if !target.empty?
         IRB::Command.command_names.select { _1.start_with?(target) }
       else
         []
@@ -111,8 +113,17 @@ module IRB
     end
 
     def completion_candidates(preposing, target, _postposing, bind:)
-      commands = command_completions(preposing, target)
+      preposing ||= ''
+      commands = command_candidates(target)
+
+      # When completing the argument of `help` command, only commands should be candidates
+      return commands if preposing.match?(HELP_COMMAND_PREPOSING)
+
+      # It doesn't make sense to propose commands with other preposing
+      commands = [] unless preposing.empty?
+
       result = ReplTypeCompletor.analyze(preposing + target, binding: bind, filename: @context.irb_path)
+
       return commands unless result
 
       commands | result.completion_candidates.map { target + _1 }
@@ -191,8 +202,18 @@ module IRB
         result = complete_require_path(target, preposing, postposing)
         return result if result
       end
-      commands = command_completions(preposing || '', target)
-      commands | retrieve_completion_data(target, bind: bind, doc_namespace: false).compact.map{ |i| i.encode(Encoding.default_external) }
+
+      preposing ||= ''
+      commands = command_candidates(target)
+
+      # When completing the argument of `help` command, only commands should be candidates
+      return commands if preposing.match?(HELP_COMMAND_PREPOSING)
+
+      # It doesn't make sense to propose commands with other preposing
+      commands = [] unless preposing.empty?
+
+      completion_data = retrieve_completion_data(target, bind: bind, doc_namespace: false).compact.map{ |i| i.encode(Encoding.default_external) }
+      commands | completion_data
     end
 
     def doc_namespace(_preposing, matched, _postposing, bind:)
