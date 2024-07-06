@@ -114,6 +114,7 @@ Help
   help           List all available commands. Use `help <command>` to get information about a specific command.
 
 IRB
+  context        Displays current configuration.
   exit           Exit the current irb session.
   exit!          Exit the current process.
   irb_load       Load a Ruby file.
@@ -121,6 +122,7 @@ IRB
   source         Loads a given file in the current session.
   irb_info       Show information about IRB.
   history        Shows the input history. `-g [query]` or `-G [query]` allows you to filter the output.
+  disable_irb    Disable binding.irb.
 
 Workspace
   cwws           Show the current workspace.
@@ -128,6 +130,7 @@ Workspace
   workspaces     Show workspaces.
   pushws         Push an object to the workspace stack.
   popws          Pop a workspace from the workspace stack.
+  cd             Move into the given object or leave the current context.
 
 Multi-irb (DEPRECATED)
   irb            Start a child IRB.
@@ -152,10 +155,13 @@ Misc
   measure        `measure` enables the mode to measure processing time. `measure :off` disables it.
 
 Context
-  show_doc       Enter the mode to look up RI documents.
+  show_doc       Look up documentation with RI.
   ls             Show methods, constants, and variables.
-  show_source    Show the source code of a given method or constant.
+  show_source    Show the source code of a given method, class/module, or constant.
   whereami       Show the source code around binding.irb again.
+
+Helper methods
+  conf           Returns the current IRB context.
 
 Aliases
   $              Alias for `show_source`
