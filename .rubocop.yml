@@ -30,3 +30,10 @@ Layout/SpaceBeforeComma:
 
 Layout/SpaceAfterComma:
   Enabled: true
+
+Style/ClassMethodsDefinitions:
+  Enabled: true
+  EnforcedStyle: self_class
+
+Layout/EmptyLines:
+  Enabled: true
