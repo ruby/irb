@@ -288,9 +288,12 @@ module IRB
 
       if IRB.conf[:USE_AUTOCOMPLETE]
         begin
+          verbose, $VERBOSE = $VERBOSE, nil
           require 'rdoc'
           Reline.add_dialog_proc(:show_doc, show_doc_dialog_proc, Reline::DEFAULT_DIALOG_CONTEXT)
         rescue LoadError
+        ensure
+          $VERBOSE = verbose
         end
       end
     end
@@ -321,6 +324,7 @@ module IRB
       return @rdoc_ri_driver if defined?(@rdoc_ri_driver)
 
       begin
+        verbose, $VERBOSE = $VERBOSE, nil
         require 'rdoc'
       rescue LoadError
         @rdoc_ri_driver = nil
@@ -328,6 +332,8 @@ module IRB
         options = {}
         options[:extra_doc_dirs] = IRB.conf[:EXTRA_DOC_DIRS] unless IRB.conf[:EXTRA_DOC_DIRS].empty?
         @rdoc_ri_driver = RDoc::RI::Driver.new(options)
+      ensure
+        $VERBOSE = verbose
       end
     end
 
