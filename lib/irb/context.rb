@@ -149,8 +149,7 @@ module IRB
         @newline_before_multiline_output = true
       end
 
-      @user_aliases = IRB.conf[:COMMAND_ALIASES].dup
-      @command_aliases = @user_aliases.dup
+      @command_aliases = IRB.conf[:COMMAND_ALIASES].dup
     end
 
     private def term_interactive?
