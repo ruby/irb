@@ -57,9 +57,7 @@ module IRB
           DEBUGGER__::ThreadClient.prepend(SkipPathHelperForIRB)
         end
 
-        if !@output_modifier_defined && !DEBUGGER__::CONFIG[:no_hint]
-          irb_output_modifier_proc = Reline.output_modifier_proc
-
+        if !@output_modifier_defined && !DEBUGGER__::CONFIG[:no_hint] && irb.context.io.is_a?(RelineInputMethod)
           Reline.output_modifier_proc = proc do |output, complete:|
             unless output.strip.empty?
               cmd = output.split(/\s/, 2).first
@@ -69,7 +67,7 @@ module IRB
               end
             end
 
-            irb_output_modifier_proc.call(output, complete: complete)
+            IRB.CurrentContext.colorize_code(output, complete: complete)
           end
 
           @output_modifier_defined = true
