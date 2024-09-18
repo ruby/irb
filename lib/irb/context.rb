@@ -649,7 +649,7 @@ module IRB
       end
     end
 
-    def colorize_code(input, complete:)
+    def colorize_input(input, complete:)
       if IRB.conf[:USE_COLORIZE] && IRB::Color.colorable?
         lvars = local_variables || []
         if parse_command(input)

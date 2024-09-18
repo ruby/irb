@@ -265,8 +265,8 @@ module IRB
         @completion_params = [preposing, target, postposing, bind]
         @completor.completion_candidates(preposing, target, postposing, bind: bind)
       }
-      Reline.output_modifier_proc = proc do |output, complete:|
-        IRB.CurrentContext.colorize_code(output, complete: complete)
+      Reline.output_modifier_proc = proc do |input, complete:|
+        IRB.CurrentContext.colorize_input(input, complete: complete)
       end
       Reline.dig_perfect_match_proc = ->(matched) { display_document(matched) }
       Reline.autocompletion = IRB.conf[:USE_AUTOCOMPLETE]
