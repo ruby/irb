@@ -181,7 +181,7 @@ module TestIRB
       IRB.conf[:HISTORY_FILE] = "fake/fake/fake/history_file"
       io = TestInputMethodWithRelineHistory.new
 
-      assert_warn(/history file does not exist/) do
+      assert_warn(/ensure the folder exists/i) do
         io.save_history
       end
 
