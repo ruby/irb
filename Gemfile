@@ -7,7 +7,7 @@ is_truffleruby = RUBY_DESCRIPTION =~ /truffleruby/
 
 if is_unix && ENV['WITH_VTERM']
   gem "vterm", github: "ruby/vterm-gem"
-  gem "yamatanooroti", github: "ruby/yamatanooroti", ref: "f6e47192100d6089f70cf64c1de540dcaadf005a"
+  gem "yamatanooroti", github: "ruby/yamatanooroti"
 end
 
 gem "stackprof" if is_unix && !is_truffleruby
