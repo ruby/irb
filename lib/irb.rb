@@ -1004,9 +1004,10 @@ module IRB
       prev_context = conf[:MAIN_CONTEXT]
       conf[:MAIN_CONTEXT] = context
 
-      save_history = !in_nested_session && History.save_history? && context.io.support_history_saving?
+      load_history = !in_nested_session && context.io.support_history_saving?
+      save_history = load_history && History.save_history?
 
-      if save_history
+      if load_history
         context.io.load_history
       end
 
