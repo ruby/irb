@@ -145,7 +145,7 @@ module TestIRB
 
       ENV['IRB_USE_AUTOCOMPLETE'] = nil
       IRB.setup(__FILE__)
-      assert IRB.conf[:USE_AUTOCOMPLETE]
+      refute IRB.conf[:USE_AUTOCOMPLETE]
 
       ENV['IRB_USE_AUTOCOMPLETE'] = ''
       IRB.setup(__FILE__)

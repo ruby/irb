@@ -79,7 +79,7 @@ module IRB # :nodoc:
 
     @CONF[:USE_SINGLELINE] = false unless defined?(ReadlineInputMethod)
     @CONF[:USE_COLORIZE] = (nc = ENV['NO_COLOR']).nil? || nc.empty?
-    @CONF[:USE_AUTOCOMPLETE] = ENV.fetch("IRB_USE_AUTOCOMPLETE", "true") != "false"
+    @CONF[:USE_AUTOCOMPLETE] = ENV.fetch("IRB_USE_AUTOCOMPLETE", "false") != "false"
     @CONF[:COMPLETOR] = ENV["IRB_COMPLETOR"]&.to_sym
     @CONF[:INSPECT_MODE] = true
     @CONF[:USE_TRACER] = false

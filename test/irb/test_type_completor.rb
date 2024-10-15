@@ -101,7 +101,6 @@ module TestIRB
         type "puts completor.doc_namespace 'a = n.chr;', 'a.encoding', '', bind: binding"
         type "exit!"
       end
-      assert_match(/Completion: Autocomplete, ReplTypeCompletor/, output)
       assert_match(/a\.bit_length/, output)
       assert_match(/String#encoding/, output)
     end

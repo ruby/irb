@@ -215,7 +215,7 @@ module TestIRB
     end
 
     def test_default_config
-      assert_equal(true, @context.use_autocomplete?)
+      assert_equal(false, @context.use_autocomplete?)
     end
 
     def test_echo_on_assignment
