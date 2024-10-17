@@ -467,6 +467,7 @@ module IRB
       Reline.output = @stdout
       Reline.prompt_proc = @prompt_proc
       Reline.auto_indent_proc = @auto_indent_proc if @auto_indent_proc
+      @completor.clear_symbol_cache if @completor.respond_to? :clear_symbol_cache
       if l = Reline.readmultiline(@prompt, false, &@check_termination_proc)
         Reline::HISTORY.push(l) if !l.empty?
         @line[@line_no += 1] = l + "\n"
