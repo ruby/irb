@@ -96,6 +96,31 @@ module IRB
       end
     end
 
+    def clear_symbol_cache
+      @sorted_symbol_names = nil
+    end
+
+    def symbol_candidates(prefix, first: 50, last: 50)
+      limit = first + last
+      symbol_names = @sorted_symbol_names ||= Symbol.all_symbols.filter_map do
+        _1.inspect[1..]
+      rescue EncodingError
+        # ignore
+      end.sort
+      start_index = symbol_names.bsearch_index { |name| name >= prefix }
+      return [] unless start_index
+
+      end_index = (start_index...symbol_names.size).bsearch { |i| !symbol_names[i].start_with?(prefix) } || symbol_names.size
+      if end_index - start_index <= limit
+        symbol_names[start_index...end_index]
+      else
+        # To avoid wrong perfect match completion, we should include first and last candidates.
+        # e.g. prefix = 'a', symbol_names = 'aaaa'...'zzzz'
+        # if this method returns first 100 of symbol_names('aaa'..'aadv'), Reline/Readline will wrongly completes the common prefix 'aa'.
+        symbol_names[start_index, first] + symbol_names[end_index - last, last]
+      end
+    end
+
     def retrieve_files_to_require_relative_from_current_dir
       @files_from_current_dir ||= Dir.glob("**/*.{rb,#{RbConfig::CONFIG['DLEXT']}}", base: '.').map { |path|
         path.sub(/\.(rb|#{RbConfig::CONFIG['DLEXT']})\z/, '')
@@ -116,18 +141,27 @@ module IRB
       # When completing the argument of `help` command, only commands should be candidates
       return command_candidates(target) if preposing.match?(HELP_COMMAND_PREPOSING)
 
-      commands = if preposing.empty?
-        command_candidates(target)
+      type_candidates = type_completion_candidates(preposing, target, bind)
+
+      if preposing.empty?
+        command_candidates(target) | type_candidates
       # It doesn't make sense to propose commands with other preposing
       else
-        []
+        type_candidates
       end
+    end
 
+    def type_completion_candidates(preposing, target, bind)
       result = ReplTypeCompletor.analyze(preposing + target, binding: bind, filename: @context.irb_path)
+      return [] unless result
 
-      return commands unless result
-
-      commands | result.completion_candidates.map { target + _1 }
+      analyze_result = result.instance_variable_get(:@analyze_result)
+      if analyze_result.is_a?(Array) && analyze_result[0] == :symbol && analyze_result[1].is_a?(String)
+        symbol_prefix = analyze_result[1]
+        symbol_candidates(symbol_prefix).map { target + _1[symbol_prefix.size..] }
+      else
+        result.completion_candidates.map { target + _1 }
+      end
     end
 
     def doc_namespace(preposing, matched, _postposing, bind:)
@@ -280,12 +314,9 @@ module IRB
           nil
         else
           sym = $1
-          candidates = Symbol.all_symbols.collect do |s|
-            s.inspect
-          rescue EncodingError
-            # ignore
+          candidates = symbol_candidates(sym[1..]).map do |s|
+            ":#{s}"
           end
-          candidates.grep(/^#{Regexp.quote(sym)}/)
         end
       when /^::([A-Z][^:\.\(\)]*)$/
         # Absolute Constant or class methods

@@ -61,6 +61,14 @@ module TestIRB
       assert_doc_namespace('num.chr.', 'upcase', 'String#upcase', binding: bind)
     end
 
+    def test_complete_symbol_limit
+      symbols = 200.times.map { :"irb_test_sym_limit_#{_1}" }.sort
+      candidates = @completor.completion_candidates('', ':irb_test_sym_lim', '', bind: binding)
+      assert_include(candidates, symbols.first.inspect)
+      assert_include(candidates, symbols.last.inspect)
+      assert_equal(candidates.size, 100)
+    end
+
     def test_inspect
       assert_match(/\AReplTypeCompletor.*\z/, @completor.inspect)
     end
