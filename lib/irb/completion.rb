@@ -219,6 +219,22 @@ module IRB
       retrieve_completion_data(matched, bind: bind, doc_namespace: true)
     end
 
+    def clear_symbol_cache
+      @all_symbols = nil
+    end
+
+    def symbol_candidates(prefix, first:, last:)
+      limit = first + last
+      symbols = @all_symbols ||= Symbol.all_symbols.sort
+      start_index = symbols.bsearch_index { |sym| sym.to_s >= prefix }
+      end_index = (start_index...symbols.size).bsearch { |i| !symbols[i].start_with?(prefix) } || symbols.size
+      if end_index - start_index <= limit
+        symbols[start_index..end_index]
+      else
+        symbols[start_index, first] + symbols[end_index - last, last]
+      end
+    end
+
     def retrieve_completion_data(input, bind:, doc_namespace:)
       case input
       # this regexp only matches the closing character because of irb's Reline.completer_quote_characters setting
@@ -280,12 +296,12 @@ module IRB
           nil
         else
           sym = $1
-          candidates = Symbol.all_symbols.collect do |s|
-            s.inspect
+          candidates = symbol_candidates(sym[1..], first: 50, last: 50).filter_map do |s|
+            ins = s.inspect
+            ins if ins.start_with?(sym)
           rescue EncodingError
             # ignore
           end
-          candidates.grep(/^#{Regexp.quote(sym)}/)
         end
       when /^::([A-Z][^:\.\(\)]*)$/
         # Absolute Constant or class methods
