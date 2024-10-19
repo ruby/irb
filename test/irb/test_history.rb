@@ -14,6 +14,7 @@ module TestIRB
       @original_verbose, $VERBOSE = $VERBOSE, nil
       @tmpdir = Dir.mktmpdir("test_irb_history_")
       setup_envs(home: @tmpdir)
+      IRB.conf[:LC_MESSAGES] = IRB::Locale.new
       save_encodings
       IRB.instance_variable_set(:@existing_rc_name_generators, nil)
     end
@@ -148,7 +149,6 @@ module TestIRB
     end
 
     def test_history_concurrent_use_not_present
-      IRB.conf[:LC_MESSAGES] = IRB::Locale.new
       IRB.conf[:SAVE_HISTORY] = 1
       io = TestInputMethodWithRelineHistory.new
       io.class::HISTORY.clear
@@ -165,9 +165,9 @@ module TestIRB
 
     def test_history_different_encodings
       IRB.conf[:SAVE_HISTORY] = 2
-      IRB.__send__(:set_encoding, Encoding::US_ASCII.name)
-      locale = IRB::Locale.new("en_US.ASCII")
-      assert_history(<<~EXPECTED_HISTORY.encode(Encoding::US_ASCII), <<~INITIAL_HISTORY.encode(Encoding::UTF_8), <<~INPUT, locale: locale)
+      IRB.conf[:LC_MESSAGES] = IRB::Locale.new("en_US.ASCII")
+      IRB.__send__(:set_encoding, Encoding::US_ASCII.name, override: false)
+      assert_history(<<~EXPECTED_HISTORY.encode(Encoding::US_ASCII), <<~INITIAL_HISTORY.encode(Encoding::UTF_8), <<~INPUT)
         ????
         exit
       EXPECTED_HISTORY
@@ -236,8 +236,7 @@ module TestIRB
       end
     end
 
-    def assert_history(expected_history, initial_irb_history, input, input_method = TestInputMethodWithRelineHistory, locale: IRB::Locale.new)
-      IRB.conf[:LC_MESSAGES] = locale
+    def assert_history(expected_history, initial_irb_history, input, input_method = TestInputMethodWithRelineHistory)
       actual_history = nil
       history_file = IRB.rc_file("_history")
       ENV["HOME"] = @tmpdir
