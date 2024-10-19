@@ -10,17 +10,19 @@ return if RUBY_PLATFORM.match?(/solaris|mswin|mingw/i)
 module TestIRB
   class HistoryTest < TestCase
     def setup
+      @conf_backup = IRB.conf.dup
       @original_verbose, $VERBOSE = $VERBOSE, nil
       @tmpdir = Dir.mktmpdir("test_irb_history_")
       setup_envs(home: @tmpdir)
-      @backup_default_external = Encoding.default_external
+      save_encodings
       IRB.instance_variable_set(:@existing_rc_name_generators, nil)
     end
 
     def teardown
+      IRB.conf.replace(@conf_backup)
       IRB.instance_variable_set(:@existing_rc_name_generators, nil)
       teardown_envs
-      Encoding.default_external = @backup_default_external
+      restore_encodings
       $VERBOSE = @original_verbose
       FileUtils.rm_rf(@tmpdir)
     end
@@ -163,7 +165,7 @@ module TestIRB
 
     def test_history_different_encodings
       IRB.conf[:SAVE_HISTORY] = 2
-      Encoding.default_external = Encoding::US_ASCII
+      IRB.__send__(:set_encoding, Encoding::US_ASCII.name)
       locale = IRB::Locale.new("en_US.ASCII")
       assert_history(<<~EXPECTED_HISTORY.encode(Encoding::US_ASCII), <<~INITIAL_HISTORY.encode(Encoding::UTF_8), <<~INPUT, locale: locale)
         ????
