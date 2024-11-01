@@ -77,9 +77,9 @@ module TestIRB
         "%w[a b]" => "#{RED}#{BOLD}%w[#{CLEAR}#{RED}a#{CLEAR} #{RED}b#{CLEAR}#{RED}#{BOLD}]#{CLEAR}",
         "%W[a b]" => "#{RED}#{BOLD}%W[#{CLEAR}#{RED}a#{CLEAR} #{RED}b#{CLEAR}#{RED}#{BOLD}]#{CLEAR}",
         "%s[a b]" => "#{YELLOW}%s[#{CLEAR}#{YELLOW}a b#{CLEAR}#{YELLOW}]#{CLEAR}",
-        "%i[c d]" => "#{YELLOW}%i[#{CLEAR}#{YELLOW}c#{CLEAR}#{YELLOW} #{CLEAR}#{YELLOW}d#{CLEAR}#{YELLOW}]#{CLEAR}",
-        "%I[c d]" => "#{YELLOW}%I[#{CLEAR}#{YELLOW}c#{CLEAR}#{YELLOW} #{CLEAR}#{YELLOW}d#{CLEAR}#{YELLOW}]#{CLEAR}",
-        "{'a': 1}" => "{#{RED}#{BOLD}'#{CLEAR}#{RED}a#{CLEAR}#{RED}#{BOLD}':#{CLEAR} #{BLUE}#{BOLD}1#{CLEAR}}",
+        "%i[c d]" => "#{YELLOW}%i[#{CLEAR}#{YELLOW}c#{CLEAR} #{YELLOW}d#{CLEAR}#{YELLOW}]#{CLEAR}",
+        "%I[c d]" => "#{YELLOW}%I[#{CLEAR}#{YELLOW}c#{CLEAR} #{YELLOW}d#{CLEAR}#{YELLOW}]#{CLEAR}",
+        "{'a': 1}" => "{#{MAGENTA}'a':#{CLEAR} #{BLUE}#{BOLD}1#{CLEAR}}",
         ":Struct" => "#{YELLOW}:#{CLEAR}#{YELLOW}Struct#{CLEAR}",
         '"#{}"' => "#{RED}#{BOLD}\"#{CLEAR}#{RED}\#{#{CLEAR}#{RED}}#{CLEAR}#{RED}#{BOLD}\"#{CLEAR}",
         ':"a#{}b"' => "#{YELLOW}:\"#{CLEAR}#{YELLOW}a#{CLEAR}#{YELLOW}\#{#{CLEAR}#{YELLOW}}#{CLEAR}#{YELLOW}b#{CLEAR}#{YELLOW}\"#{CLEAR}",
@@ -103,45 +103,21 @@ module TestIRB
         "foo(*%W(bar))" => "foo(*#{RED}#{BOLD}%W(#{CLEAR}#{RED}bar#{CLEAR}#{RED}#{BOLD})#{CLEAR})",
         "$stdout" => "#{GREEN}#{BOLD}$stdout#{CLEAR}",
         "$&" => "#{GREEN}#{BOLD}$&#{CLEAR}",
+        "$1" => "#{GREEN}#{BOLD}$1#{CLEAR}",
         "__END__" => "#{GREEN}__END__#{CLEAR}",
         "foo\n__END__\nbar" => "foo\n#{GREEN}__END__#{CLEAR}\nbar",
         "foo\n<<A\0\0bar\nA\nbaz" => "foo\n#{RED}<<A#{CLEAR}^@^@bar\n#{RED}A#{CLEAR}\nbaz",
         "<<A+1\nA" => "#{RED}<<A#{CLEAR}+#{BLUE}#{BOLD}1#{CLEAR}\n#{RED}A#{CLEAR}",
-      }
-
-      tests.merge!({
         "4.5.6" => "#{MAGENTA}#{BOLD}4.5#{CLEAR}#{RED}#{REVERSE}.6#{CLEAR}",
-        "\e[0m\n" => "#{RED}#{REVERSE}^[#{CLEAR}[#{BLUE}#{BOLD}0#{CLEAR}#{RED}#{REVERSE}m#{CLEAR}\n",
+        "\e[0m\n" => "#{RED}#{REVERSE}^[#{CLEAR}[#{BLUE}#{BOLD}0#{CLEAR}m\n",
         "<<EOS\nhere\nEOS" => "#{RED}<<EOS#{CLEAR}\n#{RED}here#{CLEAR}\n#{RED}EOS#{CLEAR}",
-      })
-
-      # specific to Ruby 3.0+
-      if Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('3.0.0')
-        tests.merge!({
-          "[1]]]\u0013" => "[#{BLUE}#{BOLD}1#{CLEAR}]#{RED}#{REVERSE}]#{CLEAR}#{RED}#{REVERSE}]#{CLEAR}#{RED}#{REVERSE}^S#{CLEAR}",
-        })
-        tests.merge!({
-          "def req(true) end" => "#{GREEN}def#{CLEAR} #{BLUE}#{BOLD}req#{CLEAR}(#{RED}#{REVERSE}true#{CLEAR}) #{RED}#{REVERSE}end#{CLEAR}",
-          "nil = 1" => "#{RED}#{REVERSE}nil#{CLEAR} = #{BLUE}#{BOLD}1#{CLEAR}",
-          "alias $x $1" => "#{GREEN}alias#{CLEAR} #{GREEN}#{BOLD}$x#{CLEAR} #{RED}#{REVERSE}$1#{CLEAR}",
-          "class bad; end" => "#{GREEN}class#{CLEAR} #{RED}#{REVERSE}bad#{CLEAR}; #{GREEN}end#{CLEAR}",
-          "def req(@a) end" => "#{GREEN}def#{CLEAR} #{BLUE}#{BOLD}req#{CLEAR}(#{RED}#{REVERSE}@a#{CLEAR}) #{GREEN}end#{CLEAR}",
-        })
-        if Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('3.2.0')
-          tests.merge!({
-            "def req(true) end" => "#{GREEN}def#{CLEAR} #{BLUE}#{BOLD}req#{CLEAR}(#{RED}#{REVERSE}true#{CLEAR}#{RED}#{REVERSE})#{CLEAR} #{RED}#{REVERSE}end#{CLEAR}",
-          })
-        end
-      else
-        tests.merge!({
-          "[1]]]\u0013" => "[#{BLUE}#{BOLD}1#{CLEAR}]#{RED}#{REVERSE}]#{CLEAR}]^S",
-          "def req(true) end" => "#{GREEN}def#{CLEAR} #{BLUE}#{BOLD}req#{CLEAR}(#{RED}#{REVERSE}true#{CLEAR}) end",
-          "nil = 1" => "#{CYAN}#{BOLD}nil#{CLEAR} = #{BLUE}#{BOLD}1#{CLEAR}",
-          "alias $x $1" => "#{GREEN}alias#{CLEAR} #{GREEN}#{BOLD}$x#{CLEAR} #{GREEN}#{BOLD}$1#{CLEAR}",
-          "class bad; end" => "#{GREEN}class#{CLEAR} bad; #{GREEN}end#{CLEAR}",
-          "def req(@a) end" => "#{GREEN}def#{CLEAR} #{BLUE}#{BOLD}req#{CLEAR}(@a) #{GREEN}end#{CLEAR}",
-        })
-      end
+        "[1]]]\u0013" => "[#{BLUE}#{BOLD}1#{CLEAR}]#{RED}#{REVERSE}]#{CLEAR}#{RED}#{REVERSE}]#{CLEAR}#{RED}#{REVERSE}^S#{CLEAR}",
+        "def req(true) end" => "#{GREEN}def#{CLEAR} #{BLUE}#{BOLD}req#{CLEAR}(#{RED}#{REVERSE}true#{CLEAR}#{RED}#{REVERSE})#{CLEAR} #{GREEN}end#{CLEAR}",
+        "nil = 1" => "#{CYAN}#{BOLD}nil#{CLEAR} #{RED}#{REVERSE}=#{CLEAR} #{BLUE}#{BOLD}1#{CLEAR}",
+        "alias $x $1" => "#{GREEN}alias#{CLEAR} #{GREEN}#{BOLD}$x#{CLEAR} #{RED}#{REVERSE}$1#{CLEAR}",
+        "class bad; end" => "#{GREEN}class#{CLEAR} #{RED}#{REVERSE}bad#{CLEAR}; #{GREEN}end#{CLEAR}",
+        "def req(@a) end" => "#{GREEN}def#{CLEAR} #{BLUE}#{BOLD}req#{CLEAR}(#{RED}#{REVERSE}@a#{CLEAR}) #{GREEN}end#{CLEAR}",
+      }
 
       tests.each do |code, result|
         assert_equal_with_term(result, code, complete: true)
@@ -174,8 +150,8 @@ module TestIRB
     def test_colorize_code_complete_true
       # `complete: true` behaviors. Warn end-of-file.
       {
-        "'foo' + 'bar" => "#{RED}#{BOLD}'#{CLEAR}#{RED}foo#{CLEAR}#{RED}#{BOLD}'#{CLEAR} + #{RED}#{BOLD}'#{CLEAR}#{RED}#{REVERSE}bar#{CLEAR}",
-        "('foo" => "(#{RED}#{BOLD}'#{CLEAR}#{RED}#{REVERSE}foo#{CLEAR}",
+        "'foo' + 'bar" => "#{RED}#{BOLD}'#{CLEAR}#{RED}foo#{CLEAR}#{RED}#{BOLD}'#{CLEAR} + #{RED}#{REVERSE}'#{CLEAR}#{RED}bar#{CLEAR}",
+        "('foo" => "(#{RED}#{REVERSE}'#{CLEAR}#{RED}foo#{CLEAR}",
       }.each do |code, result|
         assert_equal_with_term(result, code, complete: true)
 
