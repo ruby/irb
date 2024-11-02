@@ -32,6 +32,14 @@ module TestIRB
         @list[@line_no]&.tap {@line_no += 1}
       end
 
+      def puts(...)
+        Kernel.puts(...)
+      end
+
+      def print(...)
+        Kernel.print(...)
+      end
+
       def eof?
         @line_no >= @list.size
       end
