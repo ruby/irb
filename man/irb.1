@@ -7,26 +7,7 @@
 .Nd Interactive Ruby Shell
 .Sh SYNOPSIS
 .Nm
-.Op Fl -version
-.Op Fl dfUw
-.Op Fl I Ar directory
-.Op Fl r Ar library
-.Op Fl E Ar external Ns Op : Ns Ar internal
-.Op Fl W Ns Op Ar level
-.Op Fl - Ns Oo no Oc Ns inspect
-.Op Fl - Ns Oo no Oc Ns multiline
-.Op Fl - Ns Oo no Oc Ns singleline
-.Op Fl - Ns Oo no Oc Ns echo
-.Op Fl - Ns Oo no Oc Ns colorize
-.Op Fl - Ns Oo no Oc Ns autocomplete
-.Op Fl - Ns Oo no Oc Ns verbose
-.Op Fl -prompt Ar mode
-.Op Fl -prompt-mode Ar mode
-.Op Fl -inf-ruby-mode
-.Op Fl -simple-prompt
-.Op Fl -noprompt
-.Op Fl -tracer
-.Op Fl -back-trace-limit Ar n
+.Op Ar OPTIONS
 .Op Fl -
 .Op program_file
 .Op argument ...
@@ -38,6 +19,7 @@ is the REPL(read-eval-print loop) environment for Ruby programs.
 .Sh OPTIONS
 .Bl -tag -width "1234567890123" -compact
 .Pp
+.It Fl v
 .It Fl -version
 Prints the version of
 .Nm .
@@ -65,18 +47,21 @@ Sets the default value for internal encodings
 Same as `ruby -d' .
 Sets
 .Li $DEBUG
+and
+.Li $VERBOSE
 to true.
 .Pp
 .It Fl f
-Suppresses read of
-.Pa ~/.irbrc .
+Doesn't initialize from configuration file.
 .Pp
 .It Fl w
 Same as `ruby -w' .
+Suppresses warnings.
 .Pp
 .Pp
-.It Fl W
+.It Fl W Ns Op Ar level Ns =2
 Same as `ruby -W' .
+Sets warning level: 0=silence, 1=medium, 2=verbose
 .Pp
 .It Fl h
 .It Fl -help
@@ -86,6 +71,9 @@ Prints a summary of the options.
 Same as `ruby -r'.
 Causes irb to load the library using require.
 .Pp
+.It Fl -no-pager
+Doesn't use pager.
+.Pp
 .It Fl -inspect
 Uses `inspect' for output (default except for bc mode)
 .Pp
@@ -93,7 +81,7 @@ Uses `inspect' for output (default except for bc mode)
 Doesn't use inspect for output
 .Pp
 .It Fl -multiline
-Uses multiline editor module.
+Uses multiline editor module (default).
 .Pp
 .It Fl -nomultiline
 Doesn't use multiline editor module.
@@ -102,7 +90,7 @@ Doesn't use multiline editor module.
 Uses singleline editor module.
 .Pp
 .It Fl -nosingleline
-Doesn't use singleline editor module.
+Doesn't use singleline editor module (default).
 .Pp
 .Pp
 .It Fl -extra-doc-dir
@@ -127,21 +115,30 @@ Show truncated result on assignment (default).
 .Pp
 .Pp
 .It Fl -colorize
-Use colorization.
+Use colorization (default).
 .Pp
 .It Fl -nocolorize
 Don't use colorization.
 .Pp
 .Pp
 .It Fl -autocomplete
-Use autocompletion.
+Use autocompletion (default).
 .Pp
 .It Fl -noautocomplete
 Don't use autocompletion.
 .Pp
 .Pp
+.It Fl -script
+Script mode (default, treat first argument as script)
+.Pp
+.It Fl -noscript
+No script mode (leave arguments in argv)
+.Pp
+.It Fl -single-irb
+Shares self with sub-irb.
+.Pp
 .It Fl -regexp-completor
-Use regexp based completion.
+Use regexp based completion (default).
 .Pp
 .It Fl -type-completor
 Use type based completion.
@@ -156,13 +153,14 @@ Don't show details.
 .It Fl -prompt Ar mode
 .It Fl -prompt-mode Ar mode
 Switch prompt mode. Pre-defined prompt modes are
-`default', `simple', `xmp' and `inf-ruby'.
+`default', `classic', `simple', `inf-ruby', `xmp' and `null'.
 .Pp
 .It Fl -inf-ruby-mode
 Uses prompt appropriate for inf-ruby-mode on emacs.
 Suppresses --multiline and --singleline.
 .Pp
 .It Fl -simple-prompt
+.It Fl -sample-book-mode
 Makes prompts simple.
 .Pp
 .It Fl -noprompt
@@ -177,8 +175,13 @@ Displays backtrace top
 and tail
 .Ar n Ns .
 The default value is 16.
-.El
 .Pp
+.It Fl -context-mode Ar n
+Selects method to create Binding object for new workspace.
+.Ar n
+is an integer between 0 and 4, inclusive.
+.Pp
+.El
 .Sh ENVIRONMENT
 .Bl -tag -compact -width "XDG_CONFIG_HOME"
 .It Ev IRB_LANG
