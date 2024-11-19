@@ -361,6 +361,10 @@ irb(main):002> a.first. # Completes Integer methods
 - `VISUAL`: Its value would be used to open files by the `edit` command.
 - `EDITOR`: Its value would be used to open files by the `edit` command if `VISUAL` is unset.
 - `IRBRC`: The file specified would be evaluated as IRB's rc-file.
+- `XDG_CONFIG_HOME`: If it is set and `IRBRC` is unset, the file `$XDG_CONFIG_HOME/irb/irbrc` would be evaluated as IRB's rc-file.
+- `RI_PAGER`: The command specified would be used as a pager.
+- `PAGER`: The command specified would be used as a pager if `RI_PAGER` is unset.
+- `IRB_LANG`, `LC_MESSAGES`, `LC_ALL`, `LANG`: The first of these that is set would be used as the locale value.
 
 ## Documentation
 
