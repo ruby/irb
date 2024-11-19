@@ -10,7 +10,7 @@ jobs:
   ruby-versions:
     uses: ruby/actions/.github/workflows/ruby_versions.yml@master
     with:
-      engine: cruby-truffleruby
+      engine: cruby
       min_version: 2.7
   lint:
     runs-on: ubuntu-latest
@@ -30,8 +30,6 @@ jobs:
       matrix:
         ruby: ${{ fromJson(needs.ruby-versions.outputs.versions) }}
         with_latest_reline: [true, false]
-        exclude:
-          - ruby: truffleruby
       fail-fast: false
     runs-on: ubuntu-latest
     env:
@@ -80,9 +78,6 @@ jobs:
       matrix:
         ruby: ${{ fromJson(needs.ruby-versions.outputs.versions) }}
         with_latest_reline: [true, false]
-        exclude:
-          - ruby: truffleruby
-          - ruby: truffleruby-head
       fail-fast: false
     env:
       WITH_LATEST_RELINE: ${{matrix.with_latest_reline}}
