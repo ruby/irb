@@ -673,8 +673,8 @@ module IRB
       end
     end
 
-    def inspect_last_value # :nodoc:
-      @inspect_method.inspect_value(@last_value)
+    def inspect_last_value(output = +'') # :nodoc:
+      @inspect_method.inspect_value(@last_value, output)
     end
 
     NOPRINTING_IVARS = ["@last_value"] # :nodoc:
