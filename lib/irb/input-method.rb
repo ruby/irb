@@ -48,6 +48,14 @@ module IRB
       false
     end
 
+    def puts
+      fail NotImplementedError
+    end
+
+    def print
+      fail NotImplementedError
+    end
+
     # For debug message
     def inspect
       'Abstract InputMethod'
@@ -73,6 +81,14 @@ module IRB
       print @prompt
       line = @stdin.gets
       @line[@line_no += 1] = line
+    end
+
+    def puts(...)
+      @stdout.puts(...)
+    end
+
+    def print(...)
+      @stdout.print(...)
     end
 
     # Whether the end of this input method has been reached, returns +true+ if
@@ -157,6 +173,14 @@ module IRB
       @io.gets
     end
 
+    def puts(...)
+      ::Kernel.puts(...)
+    end
+
+    def print(...)
+      ::Kernel.print(...)
+    end
+
     # The external encoding for standard input.
     def encoding
       @external_encoding
@@ -223,6 +247,14 @@ module IRB
         @eof = true
         l
       end
+    end
+
+    def puts(...)
+      @stdout.puts(...)
+    end
+
+    def print(...)
+      @stdout.format(...)
     end
 
     # Whether the end of this input method has been reached, returns +true+
@@ -480,6 +512,14 @@ module IRB
         @eof = true
         l
       end
+    end
+
+    def puts(...)
+      @stdout.puts(...)
+    end
+
+    def print(...)
+      @stdout.print(...)
     end
 
     # Whether the end of this input method has been reached, returns +true+
