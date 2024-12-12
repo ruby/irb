@@ -504,10 +504,18 @@ module TestIRB
 
       output = run_ruby_file do
         type "history"
+        type "puts 'foo'"
+        type "history"
         type "exit!"
       end
 
-      assert_include(output, "old_history_3")
+      assert_include(output, "irb:rdbg(main):002") # assert that we're in an irb:rdbg session
+      assert_include(output, "5: history")
+      assert_include(output, "4: puts 'foo'")
+      assert_include(output, "3: history")
+      assert_include(output, "2: old_history_3")
+      assert_include(output, "1: old_history_2")
+      assert_include(output, "0: old_history_1")
     end
 
     private
