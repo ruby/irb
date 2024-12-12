@@ -488,6 +488,28 @@ module TestIRB
       HISTORY
     end
 
+    def test_direct_debug_session_loads_history
+      @envs['RUBY_DEBUG_IRB_CONSOLE'] = "1"
+      write_history <<~HISTORY
+        old_history_1
+        old_history_2
+        old_history_3
+      HISTORY
+
+      write_ruby <<~'RUBY'
+        require 'debug'
+        debugger
+        binding.irb # needed to satisfy run_ruby_file
+      RUBY
+
+      output = run_ruby_file do
+        type "history"
+        type "exit!"
+      end
+
+      assert_include(output, "old_history_3")
+    end
+
     private
 
     def write_history(history)
