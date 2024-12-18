@@ -19,6 +19,8 @@ gem "test-unit-ruby-core"
 
 gem "rubocop"
 
+gem "pp"
+
 gem "tracer" if !is_truffleruby
 gem "debug", github: "ruby/debug", platforms: [:mri, :mswin]
 
