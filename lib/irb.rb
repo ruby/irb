@@ -1369,40 +1369,63 @@ module IRB
     end
 
     def output_value(omit = false) # :nodoc:
-      str = @context.inspect_last_value
-      multiline_p = str.include?("\n")
+      return_format = @context.return_format
+      unless return_format.include?('%')
+        puts return_format
+        return
+      end
+      unless return_format.include?('%s')
+        puts return_format % @context.inspect_last_value.chomp
+        return
+      end
+
+      return_format_pre, return_format_post = return_format.split('%s', 2)
+
+      winheight, winwidth = @context.io.winsize
       if omit
-        winwidth = @context.io.winsize.last
-        if multiline_p
-          first_line = str.split("\n").first
-          result = @context.newline_before_multiline_output? ? (@context.return_format % first_line) : first_line
-          output_width = Reline::Unicode.calculate_width(result, true)
-          diff_size = output_width - Reline::Unicode.calculate_width(first_line, true)
-          if diff_size.positive? and output_width > winwidth
-            lines, _ = Reline::Unicode.split_by_width(first_line, winwidth - diff_size - 3)
-            str = "%s..." % lines.first
-            str += "\e[0m" if Color.colorable?
-            multiline_p = false
-          else
-            str = str.gsub(/(\A.*?\n).*/m, "\\1...")
-            str += "\e[0m" if Color.colorable?
+        out = IRB::Pager::PagingIO.new(winwidth, 2) do |lines|
+          puts return_format_pre if @context.newline_before_multiline_output?
+          omission = "\e[0m" if Color.colorable?
+          puts "#{lines.first}...#{omission}#{return_format_post}"
+          return
+        end
+        out << return_format_pre unless @context.newline_before_multiline_output?
+        @context.inspect_last_value(out)
+        unless out.multipage?
+          print return_format_pre if @context.newline_before_multiline_output?
+          puts out.string.chomp + return_format_post
+        end
+      elsif !IRB::Pager.should_page?
+        puts return_format % @context.inspect_last_value.chomp
+      else
+        out = IRB::Pager::PagingIO.new(winwidth, winheight - (@context.newline_before_multiline_output? ? 1 : 0)) do |lines|
+          if @context.newline_before_multiline_output?
+            lines = [return_format_pre + "\n", *lines]
+          end
+          puts lines.take(winheight - 1).join
+          print "\e[0mPress SPACE key to show the full content:"
+          unless STDIN.raw { |io| io.readpartial(1024) }&.start_with?(' ')
+            print "\r\e[K"
+            return
+          end
+          print "\r\e[KPreparing content..."
+        end
+        out << return_format_pre unless @context.newline_before_multiline_output?
+        @context.inspect_last_value(out)
+        content = out.string.chomp
+        if @context.newline_before_multiline_output?
+          content = return_format_pre + (out.multipage? || content.include?("\n") ? "\n" : '') + content
+        end
+        content += return_format_post
+        if out.multipage?
+          print "\r\e[K"
+          Pager.page(retain_content: true) do |io|
+            io.puts content
           end
         else
-          output_width = Reline::Unicode.calculate_width(@context.return_format % str, true)
-          diff_size = output_width - Reline::Unicode.calculate_width(str, true)
-          if diff_size.positive? and output_width > winwidth
-            lines, _ = Reline::Unicode.split_by_width(str, winwidth - diff_size - 3)
-            str = "%s..." % lines.first
-            str += "\e[0m" if Color.colorable?
-          end
+          puts content
         end
       end
-
-      if multiline_p && @context.newline_before_multiline_output?
-        str = "\n" + str
-      end
-
-      Pager.page_content(format(@context.return_format, str), retain_content: true)
     end
 
     # Outputs the local variables to this current session, including #signal_status
