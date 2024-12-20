@@ -724,6 +724,13 @@ module TestIRB
       IRB.conf[:COMPLETOR] = original_completor
     end
 
+    def test_ap_name
+      assert_equal 'irb', @context.ap_name
+      IRB.conf[:AP_NAME] = 'foo'
+      ap_name_modified_context = IRB::Context.new(nil, IRB::WorkSpace.new(Object.new), TestInputMethod.new)
+      assert_equal 'foo', ap_name_modified_context.ap_name
+    end
+
     private
 
     def without_colorize
