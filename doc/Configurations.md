@@ -1,79 +1,51 @@
-## Indexes
+# Configure \IRB
 
-### Index of Command-Line Options
+## Configuration Sources
 
-These are the \IRB command-line options, with links to explanatory text:
+\IRB configurations can be set through multiple sources, each with its own precedence:
 
-- `-d`: Set `$DEBUG` and {$VERBOSE}[rdoc-ref:IRB@Verbosity]
-  to `true`.
-- `-E _ex_[:_in_]`: Set initial external (ex) and internal (in)
-  {encodings}[rdoc-ref:IRB@Encodings] (same as `ruby -E`).
-- `-f`: Don't initialize from {configuration file}[rdoc-ref:IRB@Configuration+File].
-- `-I _dirpath_`: Specify {$LOAD_PATH directory}[rdoc-ref:IRB@Load+Modules]
-  (same as `ruby -I`).
-- `-r _load-module_`: Require {load-module}[rdoc-ref:IRB@Load+Modules]
-  (same as `ruby -r`).
-- `-U`: Set external and internal {encodings}[rdoc-ref:IRB@Encodings] to UTF-8.
-- `-w`: Suppress {warnings}[rdoc-ref:IRB@Warnings] (same as `ruby -w`).
-- `-W[_level_]`: Set {warning level}[rdoc-ref:IRB@Warnings];
-  0=silence, 1=medium, 2=verbose (same as `ruby -W`).
-- `--autocomplete`: Use {auto-completion}[rdoc-ref:IRB@Automatic+Completion].
-- `--back-trace-limit _n_`: Set a {backtrace limit}[rdoc-ref:IRB@Tracer];
-  display at most the top `n` and bottom `n` entries.
-- `--colorize`: Use {color-highlighting}[rdoc-ref:IRB@Color+Highlighting]
-  for input and output.
-- `--context-mode _n_`: Select method to create Binding object
-  for new {workspace}[rdoc-ref:IRB@Commands]; `n` in range `0..4`.
-- `--echo`: Print ({echo}[rdoc-ref:IRB@Return-Value+Printing+-28Echoing-29])
-  return values.
-- `--extra-doc-dir _dirpath_`:
-  Add a {documentation directory}[rdoc-ref:IRB@RI+Documentation+Directories]
-  for the documentation dialog.
-- `--inf-ruby-mode`: Set prompt mode to {:INF_RUBY}[rdoc-ref:IRB@Pre-Defined+Prompts]
-  (appropriate for `inf-ruby-mode` on Emacs);
-  suppresses --multiline and --singleline.
-- `--inspect`: Use method `inspect` for printing ({echoing}[rdoc-ref:IRB@Return-Value+Printing+-28Echoing-29])
-  return values.
-- `--multiline`: Use the multiline editor as the {input method}[rdoc-ref:IRB@Input+Method].
-- `--noautocomplete`: Don't use {auto-completion}[rdoc-ref:IRB@Automatic+Completion].
-- `--nocolorize`: Don't use {color-highlighting}[rdoc-ref:IRB@Color+Highlighting]
-  for input and output.
-- `--noecho`: Don't print ({echo}[rdoc-ref:IRB@Return-Value+Printing+-28Echoing-29])
-  return values.
-- `--noecho-on-assignment`: Don't print ({echo}[rdoc-ref:IRB@Return-Value+Printing+-28Echoing-29])
-  result on assignment.
-- `--noinspect`: Don't se method `inspect` for printing ({echoing}[rdoc-ref:IRB@Return-Value+Printing+-28Echoing-29])
-  return values.
-- `--nomultiline`: Don't use the multiline editor as the {input method}[rdoc-ref:IRB@Input+Method].
-- `--noprompt`: Don't print {prompts}[rdoc-ref:IRB@Prompt+and+Return+Formats].
-- `--noscript`:  Treat the first command-line argument as a normal
-  {command-line argument}[rdoc-ref:IRB@Initialization+Script],
-  and include it in `ARGV`.
-- `--nosingleline`: Don't use the singleline editor as the {input method}[rdoc-ref:IRB@Input+Method].
-- `--noverbose`: Don't print {verbose}[rdoc-ref:IRB@Verbosity] details.
-- `--prompt _mode_`, `--prompt-mode _mode_`:
-  Set {prompt and return formats}[rdoc-ref:IRB@Prompt+and+Return+Formats];
-  `mode` may be a {pre-defined prompt}[rdoc-ref:IRB@Pre-Defined+Prompts]
-  or the name of a {custom prompt}[rdoc-ref:IRB@Custom+Prompts].
-- `--script`: Treat the first command-line argument as the path to an
-  {initialization script}[rdoc-ref:IRB@Initialization+Script],
-  and omit it from `ARGV`.
-- `--simple-prompt`, `--sample-book-mode`:
-  Set prompt mode to {:SIMPLE}[rdoc-ref:IRB@Pre-Defined+Prompts].
-- `--singleline`: Use the singleline editor as the {input method}[rdoc-ref:IRB@Input+Method].
-- `--tracer`: Use {Tracer}[rdoc-ref:IRB@Tracer] to print a stack trace for each input command.
-- `--truncate-echo-on-assignment`: Print ({echo}[rdoc-ref:IRB@Return-Value+Printing+-28Echoing-29])
-  truncated result on assignment.
-- `--verbose`Print {verbose}[rdoc-ref:IRB@Verbosity] details.
-- `-v`, `--version`: Print the {IRB version}[rdoc-ref:IRB@Version].
-- `-h`, `--help`: Print the {IRB help text}[rdoc-ref:IRB@Help].
-- `--`: Separate options from {arguments}[rdoc-ref:IRB@Command-Line+Arguments]
-  on the command-line.
+1. **Command-Line Options**: When some options are specified when starting \IRB, they can override default settings.
+2. **Configuration File**: If present, \IRB reads a configuration file containing Ruby code to set configurations.
+3. **Environment Variables**: Certain environment variables influence \IRB's behavior.
+4. **Hash `IRB.conf`**: This hash holds the current configuration settings, which can be modified during a session.
 
-### Index of \IRB.conf Entries
+### Configuration File Path Resolution
 
-These are the keys for hash \IRB.conf entries, with links to explanatory text;
-for each entry that is pre-defined, the initial value is given:
+\IRB searches for a configuration file in the following order:
+
+1. `$IRBRC`
+2. `$XDG_CONFIG_HOME/irb/irbrc`
+3. `$HOME/.irbrc`
+4. `$HOME/.config/irb/irbrc`
+5. `.irbrc` in the current directory
+6. `irb.rc` in the current directory
+7. `_irbrc` in the current directory
+8. `$irbrc` in the current directory
+
+If the `-f` command-line option is used, no configuration file is loaded.
+
+Method `conf.rc?` returns `true` if a configuration file was read, `false` otherwise. Hash entry `IRB.conf[:RC]` also contains that value.
+
+## Environment Variables
+
+- `NO_COLOR`: Disables \IRB's colorization.
+- `IRB_USE_AUTOCOMPLETE`: Setting to `false` disables autocompletion.
+- `IRB_COMPLETOR`: Configures auto-completion behavior (`regexp` or `type`).
+- `VISUAL` / `EDITOR`: Specifies the editor for the `edit` command.
+- `IRBRC`: Specifies the rc-file for configuration.
+- `XDG_CONFIG_HOME`: Used to locate the rc-file if `IRBRC` is unset.
+- `RI_PAGER` / `PAGER`: Specifies the pager for documentation.
+- `IRB_LANG`, `LC_MESSAGES`, `LC_ALL`, `LANG`: Determines the locale.
+
+## Hash `IRB.conf`
+
+The initial entries in hash `IRB.conf` are determined by:
+
+- Default values.
+- Command-line options, which may override defaults.
+- Direct assignments in the configuration file.
+
+You can see the hash by typing `IRB.conf`. Below are the primary entries:
 
 - `:AP_NAME`: \IRB {application name}[rdoc-ref:IRB@Application+Name];
   initial value: `'irb'`.
@@ -187,3 +159,114 @@ for each entry that is pre-defined, the initial value is given:
   initial value: `nil`.
 - `:__MAIN__`: The main \IRB object;
   initial value: `main`.
+
+## Notes on Initialization Precedence
+
+- Any conflict between an entry in hash `IRB.conf` and a command-line option is resolved in favor of the hash entry.
+- Hash `IRB.conf` affects the context only once, when the configuration file is interpreted; any subsequent changes to it do not affect the context and are therefore essentially meaningless.
+
+## Load Modules
+
+You can specify the names of modules that are to be required at startup.
+
+Array `conf.load_modules` determines the modules (if any) that are to be required during session startup. The array is used only during session startup, so the initial value is the only one that counts.
+
+The default initial value is `[]` (load no modules):
+
+```console
+irb(main):001> conf.load_modules
+=> []
+```
+
+You can set the default initial value via:
+
+- Command-line option `-r`
+
+    ```console
+    $ irb -r csv -r json
+    irb(main):001> conf.load_modules
+    => ["csv", "json"]
+    ```
+
+- Hash entry `IRB.conf[:LOAD_MODULES] = *array*`:
+
+    ```ruby
+    IRB.conf[:LOAD_MODULES] = %w[csv json]
+    ```
+
+Note that the configuration file entry overrides the command-line options.
+
+## RI Documentation Directories
+
+You can specify the paths to RI documentation directories that are to be loaded (in addition to the default directories) at startup; see details about RI by typing `ri --help`.
+
+Array `conf.extra_doc_dirs` determines the directories (if any) that are to be loaded during session startup. The array is used only during session startup, so the initial value is the only one that counts.
+
+The default initial value is `[]` (load no extra documentation):
+
+```console
+irb(main):001> conf.extra_doc_dirs
+=> []
+```
+
+You can set the default initial value via:
+
+- Command-line option `--extra_doc_dir`
+
+    ```console
+    $ irb --extra-doc-dir your_doc_dir --extra-doc-dir my_doc_dir
+    irb(main):001> conf.extra_doc_dirs
+    => ["your_doc_dir", "my_doc_dir"]
+    ```
+
+- Hash entry `IRB.conf[:EXTRA_DOC_DIRS] = *array*`:
+
+    ```ruby
+    IRB.conf[:EXTRA_DOC_DIRS] = %w[your_doc_dir my_doc_dir]
+    ```
+
+Note that the configuration file entry overrides the command-line options.
+
+## \IRB Name
+
+You can specify a name for \IRB.
+
+The default initial value is `'irb'`:
+
+```console
+irb(main):001> conf.irb_name
+=> "irb"
+```
+
+You can set the default initial value via hash entry `IRB.conf[:IRB_NAME] = *string*`:
+
+```ruby
+IRB.conf[:IRB_NAME] = 'foo'
+```
+
+## Application Name
+
+You can specify an application name for the \IRB session.
+
+The default initial value is `'irb'`:
+
+```console
+irb(main):001> conf.ap_name
+=> "irb"
+```
+
+You can set the default initial value via hash entry `IRB.conf[:AP_NAME] = *string*`:
+
+```ruby
+IRB.conf[:AP_NAME] = 'my_ap_name'
+```
+
+## Configuration Monitor
+
+You can monitor changes to the configuration by assigning a proc to `IRB.conf[:IRB_RC]` in the configuration file:
+
+```console
+IRB.conf[:IRB_RC] = proc {|conf| puts conf.class }
+```
+
+Each time the configuration is changed, that proc is called with argument `conf`:
