@@ -687,6 +687,10 @@ Command-line option `-E *ex*[:*in*]` sets initial external (ex) and internal (in
 
 Command-line option `-U` sets both to UTF-8.
 
+## Contributing
+
+See [CONTRIBUTING.md](https://github.com/ruby/irb/blob/main/CONTRIBUTING.md) for more information.
+
 ## Extending \IRB
 
 \IRB `v1.13.0` and later versions allow users/libraries to extend its functionality through official APIs.

@@ -109,39 +109,9 @@ IRB `v1.13.0` and later versions allows users/libraries to extend its functional
 
 For more information, please visit the [IRB Extension Guide](https://ruby.github.io/irb/EXTEND_IRB_md.html).
 
-## Development
-
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
-
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
-
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/ruby/irb.
-
-### Set up the environment
-
-1. Fork the project to your GithHub account
-2. Clone the fork with `git clone git@github.com:[your_username]/irb.git`
-3. Run `bundle install`
-4. Run `bundle exec rake` to make sure tests pass locally
-
-### Run integration tests
-
-If your changes affect component rendering, such as the autocompletion's dialog/dropdown, you may need to run IRB's integration tests, known as `yamatanooroti`.
-
-Before running these tests, ensure that you have `libvterm` installed. If you're using Homebrew, you can install it by running:
-
-```bash
-brew install libvterm
-```
-
-After installing `libvterm`, you can run the integration tests using the following commands:
-
-```bash
-WITH_VTERM=1 bundle install
-WITH_VTERM=1 bundle exec rake test test_yamatanooroti
-```
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for more information.
 
 ## Releasing
 
