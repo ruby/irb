@@ -9,6 +9,7 @@ require_relative "command/cd"
 require_relative "command/chws"
 require_relative "command/context"
 require_relative "command/continue"
+require_relative "command/copy"
 require_relative "command/debug"
 require_relative "command/delete"
 require_relative "command/disable_irb"
@@ -199,6 +200,9 @@ module IRB
     )
     _register_with_aliases(:irb_continue, Command::Continue,
       [:continue, NO_OVERRIDE]
+    )
+    _register_with_aliases(:irb_copy, Command::Copy,
+      [:copy, NO_OVERRIDE]
     )
     _register_with_aliases(:irb_finish, Command::Finish,
       [:finish, NO_OVERRIDE]
