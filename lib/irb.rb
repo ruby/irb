@@ -281,13 +281,19 @@ module IRB
       end
 
       code = code.dup.force_encoding(@context.io.encoding)
+
       if (command, arg = @context.parse_command(code))
-        command_class = Command.load_command(command)
-        Statement::Command.new(code, command_class, arg)
-      else
-        is_assignment_expression = @scanner.assignment_expression?(code, local_variables: @context.local_variables)
-        Statement::Expression.new(code, is_assignment_expression)
+        if (command_class = Command.load_command(command))
+          return Statement::Command.new(code, command_class, arg)
+        elsif (helper_class = HelperMethod.helper_methods[command])
+          warn "Using command alias for helper method '#{command}' is not supported"
+        else
+          warn "Command '#{command}' does not exist"
+        end
       end
+
+      is_assignment_expression = @scanner.assignment_expression?(code, local_variables: @context.local_variables)
+      Statement::Expression.new(code, is_assignment_expression)
     end
 
     def command?(code)
