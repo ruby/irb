@@ -158,6 +158,7 @@ module TestIRB
         irb.eval_input
       end
       assert_empty err
+      puts PP::VERSION
       assert_not_match(/NoMethodError/, out)
       assert_match(/#<BasicObject:.*>/, out)
     ensure
