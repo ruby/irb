@@ -6,6 +6,11 @@ module IRB
   class Pager
     PAGE_COMMANDS = [ENV['RI_PAGER'], ENV['PAGER'], 'less', 'more'].compact.uniq
 
+    # Maximum size of a single cell in terminal
+    # Assumed worst case: "\e[1;3;4;9;38;2;255;128;128;48;2;128;128;255mA\e[0m"
+    # bold, italic, underline, crossed_out, RGB forgound, RGB background
+    MAX_CHAR_PER_CELL = 50
+
     class << self
       def page_content(content, **options)
         if content_exceeds_screen_height?(content)
@@ -47,11 +52,36 @@ module IRB
       rescue Errno::EPIPE
       end
 
-      private
-
       def should_page?
         IRB.conf[:USE_PAGER] && STDIN.tty? && (ENV.key?("TERM") && ENV["TERM"] != "dumb")
       end
+
+      def page_with_preview(width, height, modifier_proc)
+        out = PageOverflowIO.new(width, height) do |lines|
+          modified_output = modifier_proc.call(lines.join, true)
+          puts modified_output.lines.take(height - 1)
+          print "\e[0m" if Color.colorable?
+        end
+        yield out
+        content = modifier_proc.call(out.string, out.multipage?)
+        if out.multipage?
+          page(retain_content: true) do |io|
+            io.puts content
+          end
+        else
+          puts content
+        end
+      end
+
+      def take_first_page(width, height)
+        out = Pager::PageOverflowIO.new(width, height) do |lines|
+          return lines.join, true
+        end
+        yield out
+        [out.string, false]
+      end
+
+      private
 
       def content_exceeds_screen_height?(content)
         screen_height, screen_width = begin
@@ -64,8 +94,9 @@ module IRB
 
         # If the content has more lines than the pageable height
         content.lines.count > pageable_height ||
-          # Or if the content is a few long lines
-          pageable_height * screen_width < Reline::Unicode.calculate_width(content, true)
+        # Or if the content is a few long lines
+        content.size > pageable_height * screen_width * MAX_CHAR_PER_CELL ||
+        pageable_height * screen_width < Reline::Unicode.calculate_width(content, true)
       end
 
       def setup_pager(retain_content:)
@@ -95,6 +126,66 @@ module IRB
 
         nil
       end
+    end
+
+    # Writable IO that has page overflow callback
+    class PageOverflowIO
+      attr_reader :string
+      def initialize(width, height, &overflow_callback)
+        @lines = []
+        @width = width
+        @height = height
+        @buffer = +''
+        @overflow_callback = overflow_callback
+        @col = 0
+        @string = +''
+        @multipage = false
+      end
+
+      def puts(text = '')
+        write(text)
+        write("\n") unless text.end_with?("\n")
+      end
+
+      def write(text)
+        @string << text
+        return if @multipage
+
+        overflow_size = (@width * (@height - @lines.size) + @width - @col )* MAX_CHAR_PER_CELL
+        if text.size >= overflow_size
+          text = text[0, overflow_size]
+          overflow = true
+        end
+
+        @buffer << text
+        @col += Reline::Unicode.calculate_width(text)
+        if text.include?("\n") || @col >= @width
+          @buffer.lines.each do |line|
+            wrapped_lines = Reline::Unicode.split_by_width(line.chomp, @width).first.compact
+            wrapped_lines.pop if wrapped_lines.last == ''
+            @lines.concat(wrapped_lines)
+            if @lines.empty?
+              @lines << "\n"
+            elsif line.end_with?("\n")
+              @lines[-1] += "\n"
+            end
+          end
+          @buffer.clear
+          @buffer << @lines.pop unless @lines.last.end_with?("\n")
+          @col = Reline::Unicode.calculate_width(@buffer)
+        end
+        if overflow || @lines.size > @height || (@lines.size == @height && @col > 0)
+          @overflow_callback.call(@lines.take(@height))
+          @multipage = true
+        end
+      end
+
+      def multipage?
+        @multipage
+      end
+
+      alias print write
+      alias << write
     end
   end
 end

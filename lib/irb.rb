@@ -517,40 +517,36 @@ module IRB
     end
 
     def output_value(omit = false) # :nodoc:
-      str = @context.inspect_last_value
-      multiline_p = str.include?("\n")
+      unless @context.return_format.include?('%')
+        puts @context.return_format
+        return
+      end
+
+      winheight, winwidth = @context.io.winsize
       if omit
-        winwidth = @context.io.winsize.last
-        if multiline_p
-          first_line = str.split("\n").first
-          result = @context.newline_before_multiline_output? ? (@context.return_format % first_line) : first_line
-          output_width = Reline::Unicode.calculate_width(result, true)
-          diff_size = output_width - Reline::Unicode.calculate_width(first_line, true)
-          if diff_size.positive? and output_width > winwidth
-            lines, _ = Reline::Unicode.split_by_width(first_line, winwidth - diff_size - 3)
-            str = "%s..." % lines.first
-            str += "\e[0m" if Color.colorable?
-            multiline_p = false
-          else
-            str = str.gsub(/(\A.*?\n).*/m, "\\1...")
-            str += "\e[0m" if Color.colorable?
-          end
-        else
-          output_width = Reline::Unicode.calculate_width(@context.return_format % str, true)
-          diff_size = output_width - Reline::Unicode.calculate_width(str, true)
-          if diff_size.positive? and output_width > winwidth
-            lines, _ = Reline::Unicode.split_by_width(str, winwidth - diff_size - 3)
-            str = "%s..." % lines.first
-            str += "\e[0m" if Color.colorable?
-          end
+        content, truncated = Pager.take_first_page(winwidth, 1) do |out|
+          @context.inspect_last_value(out)
         end
+        if truncated
+          content = "\n#{content}" if @context.newline_before_multiline_output?
+          content = "#{content}..."
+          content = "#{content}\e[0m" if Color.colorable?
+        end
+        puts @context.return_format % content.chomp
+      elsif IRB::Pager.should_page?
+        modifier_proc = ->(content, multipage) do
+          content = content.chomp
+          content = "\n#{content}" if @context.newline_before_multiline_output? && (multipage || content.include?("\n"))
+          @context.return_format % content
+        end
+        IRB::Pager.page_with_preview(winwidth, winheight, modifier_proc) do |out|
+          @context.inspect_last_value(out)
+        end
+      else
+        content = @context.inspect_last_value.chomp
+        content = "\n" + content if @context.newline_before_multiline_output? && content.include?("\n")
+        puts @context.return_format % content
       end
-
-      if multiline_p && @context.newline_before_multiline_output?
-        str = "\n" + str
-      end
-
-      Pager.page_content(format(@context.return_format, str), retain_content: true)
     end
 
     # Outputs the local variables to this current session, including #signal_status
