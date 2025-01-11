@@ -276,9 +276,9 @@ The setting may not be changed during the session.
 
 ### Type Based Completion
 
-\IRB's default completion `\IRB::RegexpCompletor` uses Regexp. \IRB offers an experimental completion `\IRB::TypeCompletor` that uses type analysis.
+\IRB's default completion `IRB::RegexpCompletor` uses Regexp. \IRB offers an experimental completion `IRB::TypeCompletor` that uses type analysis.
 
-#### How to Enable \IRB::TypeCompletor
+#### How to Enable IRB::TypeCompletor
 
 Install [ruby/repl_type_completor](https://github.com/ruby/repl_type_completor/) with:
 
@@ -328,9 +328,9 @@ Completion: Autocomplete, RegexpCompletor
 
 If you have a `sig/` directory or `rbs_collection.lock.yaml` in the current directory, \IRB will load it.
 
-#### Advantage over Default \IRB::RegexpCompletor
+#### Advantage over Default IRB::RegexpCompletor
 
-\IRB::TypeCompletor can autocomplete chained methods, block parameters, and more if type information is available. These are some examples \IRB::RegexpCompletor cannot complete.
+`IRB::TypeCompletor` can autocomplete chained methods, block parameters, and more if type information is available. These are some examples `IRB::RegexpCompletor` cannot complete.
 
 ```console
 irb(main):001> 'Ruby'.upcase.chars.s # Array methods (sample, select, shift, size)
@@ -347,11 +347,11 @@ irb(main):002>   def foo
 irb(main):003>     sa # save, save!
 ```
 
-As a trade-off, completion calculation takes more time than \IRB::RegexpCompletor.
+As a trade-off, completion calculation takes more time than `IRB::RegexpCompletor`.
 
 #### Difference between Steep's Completion
 
-Compared with Steep, \IRB::TypeCompletor has some differences and limitations.
+Compared with Steep, `IRB::TypeCompletor` has some differences and limitations.
 ```ruby
 [0, 'a'].sample.
 # Steep completes the intersection of Integer methods and String methods
@@ -365,7 +365,7 @@ def f(arg = [0, 'a'].sample)
     arg. # Completes both Integer and String methods
 ```
 
-Unlike other static type checkers, \IRB::TypeCompletor uses runtime information to provide better completion.
+Unlike other static type checkers, `IRB::TypeCompletor` uses runtime information to provide better completion.
 
 ```console
 irb(main):001> a = [1]
