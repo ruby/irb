@@ -400,7 +400,7 @@ class IRB::RenderingTest < Yamatanooroti::TestCase
     write("o2 = Object.new; def o2.inspect; sleep 10; end\n")
     # preview should be shown even if pretty_print is not completed.
     write("[o1] * 20 + [o2]\n")
-    assert_screen(/=>\n\[INSPECT,\n( INSPECT,\n){6}Inspecting.../)
+    assert_screen(/=>\n\[INSPECT,\n( INSPECT,\n){6}Preparing full inspection value\.\.\./)
     write("\C-c") # abort pretty_print
     write("'foo' + 'bar'\n") # eval something to make sure IRB resumes
     assert_screen(/foobar/)
