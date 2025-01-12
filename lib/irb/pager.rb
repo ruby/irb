@@ -60,7 +60,7 @@ module IRB
           content = content.chomp
           content = "#{content}\e[0m" if Color.colorable?
           $stdout.puts content
-          $stdout.puts 'Inspecting...'
+          $stdout.puts 'Preparing full inspection value...'
         end
         out = PageOverflowIO.new(width, height, overflow_callback)
         yield out
