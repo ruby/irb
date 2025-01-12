@@ -31,6 +31,7 @@ Method `conf.rc?` returns `true` if a configuration file was read, `false` other
 - `NO_COLOR`: Disables \IRB's colorization.
 - `IRB_USE_AUTOCOMPLETE`: Setting to `false` disables autocompletion.
 - `IRB_COMPLETOR`: Configures auto-completion behavior (`regexp` or `type`).
+- `IRB_COPY_COMMAND`: Overrides the default program used to interface with the system clipboard.
 - `VISUAL` / `EDITOR`: Specifies the editor for the `edit` command.
 - `IRBRC`: Specifies the rc-file for configuration.
 - `XDG_CONFIG_HOME`: Used to locate the rc-file if `IRBRC` is unset.
