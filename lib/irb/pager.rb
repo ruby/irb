@@ -56,10 +56,11 @@ module IRB
       def page_with_preview(width, height, formatter_proc)
         overflow_callback = ->(lines) do
           modified_output = formatter_proc.call(lines.join, true)
-          content, = take_first_page(width, height - 1) {|o| o.write modified_output }
+          content, = take_first_page(width, [height - 2, 0].max) {|o| o.write modified_output }
           content = content.chomp
           content = "#{content}\e[0m" if Color.colorable?
           $stdout.puts content
+          $stdout.puts 'Inspecting...'
         end
         out = PageOverflowIO.new(width, height, overflow_callback)
         yield out
