@@ -42,6 +42,8 @@ jobs:
         with:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
+          # Added to make Ruby 2.7 correctly require installed default gems, like `pp`.
+          rubygems: latest
       - name: Run tests
         run: bundle exec rake test
       - name: Run tests in isolation
