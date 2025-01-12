@@ -524,7 +524,14 @@ module IRB # :nodoc:
       Encoding.default_external = extern unless extern.nil? || extern.empty?
       Encoding.default_internal = intern unless intern.nil? || intern.empty?
       [$stdin, $stdout, $stderr].each do |io|
-        io.set_encoding(extern, intern)
+        if io.tty? && io.internal_encoding && /mswin|mingw/ =~ RUBY_PLATFORM
+          # some ruby versions, $stdin has locale:UTF-8 encoding by default on windows.
+          # preserve external_encoding in that case.
+          io.set_encoding(io.external_encoding, (intern.nil? || intern.empty?) ? extern : intern)
+          next
+        else
+          io.set_encoding(extern, intern)
+        end
       end
       if override
         @CONF[:LC_MESSAGES].instance_variable_set(:@override_encoding, extern)
