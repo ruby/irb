@@ -397,9 +397,9 @@ class IRB::RenderingTest < Yamatanooroti::TestCase
     LINES
     start_terminal(10, 80, %W{ruby -I#{@pwd}/lib #{@pwd}/exe/irb}, startup_message: /irb\(main\)/)
     write("o1 = Object.new; def o1.inspect; 'INSPECT'; end\n")
-    write("o2 = Object.new; def o2.inspect; sleep 10; end\n")
+    write("o2 = Object.new; def o2.inspect; sleep 0.1; 'SLOW'; end\n")
     # preview should be shown even if pretty_print is not completed.
-    write("[o1] * 20 + [o2]\n")
+    write("[o1] * 20 + [o2] * 100\n")
     assert_screen(/=>\n\[INSPECT,\n( INSPECT,\n){6}Preparing full inspection value\.\.\./)
     write("\C-c") # abort pretty_print
     write("'foo' + 'bar'\n") # eval something to make sure IRB resumes

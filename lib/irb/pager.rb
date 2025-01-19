@@ -62,7 +62,7 @@ module IRB
           $stdout.puts content
           $stdout.puts 'Preparing full inspection value...'
         end
-        out = PageOverflowIO.new(width, height, overflow_callback)
+        out = PageOverflowIO.new(width, height, overflow_callback, delay: 0.1)
         yield out
         content = formatter_proc.call(out.string, out.multipage?)
         if out.multipage?
@@ -131,15 +131,16 @@ module IRB
 
     # Writable IO that has page overflow callback
     class PageOverflowIO
-      attr_reader :string
+      attr_reader :string, :first_page_lines
 
       # Maximum size of a single cell in terminal
       # Assumed worst case: "\e[1;3;4;9;38;2;255;128;128;48;2;128;128;255mA\e[0m"
       # bold, italic, underline, crossed_out, RGB forgound, RGB background
       MAX_CHAR_PER_CELL = 50
 
-      def initialize(width, height, overflow_callback)
+      def initialize(width, height, overflow_callback, delay: nil)
         @lines = []
+        @first_page_lines = nil
         @width = width
         @height = height
         @buffer = +''
@@ -147,6 +148,7 @@ module IRB
         @col = 0
         @string = +''
         @multipage = false
+        @delay_until = (Time.now + delay if delay)
       end
 
       def puts(text = '')
@@ -156,7 +158,13 @@ module IRB
 
       def write(text)
         @string << text
-        return if @multipage
+        if @multipage
+          if @delay_until && Time.now > @delay_until
+            @overflow_callback.call(@first_page_lines)
+            @delay_until = nil
+          end
+          return
+        end
 
         overflow_size = (@width * (@height - @lines.size) + @width - @col) * MAX_CHAR_PER_CELL
         if text.size >= overflow_size
@@ -182,7 +190,11 @@ module IRB
           @col = Reline::Unicode.calculate_width(@buffer)
         end
         if overflow || @lines.size > @height || (@lines.size == @height && @col > 0)
-          @overflow_callback.call(@lines.take(@height))
+          @first_page_lines = @lines.take(@height)
+          if !@delay_until || Time.now > @delay_until
+            @overflow_callback.call(@first_page_lines)
+            @delay_until = nil
+          end
           @multipage = true
         end
       end

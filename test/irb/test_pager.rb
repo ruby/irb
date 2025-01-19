@@ -44,5 +44,23 @@ module TestIRB
       expected_whole_content = 'a' * 15 + "\n" + 'b' * 15 + 'c' * 1000 + 'd' * 1000 + "\n" + 'e' * 1000
       assert_equal expected_whole_content, out.string
     end
+
+    def test_callback_delay
+      actual_events = []
+      overflow_callback = ->(lines) do
+        actual_events << [:callback_called, lines]
+      end
+      out = IRB::Pager::PageOverflowIO.new(10, 4, overflow_callback, delay: 0.2)
+      out.write 'a' * 1000
+      assert_equal ['a' * 10] * 4, out.first_page_lines
+      out.write 'b'
+      actual_events << :before_delay
+      sleep 0.2
+      out.write 'c'
+      actual_events << :after_delay
+      out.write 'd'
+      assert_equal 'a' * 1000 + 'bcd', out.string
+      assert_equal [:before_delay, [:callback_called, ['a' * 10] * 4], :after_delay], actual_events
+    end
   end
 end
