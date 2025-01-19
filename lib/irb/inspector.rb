@@ -92,9 +92,13 @@ module IRB # :nodoc:
       @init.call if @init
     end
 
+    def support_stream_output?
+      @inspect.arity == 2
+    end
+
     # Proc to call when the input is evaluated and output in irb.
-    def inspect_value(v)
-      @inspect.call(v)
+    def inspect_value(v, output)
+      @inspect.arity == 2 ? @inspect.call(v, output) : output << @inspect.call(v)
     rescue => e
       puts "An error occurred when inspecting the object: #{e.inspect}"
 
@@ -113,8 +117,8 @@ module IRB # :nodoc:
   Inspector.def_inspector([:p, :inspect]){|v|
     Color.colorize_code(v.inspect, colorable: Color.colorable? && Color.inspect_colorable?(v))
   }
-  Inspector.def_inspector([true, :pp, :pretty_inspect], proc{require_relative "color_printer"}){|v|
-    IRB::ColorPrinter.pp(v, +'').chomp
+  Inspector.def_inspector([true, :pp, :pretty_inspect], proc{require_relative "color_printer"}){|v, output|
+    IRB::ColorPrinter.pp(v, output)
   }
   Inspector.def_inspector([:yaml, :YAML], proc{require "yaml"}){|v|
     begin
