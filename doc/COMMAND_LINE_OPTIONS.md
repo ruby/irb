@@ -1,6 +1,6 @@
 # Index of Command-Line Options
 
-These are the \IRB command-line options, with links to explanatory text:
+These are the IRB command-line options, with links to explanatory text:
 
 - `-d`: Set `$DEBUG` and {$VERBOSE}[rdoc-ref:IRB@Verbosity]
   to `true`.

@@ -1,17 +1,17 @@
-# Configure \IRB
+# Configure IRB
 
 ## Configuration Sources
 
-\IRB configurations can be set through multiple sources, each with its own precedence:
+IRB configurations can be set through multiple sources, each with its own precedence:
 
-1. **Command-Line Options**: When some options are specified when starting \IRB, they can override default settings.
-2. **Configuration File**: If present, \IRB reads a configuration file containing Ruby code to set configurations.
-3. **Environment Variables**: Certain environment variables influence \IRB's behavior.
+1. **Command-Line Options**: When some options are specified when starting IRB, they can override default settings.
+2. **Configuration File**: If present, IRB reads a configuration file containing Ruby code to set configurations.
+3. **Environment Variables**: Certain environment variables influence IRB's behavior.
 4. **Hash `IRB.conf`**: This hash holds the current configuration settings, which can be modified during a session.
 
 ### Configuration File Path Resolution
 
-\IRB searches for a configuration file in the following order:
+IRB searches for a configuration file in the following order:
 
 1. `$IRBRC`
 2. `$XDG_CONFIG_HOME/irb/irbrc`
@@ -28,7 +28,7 @@ Method `conf.rc?` returns `true` if a configuration file was read, `false` other
 
 ## Environment Variables
 
-- `NO_COLOR`: Disables \IRB's colorization.
+- `NO_COLOR`: Disables IRB's colorization.
 - `IRB_USE_AUTOCOMPLETE`: Setting to `false` disables autocompletion.
 - `IRB_COMPLETOR`: Configures auto-completion behavior (`regexp` or `type`).
 - `IRB_COPY_COMMAND`: Overrides the default program used to interface with the system clipboard.
@@ -48,7 +48,7 @@ The initial entries in hash `IRB.conf` are determined by:
 
 You can see the hash by typing `IRB.conf`. Below are the primary entries:
 
-- `:AP_NAME`: \IRB {application name}[rdoc-ref:IRB@Application+Name];
+- `:AP_NAME`: IRB {application name}[rdoc-ref:IRB@Application+Name];
   initial value: `'irb'`.
 - `:AT_EXIT`: Array of hooks to call
   {at exit}[rdoc-ref:IRB@IRB];
@@ -76,7 +76,7 @@ You can see the hash by typing `IRB.conf`. Below are the primary entries:
   initial value: `nil`, which would set `conf.echo_on_assignment` to `:truncate`.
 - `:EVAL_HISTORY`: How much {evaluation history}[rdoc-ref:IRB@Evaluation+History]
   is to be stored; initial value: `nil`.
-- `:EXTRA_DOC_DIRS`: \Array of
+- `:EXTRA_DOC_DIRS`: Array of
   {RI documentation directories}[rdoc-ref:IRB@RI+Documentation+Directories]
   to be parsed for the documentation dialog;
   initial value: `[]`.
@@ -95,7 +95,7 @@ You can see the hash by typing `IRB.conf`. Below are the primary entries:
 
       - <i>RUBY_DIR</i> is the Ruby installation dirpath.
       - <i>RUBY_VER_NUM</i> is the Ruby version number.
-      - <i>IRB_VER_NUM</i> is the \IRB version number.
+      - <i>IRB_VER_NUM</i> is the IRB version number.
 
 - `:IRB_NAME`: {IRB name}[rdoc-ref:IRB@IRB+Name];
   initial value: `'irb'`.
@@ -104,7 +104,7 @@ You can see the hash by typing `IRB.conf`. Below are the primary entries:
 - `:LC_MESSAGES`: {Locale}[rdoc-ref:IRB@Locale];
   initial value: IRB::Locale object.
 - `:LOAD_MODULES`: deprecated.
-- `:MAIN_CONTEXT`: The {context}[rdoc-ref:IRB@Session+Context] for the main \IRB session;
+- `:MAIN_CONTEXT`: The {context}[rdoc-ref:IRB@Session+Context] for the main IRB session;
   initial value: IRB::Context object.
 - `:MEASURE`: Whether to
   {measure performance}[rdoc-ref:IRB@Performance+Measurement];
@@ -121,7 +121,7 @@ You can see the hash by typing `IRB.conf`. Below are the primary entries:
           :STACKPROF=>#<Proc:0x0000556e271c6548 /var/lib/gems/3.0.0/gems/irb-1.8.3/lib/irb/init.rb:116>
         }
 
-- `:PROMPT`: \Hash of {defined prompts}[rdoc-ref:IRB@Prompt+and+Return+Formats];
+- `:PROMPT`: Hash of {defined prompts}[rdoc-ref:IRB@Prompt+and+Return+Formats];
   initial value:
 
         {
@@ -158,7 +158,7 @@ You can see the hash by typing `IRB.conf`. Below are the primary entries:
   initial value: `false`.
 - `:VERBOSE`: Whether to print {verbose output}[rdoc-ref:IRB@Verbosity];
   initial value: `nil`.
-- `:__MAIN__`: The main \IRB object;
+- `:__MAIN__`: The main IRB object;
   initial value: `main`.
 
 ## Notes on Initialization Precedence
@@ -228,9 +228,9 @@ You can set the default initial value via:
 
 Note that the configuration file entry overrides the command-line options.
 
-## \IRB Name
+## IRB Name
 
-You can specify a name for \IRB.
+You can specify a name for IRB.
 
 The default initial value is `'irb'`:
 
@@ -247,7 +247,7 @@ IRB.conf[:IRB_NAME] = 'foo'
 
 ## Application Name
 
-You can specify an application name for the \IRB session.
+You can specify an application name for the IRB session.
 
 The default initial value is `'irb'`:
 
