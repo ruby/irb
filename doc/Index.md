@@ -1,23 +1,23 @@
-# \IRB
+# IRB
 
 [![Gem Version](https://badge.fury.io/rb/irb.svg)](https://badge.fury.io/rb/irb)
 [![build](https://github.com/ruby/irb/actions/workflows/test.yml/badge.svg)](https://github.com/ruby/irb/actions/workflows/test.yml)
 
 ## Overview
 
-\IRB stands for "Interactive Ruby" and is a tool to interactively execute Ruby expressions read from the standard input. The `irb` command from your shell will start the interpreter.
+IRB stands for "Interactive Ruby" and is a tool to interactively execute Ruby expressions read from the standard input. The `irb` command from your shell will start the interpreter.
 
-\IRB provides a shell-like interface that supports user interaction with the Ruby interpreter. It operates as a *read-eval-print loop* ([REPL](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop)) that:
+IRB provides a shell-like interface that supports user interaction with the Ruby interpreter. It operates as a *read-eval-print loop* ([REPL](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop)) that:
 
-- **Reads** each character as you type. You can modify the \IRB context to change the way input works. See [Input](#label-Input).
+- **Reads** each character as you type. You can modify the IRB context to change the way input works. See [Input](#label-Input).
 - **Evaluates** the code each time it has read a syntactically complete passage.
-- **Prints** after evaluating. You can modify the \IRB context to change the way output works. See [Output](#label-Output).
+- **Prints** after evaluating. You can modify the IRB context to change the way output works. See [Output](#label-Output).
 
 ## Installation
 
 > **Note**
 >
-> \IRB is a default gem of Ruby, so you shouldn't need to install it separately. However, if you're using Ruby 2.6 or later and want to upgrade/install a specific version of \IRB, follow these steps.
+> IRB is a default gem of Ruby, so you shouldn't need to install it separately. However, if you're using Ruby 2.6 or later and want to upgrade/install a specific version of IRB, follow these steps.
 
 To install it with `bundler`, add this line to your application's Gemfile:
 
@@ -41,11 +41,11 @@ $ gem install irb
 
 > **Note**
 >
-> We're working hard to match Pry's variety of powerful features in \IRB. Track our progress or find contribution ideas in [COMPARED_WITH_PRY.md](./COMPARED_WITH_PRY.md).
+> We're working hard to match Pry's variety of powerful features in IRB. Track our progress or find contribution ideas in [COMPARED_WITH_PRY.md](./COMPARED_WITH_PRY.md).
 
-### Starting \IRB
+### Starting IRB
 
-You can start a fresh \IRB session by typing `irb` in your terminal. In the session, you can evaluate Ruby expressions or prototype small Ruby scripts. Input is executed when it is syntactically complete.
+You can start a fresh IRB session by typing `irb` in your terminal. In the session, you can evaluate Ruby expressions or prototype small Ruby scripts. Input is executed when it is syntactically complete.
 
 ```console
 $ irb
@@ -64,7 +64,7 @@ irb(main):007> Foo.new.foo
 
 ### The `binding.irb` Breakpoint
 
-If you use Ruby 2.5 or later versions, you can use `binding.irb` in your program as breakpoints. Once `binding.irb` is evaluated, a new \IRB session starts with the surrounding context:
+If you use Ruby 2.5 or later versions, you can use `binding.irb` in your program as breakpoints. Once `binding.irb` is evaluated, a new IRB session starts with the surrounding context:
 
 ```console
 $ ruby test.rb
@@ -86,23 +86,23 @@ Hello World
 
 ### Debugging
 
-You can use \IRB as a debugging console with `debug.gem` with these options:
+You can use IRB as a debugging console with `debug.gem` with these options:
 
 - In `binding.irb`, use the `debug` command to start an `irb:rdbg` session with access to all `debug.gem` commands.
-- Use the `RUBY_DEBUG_IRB_CONSOLE=1` environment variable to make `debug.gem` use \IRB as the debugging console.
+- Use the `RUBY_DEBUG_IRB_CONSOLE=1` environment variable to make `debug.gem` use IRB as the debugging console.
 
-To learn more about debugging with \IRB, see [Debugging with \IRB](#label-Debugging+with+IRB).
+To learn more about debugging with IRB, see [Debugging with IRB](#label-Debugging+with+IRB).
 
 ## Startup
 
-At startup, \IRB:
+At startup, IRB:
 
 1. Interprets (as Ruby code) the content of the [configuration file](#label-Configuration) (if given).
 2. Constructs the initial session context from [hash IRB.conf](#label-Hash+IRB.conf) and from default values; the hash content may have been affected by [command-line options](#command-line-options), and by direct assignments in the configuration file.
 3. Assigns the context to variable `conf`.
 4. Assigns command-line arguments to variable `ARGV`.
 5. Prints the prompt.
-6. Puts the content of the [initialization script](#label-Initialization+script) onto the \IRB shell, just as if it were user-typed commands.
+6. Puts the content of the [initialization script](#label-Initialization+script) onto the IRB shell, just as if it were user-typed commands.
 
 ## Command Line
 
@@ -110,15 +110,15 @@ On the command line, all options precede all arguments; the first item that is n
 
 ### Command-Line Options
 
-Many command-line options affect entries in hash `IRB.conf`, which in turn affect the initial configuration of the \IRB session.
+Many command-line options affect entries in hash `IRB.conf`, which in turn affect the initial configuration of the IRB session.
 
-Details of the options are described in relevant subsections below. A cursory list of \IRB command-line options may be seen in the [help message](https://raw.githubusercontent.com/ruby/irb/master/lib/irb/lc/help-message), which is also displayed if you use command-line option `--help`.
+Details of the options are described in relevant subsections below. A cursory list of IRB command-line options may be seen in the [help message](https://raw.githubusercontent.com/ruby/irb/master/lib/irb/lc/help-message), which is also displayed if you use command-line option `--help`.
 
 If you are interested in a specific option, consult the [index](rdoc-ref:COMMAND_LINE_OPTIONS.md).
 
 ### Command-Line Arguments
 
-Command-line arguments are passed to \IRB in array `ARGV`:
+Command-line arguments are passed to IRB in array `ARGV`:
 
 ```console
 $ irb --noscript Foo Bar Baz
@@ -140,7 +140,7 @@ $
 
 ## Commands
 
-The following commands are available in \IRB. Use the `help` command to see the list of available commands.
+The following commands are available in IRB. Use the `help` command to see the list of available commands.
 
 ```txt
 Help
@@ -202,19 +202,19 @@ Aliases
   @              Alias for `whereami`
 ```
 
-## Configure \IRB
+## Configure IRB
 
 See [Configurations](rdoc-ref:Configurations.md) for more details.
 
 ## Input
 
-This section describes the features that allow you to change the way \IRB input works; see also [Output](#output).
+This section describes the features that allow you to change the way IRB input works; see also [Output](#output).
 
 ### Input Command History
 
-By default, \IRB stores a history of up to 1000 input commands in a file named `.irb_history`. The history file will be in the same directory as the [configuration file](#label-Configuration+File) if one is found, or in `~/` otherwise.
+By default, IRB stores a history of up to 1000 input commands in a file named `.irb_history`. The history file will be in the same directory as the [configuration file](#label-Configuration+File) if one is found, or in `~/` otherwise.
 
-A new \IRB session creates the history file if it does not exist and appends to the file if it does exist.
+A new IRB session creates the history file if it does not exist and appends to the file if it does exist.
 
 You can change the filepath by adding to your configuration file:
 `IRB.conf[:HISTORY_FILE] = *filepath*`, where *filepath* is a string filepath.
@@ -231,7 +231,7 @@ During the session, you can use methods `conf.save_history` or `conf.save_histor
 
 ### Command Aliases
 
-By default, \IRB defines several command aliases:
+By default, IRB defines several command aliases:
 
 ```console
 irb(main):001> conf.command_aliases
@@ -264,7 +264,7 @@ During the session, method `conf.ignore_siging?` returns the setting, and method
 
 ### Automatic Completion
 
-By default, \IRB enables [automatic completion](https://en.wikipedia.org/wiki/Autocomplete#In_command-line_interpreter):
+By default, IRB enables [automatic completion](https://en.wikipedia.org/wiki/Autocomplete#In_command-line_interpreter):
 
 You can disable it by either of these:
 
@@ -277,7 +277,7 @@ The setting may not be changed during the session.
 
 ### Type Based Completion
 
-\IRB's default completion `IRB::RegexpCompletor` uses Regexp. \IRB offers an experimental completion `IRB::TypeCompletor` that uses type analysis.
+IRB's default completion `IRB::RegexpCompletor` uses Regexp. IRB offers an experimental completion `IRB::TypeCompletor` that uses type analysis.
 
 #### How to Enable IRB::TypeCompletor
 
@@ -296,13 +296,13 @@ gem 'repl_type_completor', group: [:development, :test]
 
 Now you can use type-based completion by:
 
-- Running \IRB with the `--type-completor` option
+- Running IRB with the `--type-completor` option
 
     ```console
     $ irb --type-completor
     ```
 
-- Or writing this line to \IRB's rc-file (e.g., `~/.irbrc`)
+- Or writing this line to IRB's rc-file (e.g., `~/.irbrc`)
 
     ```ruby
     IRB.conf[:COMPLETOR] = :type # default is :regexp
@@ -315,7 +315,7 @@ Now you can use type-based completion by:
     IRB.start
     ```
 
-To check if it's enabled, type `irb_info` into \IRB and see the `Completion` section.
+To check if it's enabled, type `irb_info` into IRB and see the `Completion` section.
 
 ```console
 irb(main):001> irb_info
@@ -327,7 +327,7 @@ Completion: Autocomplete, RegexpCompletor
 ...
 ```
 
-If you have a `sig/` directory or `rbs_collection.lock.yaml` in the current directory, \IRB will load it.
+If you have a `sig/` directory or `rbs_collection.lock.yaml` in the current directory, IRB will load it.
 
 #### Advantage over Default IRB::RegexpCompletor
 
@@ -376,7 +376,7 @@ irb(main):002> a.first. # Completes Integer methods
 
 ### Automatic Indentation
 
-By default, \IRB automatically indents lines of code to show structure (e.g., it indents the contents of a block).
+By default, IRB automatically indents lines of code to show structure (e.g., it indents the contents of a block).
 
 The current setting is returned by the configuration method `conf.auto_indent_mode`.
 
@@ -397,24 +397,24 @@ You can change the initial setting in the configuration file with:
 IRB.conf[:AUTO_INDENT] = false
 ```
 
-Note that the *current* setting *may not* be changed in the \IRB session.
+Note that the *current* setting *may not* be changed in the IRB session.
 
 ### Input Method
 
-The \IRB input method determines how command input is read; by default, the input method for a session is \IRB::RelineInputMethod unless the TERM environment variable is 'dumb', in which case the most simplistic input method is used.
+The IRB input method determines how command input is read; by default, the input method for a session is IRB::RelineInputMethod unless the TERM environment variable is 'dumb', in which case the most simplistic input method is used.
 
 You can set the input method by:
 
 - Adding to the configuration file:
 
-    - `IRB.conf[:USE_SINGLELINE] = true` or `IRB.conf[:USE_MULTILINE] = false` sets the input method to \IRB::ReadlineInputMethod.
-    - `IRB.conf[:USE_SINGLELINE] = false` or `IRB.conf[:USE_MULTILINE] = true` sets the input method to \IRB::RelineInputMethod.
+    - `IRB.conf[:USE_SINGLELINE] = true` or `IRB.conf[:USE_MULTILINE] = false` sets the input method to IRB::ReadlineInputMethod.
+    - `IRB.conf[:USE_SINGLELINE] = false` or `IRB.conf[:USE_MULTILINE] = true` sets the input method to IRB::RelineInputMethod.
 
 - Giving command-line options:
 
-  - `--singleline` or `--nomultiline` sets the input method to \IRB::ReadlineInputMethod.
-  - `--nosingleline` or `--multiline` sets the input method to \IRB::RelineInputMethod.
-  - `--nosingleline` together with `--nomultiline` sets the input to \IRB::StdioInputMethod.
+  - `--singleline` or `--nomultiline` sets the input method to IRB::ReadlineInputMethod.
+  - `--nosingleline` or `--multiline` sets the input method to IRB::RelineInputMethod.
+  - `--nosingleline` together with `--nomultiline` sets the input to IRB::StdioInputMethod.
 
 Method `conf.use_multiline?` and its synonym `conf.use_reline` return:
 
@@ -430,11 +430,11 @@ Method `conf.use_singleline?` and its synonym `conf.use_readline` return:
 
 ## Output
 
-This section describes the features that allow you to change the way \IRB output works; see also [Input](#label-Input).
+This section describes the features that allow you to change the way IRB output works; see also [Input](#label-Input).
 
 ### Return-Value Printing (Echoing)
 
-By default, \IRB prints (echoes) the values returned by all input commands.
+By default, IRB prints (echoes) the values returned by all input commands.
 
 You can change the initial behavior and suppress all echoing by:
 
@@ -443,7 +443,7 @@ You can change the initial behavior and suppress all echoing by:
 
 During the session, you can change the current setting with configuration method `conf.echo=` (set to `true` or `false`).
 
-As stated above, by default \IRB prints the values returned by all input commands; but \IRB offers special treatment for values returned by assignment statements, which may be:
+As stated above, by default IRB prints the values returned by all input commands; but IRB offers special treatment for values returned by assignment statements, which may be:
 
 - Printed with truncation (to fit on a single line of output), which is the default; an ellipsis (`...` is suffixed, to indicate the truncation):
 
@@ -462,7 +462,7 @@ You can change the initial behavior by:
 
 During the session, you can change the current setting with configuration method `conf.echo_on_assignment=` (set to `true`, `false`, or `:truncate`).
 
-By default, \IRB formats returned values by calling method `inspect`.
+By default, IRB formats returned values by calling method `inspect`.
 
 You can change the initial behavior by:
 
@@ -473,7 +473,7 @@ During the session, you can change the setting using method `conf.inspect_mode=`
 
 ### Multiline Output
 
-By default, \IRB prefixes a newline to a multiline response.
+By default, IRB prefixes a newline to a multiline response.
 
 You can change the initial default value by adding to the configuration file:
 
@@ -501,7 +501,7 @@ bar
 
 ### Evaluation History
 
-By default, \IRB saves no history of evaluations (returned values), and the related methods `conf.eval_history`, `_`, and `__` are undefined.
+By default, IRB saves no history of evaluations (returned values), and the related methods `conf.eval_history`, `_`, and `__` are undefined.
 
 You can turn on that history and set the maximum number of evaluations to be stored:
 
@@ -593,13 +593,13 @@ Doing either of the above:
 
 By default, the first command-line argument (after any options) is the path to a Ruby initialization script.
 
-\IRB reads the initialization script and puts its content onto the \IRB shell, just as if it were user-typed commands.
+IRB reads the initialization script and puts its content onto the IRB shell, just as if it were user-typed commands.
 
 Command-line option `--noscript` causes the first command-line argument to be treated as an ordinary argument (instead of an initialization script); `--script` is the default.
 
-## Debugging with \IRB
+## Debugging with IRB
 
-Starting from version 1.8.0, \IRB offers a powerful integration with `debug.gem`, providing a debugging experience similar to `pry-byebug`.
+Starting from version 1.8.0, IRB offers a powerful integration with `debug.gem`, providing a debugging experience similar to `pry-byebug`.
 
 After hitting a `binding.irb` breakpoint, you can activate the debugger with the `debug` command. Alternatively, if the `debug` method is already defined in the current scope, you can call `irb_debug`.
 
@@ -639,7 +639,7 @@ irb:rdbg(main):003> next # use next command to move to the next line
 irb:rdbg(main):004>
 ```
 
-Simultaneously, you maintain access to \IRB's commands, such as `show_source`:
+Simultaneously, you maintain access to IRB's commands, such as `show_source`:
 
 ```console
 irb:rdbg(main):004> show_source greet
@@ -670,7 +670,7 @@ In the `irb:rdbg` session, the `help` command also displays all commands from `d
 
 This integration offers several benefits over `debug.gem`'s native console:
 
-1. Access to handy \IRB commands like `show_source` or `show_doc`.
+1. Access to handy IRB commands like `show_source` or `show_doc`.
 2. Support for multi-line input.
 3. Symbol shortcuts such as `@` (`whereami`) and `$` (`show_source`).
 4. Autocompletion.
@@ -679,7 +679,7 @@ This integration offers several benefits over `debug.gem`'s native console:
 However, there are some limitations to be aware of:
 
 1. `binding.irb` doesn't support `pre` and `do` arguments like [binding.break](https://github.com/ruby/debug#bindingbreak-method).
-2. As \IRB [doesn't currently support remote-connection](https://github.com/ruby/irb/issues/672), it can't be used with `debug.gem`'s remote debugging feature.
+2. As IRB [doesn't currently support remote-connection](https://github.com/ruby/irb/issues/672), it can't be used with `debug.gem`'s remote debugging feature.
 3. Access to the previous return value via the underscore `_` is not supported.
 
 ## Encodings
@@ -692,9 +692,9 @@ Command-line option `-U` sets both to UTF-8.
 
 See [CONTRIBUTING.md](https://github.com/ruby/irb/blob/main/CONTRIBUTING.md) for more information.
 
-## Extending \IRB
+## Extending IRB
 
-\IRB `v1.13.0` and later versions allow users/libraries to extend its functionality through official APIs.
+IRB `v1.13.0` and later versions allow users/libraries to extend its functionality through official APIs.
 
 For more information, visit [EXTEND_IRB.md](rdoc-ref:EXTEND_IRB.md).
 

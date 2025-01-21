@@ -22,6 +22,8 @@ gem "rubocop"
 gem "tracer" if !is_truffleruby
 gem "debug", github: "ruby/debug", platforms: [:mri, :mswin]
 
+gem "rdoc", ">= 6.11.0"
+
 if RUBY_VERSION >= "3.0.0" && !is_truffleruby
   gem "repl_type_completor"
 end
