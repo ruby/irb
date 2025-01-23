@@ -189,7 +189,7 @@ module IRB
             end
           end
           @buffer.clear
-          @buffer << @lines.pop unless @lines.last.end_with?("\n")
+          @buffer << @lines.pop if !@lines.empty? && !@lines.last.end_with?("\n")
           @col = Reline::Unicode.calculate_width(@buffer, true)
         end
         if overflow || @lines.size > @height || (@lines.size == @height && @col > 0)
