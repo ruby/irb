@@ -26,10 +26,11 @@ module IRB
 
     def winsize
       if instance_variable_defined?(:@stdout) && @stdout.tty?
-        @stdout.winsize
-      else
-        [24, 80]
+        winsize = @stdout.winsize
+        # If width or height is 0, something is wrong.
+        return winsize unless winsize.include? 0
       end
+      [24, 80]
     end
 
     # Whether this input method is still readable when there is no more data to
