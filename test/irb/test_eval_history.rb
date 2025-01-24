@@ -14,22 +14,6 @@ module TestIRB
       restore_encodings
     end
 
-    def execute_lines(*lines, conf: {}, main: self, irb_path: nil)
-      IRB.init_config(nil)
-      IRB.conf[:VERBOSE] = false
-      IRB.conf[:PROMPT_MODE] = :SIMPLE
-      IRB.conf[:USE_PAGER] = false
-      IRB.conf.merge!(conf)
-      input = TestInputMethod.new(lines)
-      irb = IRB::Irb.new(IRB::WorkSpace.new(main), input)
-      irb.context.return_format = "=> %s\n"
-      irb.context.irb_path = irb_path if irb_path
-      IRB.conf[:MAIN_CONTEXT] = irb.context
-      capture_output do
-        irb.eval_input
-      end
-    end
-
     def test_eval_history_is_disabled_by_default
       out, err = execute_lines(
         "a = 1",
