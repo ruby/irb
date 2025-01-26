@@ -1,6 +1,5 @@
 # frozen_string_literal: false
 require 'irb'
-require 'readline'
 require "tempfile"
 
 require_relative "helper"
@@ -8,6 +7,13 @@ require_relative "helper"
 return if RUBY_PLATFORM.match?(/solaris|mswin|mingw/i)
 
 module TestIRB
+  begin
+    require 'readline'
+    Readline = ::Readline
+  rescue LoadError
+    Readline = ::Reline
+  end
+
   class HistoryTest < TestCase
     def setup
       @conf_backup = IRB.conf.dup
