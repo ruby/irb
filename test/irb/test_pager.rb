@@ -70,5 +70,17 @@ module TestIRB
       assert_equal 'a' * 1000 + 'bcd', out.string
       assert_equal [:before_delay, [:callback_called, ['a' * 10] * 4], :after_delay], actual_events
     end
+
+    def test_zero_width
+      out = IRB::Pager::PageOverflowIO.new(0, 0, ->*{})
+      100.times { out.write 'a' }
+      assert_equal [true, [], 'a' * 100], [out.multipage?, out.first_page_lines, out.string]
+      out = IRB::Pager::PageOverflowIO.new(10, 0, ->*{})
+      100.times { out.write 'a' }
+      assert_equal [true, [], 'a' * 100], [out.multipage?, out.first_page_lines, out.string]
+      out = IRB::Pager::PageOverflowIO.new(0, 10, ->*{})
+      100.times { out.write 'a' }
+      assert_equal [true, [], 'a' * 100], [out.multipage?, out.first_page_lines, out.string]
+    end
   end
 end
