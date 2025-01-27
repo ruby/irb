@@ -21,9 +21,19 @@ Gem::Specification.new do |spec|
   spec.metadata["documentation_uri"] = "https://ruby.github.io/irb/"
   spec.metadata["changelog_uri"] = "#{spec.homepage}/releases"
 
-  spec.files         = Dir.chdir(File.expand_path('..', __FILE__)) do
-    `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
-  end
+  spec.files         = [
+    "Gemfile",
+    "LICENSE.txt",
+    "README.md",
+    "Rakefile",
+    "bin/console",
+    "bin/setup",
+    "doc/irb/irb-tools.rd.ja",
+    "doc/irb/irb.rd.ja",
+    "exe/irb",
+    "irb.gemspec",
+    "man/irb.1",
+  ] + Dir.chdir(File.expand_path('..', __FILE__)) { Dir.glob("lib/**/*") }
   spec.bindir        = "exe"
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
