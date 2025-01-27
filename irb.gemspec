@@ -33,7 +33,7 @@ Gem::Specification.new do |spec|
     "exe/irb",
     "irb.gemspec",
     "man/irb.1",
-  ] + Dir.glob("lib/**/*")
+  ] + Dir.chdir(File.expand_path('..', __FILE__)) { Dir.glob("lib/**/*") }
   spec.bindir        = "exe"
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
