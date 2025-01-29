@@ -63,6 +63,8 @@ module TestIRB
       assert_should_continue(['a+'], true)
       assert_should_continue(['a; #comment', '', '=begin', 'embdoc', '=end', ''], false)
       assert_should_continue(['a+ #comment', '', '=begin', 'embdoc', '=end', ''], true)
+      assert_should_continue(['x. in *'], true)
+      assert_should_continue(['x. in **'], true)
     end
 
     def test_code_block_open_with_should_continue
@@ -80,6 +82,16 @@ module TestIRB
       assert_code_block_open(['@; a'], false)
       assert_code_block_open(['@; a+'], true)
       assert_code_block_open(['@; (a'], true)
+
+      # pattern match should not continue
+      if RUBY_VERSION >= '3.1.0'
+        assert_code_block_open(['x in *'], false)
+        assert_code_block_open(['x in **'], false)
+      end
+
+      # multiply and power should continue
+      assert_code_block_open(['x. in *'], true)
+      assert_code_block_open(['x. in **'], true)
     end
 
     def test_broken_percent_literal
