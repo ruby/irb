@@ -9,6 +9,7 @@ require_relative "command/cd"
 require_relative "command/chws"
 require_relative "command/context"
 require_relative "command/continue"
+require_relative "command/copy"
 require_relative "command/debug"
 require_relative "command/delete"
 require_relative "command/disable_irb"
@@ -218,7 +219,8 @@ module IRB
     )
 
     _register_with_aliases(:irb_show_doc, Command::ShowDoc,
-      [:show_doc, NO_OVERRIDE]
+      [:show_doc, NO_OVERRIDE],
+      [:ri, NO_OVERRIDE]
     )
 
     _register_with_aliases(:irb_info, Command::IrbInfo)
@@ -249,6 +251,7 @@ module IRB
     )
 
     register(:cd, Command::CD)
+    register(:copy, Command::Copy)
   end
 
   ExtendCommand = Command

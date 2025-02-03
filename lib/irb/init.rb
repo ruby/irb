@@ -93,7 +93,7 @@ module IRB # :nodoc:
     @CONF[:VERBOSE] = nil
 
     @CONF[:EVAL_HISTORY] = nil
-    @CONF[:SAVE_HISTORY] = 1000
+    @CONF[:SAVE_HISTORY] = History::DEFAULT_ENTRY_LIMIT
 
     @CONF[:BACK_TRACE_LIMIT] = 16
 
@@ -194,6 +194,8 @@ module IRB # :nodoc:
       :'$' => :show_source,
       :'@' => :whereami,
     }
+
+    @CONF[:COPY_COMMAND] = ENV.fetch("IRB_COPY_COMMAND", nil)
   end
 
   def IRB.set_measure_callback(type = nil, arg = nil, &block)

@@ -1,8 +1,0 @@
-LICENSE.txt
-README.md
-EXTEND_IRB.md
-COMPARED_WITH_PRY.md
-doc/irb/indexes.md
-lib/irb.rb
-lib/irb/context.rb
-lib/irb/command/base.rb

@@ -84,12 +84,13 @@ module TestIRB
       bug17623 = '[ruby-core:102468]'
       bundle_exec = ENV.key?('BUNDLE_GEMFILE') ? ['-rbundler/setup'] : []
       top_srcdir = "#{__dir__}/../.."
+      reline_libdir = Gem.loaded_specs["reline"].full_gem_path + "/lib"
       irb_path = nil
       %w[exe libexec].find do |dir|
         irb_path = "#{top_srcdir}/#{dir}/irb"
         File.exist?(irb_path)
       end or omit 'irb command not found'
-      assert_in_out_err(bundle_exec + ['-W0', "-C#{top_srcdir}", '-e', <<~RUBY, '--', '-f', '--'], 'binding.local_variables', /\[:_\]/, [], bug17623)
+      assert_in_out_err(bundle_exec + ['-W0', "-I#{top_srcdir}/lib", "-I#{reline_libdir}", "-C#{top_srcdir}", '-e', <<~RUBY, '--', '-f', '--'], 'binding.local_variables', /\[:_\]/, [], bug17623)
         version = 'xyz' # typical rubygems loading file
         load('#{irb_path}')
       RUBY

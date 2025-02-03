@@ -42,6 +42,8 @@ jobs:
         with:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
+          # Added to make Ruby 2.7 correctly require installed default gems, like `pp`.
+          rubygems: latest
       - name: Run tests
         run: bundle exec rake test
       - name: Run tests in isolation
@@ -81,14 +83,10 @@ jobs:
       fail-fast: false
     env:
       WITH_LATEST_RELINE: ${{matrix.with_latest_reline}}
+      WITH_VTERM: 1
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: ${{ matrix.ruby }}
-          bundler-cache: true
       - name: Install libvterm
         run: |
           sudo apt install -y libtool-bin
@@ -98,8 +96,10 @@ jobs:
           sed -i -e 's/^PREFIX=.*$/PREFIX=\/usr/g' Makefile
           make
           sudo make install
-      - name: Install dependencies
-        run: |
-          WITH_VTERM=1 bundle install
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
       - name: rake test_yamatanooroti
-        run: WITH_VTERM=1 bundle exec rake test_yamatanooroti
+        run: bundle exec rake test_yamatanooroti

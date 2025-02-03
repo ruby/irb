@@ -200,7 +200,9 @@ module TestIRB
     end
 
     def test_initialising_the_old_top_level_ruby_lex
-      assert_in_out_err(["--disable-gems", "-W:deprecated"], <<~RUBY, [], /warning: constant ::RubyLex is deprecated/)
+      libdir = File.expand_path("../../lib", __dir__)
+      reline_libdir = Gem.loaded_specs["reline"].full_gem_path + "/lib"
+      assert_in_out_err(["-I#{libdir}", "-I#{reline_libdir}", "--disable-gems", "-W:deprecated"], <<~RUBY, [], /warning: constant ::RubyLex is deprecated/)
         require "irb"
         ::RubyLex.new(nil)
       RUBY

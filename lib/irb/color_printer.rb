@@ -4,12 +4,9 @@ require_relative 'color'
 
 module IRB
   class ColorPrinter < ::PP
-    METHOD_RESPOND_TO = Object.instance_method(:respond_to?)
-    METHOD_INSPECT = Object.instance_method(:inspect)
-
     class << self
-      def pp(obj, out = $>, width = screen_width)
-        q = ColorPrinter.new(out, width)
+      def pp(obj, out = $>, width = screen_width, colorize: true)
+        q = ColorPrinter.new(out, width, colorize: colorize)
         q.guard_inspect_key {q.pp obj}
         q.flush
         out << "\n"
@@ -24,12 +21,16 @@ module IRB
       end
     end
 
+    def initialize(out, width, colorize: true)
+      @colorize = colorize
+
+      super(out, width)
+    end
+
     def pp(obj)
       if String === obj
         # Avoid calling Ruby 2.4+ String#pretty_print that splits a string by "\n"
         text(obj.inspect)
-      elsif !METHOD_RESPOND_TO.bind(obj).call(:inspect)
-        text(METHOD_INSPECT.bind(obj).call)
       else
         super
       end
@@ -46,9 +47,9 @@ module IRB
       when ',', '=>', '[', ']', '{', '}', '..', '...', /\A@\w+\z/
         super(str, width)
       when /\A#</, '=', '>'
-        super(Color.colorize(str, [:GREEN]), width)
+        super(@colorize ? Color.colorize(str, [:GREEN]) : str, width)
       else
-        super(Color.colorize_code(str, ignore_error: true), width)
+        super(@colorize ? Color.colorize_code(str, ignore_error: true) : str, width)
       end
     end
   end

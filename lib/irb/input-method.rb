@@ -26,10 +26,11 @@ module IRB
 
     def winsize
       if instance_variable_defined?(:@stdout) && @stdout.tty?
-        @stdout.winsize
-      else
-        [24, 80]
+        winsize = @stdout.winsize
+        # If width or height is 0, something is wrong.
+        return winsize unless winsize.include? 0
       end
+      [24, 80]
     end
 
     # Whether this input method is still readable when there is no more data to
@@ -175,10 +176,15 @@ module IRB
   class ReadlineInputMethod < StdioInputMethod
     class << self
       def initialize_readline
-        require "readline"
-      rescue LoadError
-      else
-        include ::Readline
+        return if defined?(self::Readline)
+
+        begin
+          require 'readline'
+          const_set(:Readline, ::Readline)
+        rescue LoadError
+          const_set(:Readline, ::Reline)
+        end
+        const_set(:HISTORY, self::Readline::HISTORY)
       end
     end
 
@@ -216,8 +222,8 @@ module IRB
     def gets
       Readline.input = @stdin
       Readline.output = @stdout
-      if l = readline(@prompt, false)
-        HISTORY.push(l) if !l.empty?
+      if l = Readline.readline(@prompt, false)
+        Readline::HISTORY.push(l) if !l.empty?
         @line[@line_no += 1] = l + "\n"
       else
         @eof = true
@@ -239,7 +245,7 @@ module IRB
 
     # For debug message
     def inspect
-      readline_impl = (defined?(Reline) && Readline == Reline) ? 'Reline' : 'ext/readline'
+      readline_impl = Readline == ::Reline ? 'Reline' : 'ext/readline'
       str = "ReadlineInputMethod with #{readline_impl} #{Readline::VERSION}"
       inputrc_path = File.expand_path(ENV['INPUTRC'] || '~/.inputrc')
       str += " and #{inputrc_path}" if File.exist?(inputrc_path)

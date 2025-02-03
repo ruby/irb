@@ -18,11 +18,10 @@ Gem::Specification.new do |spec|
 
   spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["source_code_uri"] = spec.homepage
-  spec.metadata["documentation_uri"] = spec.homepage
+  spec.metadata["documentation_uri"] = "https://ruby.github.io/irb/"
   spec.metadata["changelog_uri"] = "#{spec.homepage}/releases"
 
   spec.files         = [
-    ".document",
     "Gemfile",
     "LICENSE.txt",
     "README.md",
@@ -34,7 +33,9 @@ Gem::Specification.new do |spec|
     "exe/irb",
     "irb.gemspec",
     "man/irb.1",
-  ] + Dir.glob("lib/**/*")
+  ] + Dir.chdir(File.expand_path('..', __FILE__)) do
+    Dir.glob("lib/**/*").map {|f| f unless File.directory?(f) }.compact
+  end
   spec.bindir        = "exe"
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
@@ -43,4 +44,5 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "reline", ">= 0.4.2"
   spec.add_dependency "rdoc", ">= 4.0.0"
+  spec.add_dependency "pp", ">= 0.6.0"
 end

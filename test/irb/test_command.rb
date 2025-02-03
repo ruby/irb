@@ -4,6 +4,15 @@ require "irb"
 require_relative "helper"
 
 module TestIRB
+  # In case when RDoc becomes a bundled gem, we may not be able to load it when running tests
+  # in ruby/ruby
+  HAS_RDOC = begin
+    require "rdoc"
+    true
+  rescue LoadError
+    false
+  end
+
   class CommandTestCase < TestCase
     def setup
       @pwd = Dir.pwd
@@ -27,22 +36,6 @@ module TestIRB
       Dir.chdir(@pwd)
       FileUtils.rm_rf(@tmpdir)
       restore_encodings
-    end
-
-    def execute_lines(*lines, conf: {}, main: self, irb_path: nil)
-      capture_output do
-        IRB.init_config(nil)
-        IRB.conf[:VERBOSE] = false
-        IRB.conf[:PROMPT_MODE] = :SIMPLE
-        IRB.conf[:USE_PAGER] = false
-        IRB.conf.merge!(conf)
-        input = TestInputMethod.new(lines)
-        irb = IRB::Irb.new(IRB::WorkSpace.new(main), input)
-        irb.context.return_format = "=> %s\n"
-        irb.context.irb_path = irb_path if irb_path
-        IRB.conf[:MAIN_CONTEXT] = irb.context
-        irb.eval_input
-      end
     end
   end
 
@@ -767,18 +760,33 @@ module TestIRB
   end
 
   class ShowDocTest < CommandTestCase
-    def test_show_doc
-      out, err = execute_lines("show_doc String#gsub")
+    if HAS_RDOC
+      def test_show_doc
+        out, err = execute_lines("show_doc String#gsub")
 
-      # the former is what we'd get without document content installed, like on CI
-      # the latter is what we may get locally
-      possible_rdoc_output = [/Nothing known about String#gsub/, /gsub\(pattern\)/]
-      assert_not_include err, "[Deprecation]"
-      assert(possible_rdoc_output.any? { |output| output.match?(out) }, "Expect the `show_doc` command to match one of the possible outputs. Got:\n#{out}")
-    ensure
-      # this is the only way to reset the redefined method without coupling the test with its implementation
-      EnvUtil.suppress_warning { load "irb/command/help.rb" }
-    end if defined?(RDoc)
+        # the former is what we'd get without document content installed, like on CI
+        # the latter is what we may get locally
+        possible_rdoc_output = [/Nothing known about String#gsub/, /gsub\(pattern\)/]
+        assert_not_include err, "[Deprecation]"
+        assert(possible_rdoc_output.any? { |output| output.match?(out) }, "Expect the `show_doc` command to match one of the possible outputs. Got:\n#{out}")
+      ensure
+        # this is the only way to reset the redefined method without coupling the test with its implementation
+        EnvUtil.suppress_warning { load "irb/command/help.rb" }
+      end
+
+      def test_ri
+        out, err = execute_lines("ri String#gsub")
+
+        # the former is what we'd get without document content installed, like on CI
+        # the latter is what we may get locally
+        possible_rdoc_output = [/Nothing known about String#gsub/, /gsub\(pattern\)/]
+        assert_not_include err, "[Deprecation]"
+        assert(possible_rdoc_output.any? { |output| output.match?(out) }, "Expect the `ri` command to match one of the possible outputs. Got:\n#{out}")
+      ensure
+        # this is the only way to reset the redefined method without coupling the test with its implementation
+        EnvUtil.suppress_warning { load "irb/command/help.rb" }
+      end
+    end
 
     def test_show_doc_without_rdoc
       _, err = without_rdoc do
@@ -947,6 +955,12 @@ module TestIRB
         2: [].each do |x|
              puts x
            ...
+      EOF
+      assert_not_include(out, <<~EOF)
+        foo
+      EOF
+      assert_not_include(out, <<~EOF)
+        bar
       EOF
       assert_empty err
     end

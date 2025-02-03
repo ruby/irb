@@ -45,8 +45,8 @@ end
 task :default => :test
 
 RDoc::Task.new do |rdoc|
-  rdoc.title = "IRB"
-  rdoc.rdoc_dir = "docs"
-  rdoc.main = "README.md"
-  rdoc.options.push("--copy-files", "LICENSE.txt")
+  rdoc.title = "IRB Documentation"
+  rdoc.main = "Index.md"
+  rdoc.rdoc_dir = "_site"
+  rdoc.options.push("lib")
 end
