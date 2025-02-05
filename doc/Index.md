@@ -266,6 +266,8 @@ During the session, method `conf.ignore_siging?` returns the setting, and method
 
 By default, IRB enables [automatic completion](https://en.wikipedia.org/wiki/Autocomplete#In_command-line_interpreter):
 
+To cycle through the completion suggestions, use the tab key (and shift-tab to reverse).
+
 You can disable it by either of these:
 
 - Adding `IRB.conf[:USE_AUTOCOMPLETE] = false` to the configuration file.
