@@ -56,6 +56,20 @@ module TestIRB
       assert_include output, "=> 12"
     end
 
+    def test_local_variable_handeld_correctly
+      write_ruby <<~'RUBY'
+        tap do |if:0, and:0, foo:100|
+          binding.irb
+        end
+      RUBY
+
+      output = run_ruby_file do
+        type 'foo /4#/ do'
+        type 'exit!'
+      end
+      assert_include output, '=> 25'
+    end
+
     def test_commands_dont_override_stored_last_result
       write_ruby <<~'RUBY'
         binding.irb
