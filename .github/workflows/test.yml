@@ -8,11 +8,13 @@ on:
 
 jobs:
   ruby-versions:
+    if: github.repository == 'ruby/irb' || github.event_name != 'schedule'
     uses: ruby/actions/.github/workflows/ruby_versions.yml@master
     with:
       engine: cruby
       min_version: 2.7
   lint:
+    if: github.repository == 'ruby/irb' || github.event_name != 'schedule'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -49,6 +51,7 @@ jobs:
       - name: Run tests in isolation
         run: bundle exec rake test_in_isolation
   debug-test:
+    if: github.repository == 'ruby/irb' || github.event_name != 'schedule'
     name: Debug compatibility test
     runs-on: ubuntu-latest
     timeout-minutes: 30
