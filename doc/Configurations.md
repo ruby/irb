@@ -156,7 +156,7 @@ You can see the hash by typing `IRB.conf`. Below are the primary entries:
 - `:USE_TRACER`: Whether to use the
   {IRB tracer}[rdoc-ref:IRB@Tracer];
   initial value: `false`.
-- `:USE_PAGER`: Controls whether "pagination" is enabled.
+- `:USE_PAGER`: Controls whether pager is enabled.
   initial value: `true`.
 - `:VERBOSE`: Whether to print {verbose output}[rdoc-ref:IRB@Verbosity];
   initial value: `nil`.
