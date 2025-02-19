@@ -167,8 +167,8 @@ module TestIRB
       result_with_lvars = "a /(b +#{BLUE}#{BOLD}1#{CLEAR})/i"
 
       assert_equal_with_term(result_without_lvars, code)
-      assert_equal_with_term(result_with_lvar, code, local_variables: ['a'])
-      assert_equal_with_term(result_with_lvars, code, local_variables: ['a', 'b'])
+      assert_equal_with_term(result_with_lvar, code, local_variables: [:a])
+      assert_equal_with_term(result_with_lvars, code, local_variables: [:a, :b])
     end
 
     def test_colorize_code_complete_true

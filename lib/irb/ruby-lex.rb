@@ -52,6 +52,27 @@ module IRB
       on_words_beg on_qwords_beg
     ]
 
+    RESERVED_WORDS = %i[
+      __ENCODING__ __LINE__ __FILE__
+      BEGIN END
+      alias and
+      begin break
+      case class
+      def defined? do
+      else elsif end ensure
+      false for
+      if in
+      module
+      next nil not
+      or
+      redo rescue retry return
+      self super
+      then true
+      undef unless until
+      when while
+      yield
+    ]
+
     class TerminateLineInput < StandardError
       def initialize
         super("Terminate Line Input")
@@ -77,6 +98,10 @@ module IRB
       end
 
       def generate_local_variables_assign_code(local_variables)
+        # Some reserved words could be a local variable
+        # Example: def f(if: 1); binding.irb; end
+        # These reserved words should be removed from assignment code
+        local_variables -= RESERVED_WORDS
         "#{local_variables.join('=')}=nil;" unless local_variables.empty?
       end
 
