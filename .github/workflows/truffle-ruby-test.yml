@@ -8,6 +8,7 @@ on:
 
 jobs:
   irb:
+    if: github.repository == 'ruby/irb' || github.event_name != 'schedule'
     name: rake test truffleruby-head ${{ matrix.with_latest_reline && '(latest reline)' || '' }}
     strategy:
       matrix:
