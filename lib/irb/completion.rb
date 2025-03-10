@@ -12,26 +12,6 @@ module IRB
 
     # Set of reserved words used by Ruby, you should not use these for
     # constants or variables
-    ReservedWords = %w[
-      __ENCODING__ __LINE__ __FILE__
-      BEGIN END
-      alias and
-      begin break
-      case class
-      def defined? do
-      else elsif end ensure
-      false for
-      if in
-      module
-      next nil not
-      or
-      redo rescue retry return
-      self super
-      then true
-      undef unless until
-      when while
-      yield
-    ]
 
     HELP_COMMAND_PREPOSING = /\Ahelp\s+/
 
@@ -459,12 +439,12 @@ module IRB
             eval("#{perfect_match_var}.class.name", bind) rescue nil
           else
             candidates = (bind.eval_methods | bind.eval_private_methods | bind.local_variables | bind.eval_instance_variables | bind.eval_class_constants).collect{|m| m.to_s}
-            candidates |= ReservedWords
+            candidates |= RubyLex::RESERVED_WORDS.map(&:to_s)
             candidates.find{ |i| i == input }
           end
         else
           candidates = (bind.eval_methods | bind.eval_private_methods | bind.local_variables | bind.eval_instance_variables | bind.eval_class_constants).collect{|m| m.to_s}
-          candidates |= ReservedWords
+          candidates |= RubyLex::RESERVED_WORDS.map(&:to_s)
           candidates.grep(/^#{Regexp.quote(input)}/).sort
         end
       end
