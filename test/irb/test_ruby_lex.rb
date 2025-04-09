@@ -38,8 +38,16 @@ module TestIRB
       lines = ["a /1#/ do", "2"]
       assert_indent_level(lines, 1)
       assert_code_block_open(lines, true)
-      assert_indent_level(lines, 0, local_variables: ['a'])
-      assert_code_block_open(lines, false, local_variables: ['a'])
+      assert_indent_level(lines, 0, local_variables: [:a])
+      assert_code_block_open(lines, false, local_variables: [:a])
+    end
+
+    def test_keyword_local_variables
+      # Assuming `def f(if: 1, and: 2, ); binding.irb; end`
+      local_variables = [:if, :and]
+      lines = ['1 + 2']
+      assert_indent_level(lines, 0, local_variables: local_variables)
+      assert_code_block_open(lines, false, local_variables: local_variables)
     end
 
     def test_literal_ends_with_space
