@@ -4,6 +4,7 @@
 #   	by Keiju ISHITSUKA(keiju@ruby-lang.org)
 #
 
+require "prism"
 require "ripper"
 require "jruby" if RUBY_ENGINE == "jruby"
 require_relative "nesting_parser"
@@ -170,7 +171,7 @@ module IRB
 
     def check_code_state(code, local_variables:)
       tokens = self.class.ripper_lex_without_warning(code, local_variables: local_variables)
-      opens = NestingParser.open_tokens(tokens)
+      opens = NestingParser.open_nestings(Prism.parse_lex(code, scopes: [local_variables]))
       [tokens, opens, code_terminated?(code, tokens, opens, local_variables: local_variables)]
     end
 
@@ -339,7 +340,7 @@ module IRB
     # Calculates the difference of pasted code's indent and indent calculated from tokens
     def indent_difference(lines, line_results, line_index)
       loop do
-        _tokens, prev_opens, _next_opens, min_depth = line_results[line_index]
+        prev_opens, _next_opens, min_depth = line_results[line_index]
         open_token = prev_opens.last
         if !open_token || (open_token.event != :on_heredoc_beg && !free_indent_token?(open_token))
           # If the leading whitespace is an indent, return the difference
@@ -356,14 +357,14 @@ module IRB
       end
     end
 
-    def process_indent_level(tokens, lines, line_index, is_newline)
-      line_results = NestingParser.parse_by_line(tokens)
+    def process_indent_level(parse_lex_result, lines, line_index, is_newline)
+      line_results = NestingParser.parse_by_line(parse_lex_result)
       result = line_results[line_index]
       if result
-        _tokens, prev_opens, next_opens, min_depth = result
+        prev_opens, next_opens, min_depth = result
       else
         # When last line is empty
-        prev_opens = next_opens = line_results.last[2]
+        prev_opens = next_opens = line_results.last[1]
         min_depth = next_opens.size
       end
 
@@ -405,7 +406,7 @@ module IRB
       elsif prev_open_token&.event == :on_heredoc_beg
         tok = prev_open_token.tok
         if prev_opens.size <= next_opens.size
-          if is_newline && lines[line_index].empty? && line_results[line_index - 1][1].last != next_open_token
+          if is_newline && lines[line_index].empty? && line_results[line_index - 1][0].last != next_open_token
             # First line in heredoc
             tok.match?(/^<<[-~]/) ? base_indent + indent : indent
           elsif tok.match?(/^<<~/)
@@ -485,7 +486,7 @@ module IRB
         if first_token && first_token.state != Ripper::EXPR_DOT
           tokens_without_last_line = tokens[0..index]
           code_without_last_line = tokens_without_last_line.map(&:tok).join
-          opens_without_last_line = NestingParser.open_tokens(tokens_without_last_line)
+          opens_without_last_line = NestingParser.open_nestings(Prism.parse_lex(code_without_last_line, scopes: [local_variables]))
           if code_terminated?(code_without_last_line, tokens_without_last_line, opens_without_last_line, local_variables: local_variables)
             return last_line_tokens.map(&:tok).join
           end
