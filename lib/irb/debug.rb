@@ -60,7 +60,7 @@ module IRB
         if !DEBUGGER__::CONFIG[:no_hint] && irb.context.io.is_a?(RelineInputMethod)
           Reline.output_modifier_proc = proc do |input, complete:|
             unless input.strip.empty?
-              cmd = input.split(/\s/, 2).first
+              cmd = input[/\S+/]
 
               if !complete && DEBUGGER__.commands.key?(cmd)
                 input = input.sub(/\n$/, " # debug command\n")
