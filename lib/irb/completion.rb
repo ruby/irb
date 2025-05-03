@@ -40,13 +40,13 @@ module IRB
 
     def retrieve_gem_and_system_load_path
       candidates = (GEM_PATHS | $LOAD_PATH)
-      candidates.map do |p|
+      candidates.filter_map do |p|
         if p.respond_to?(:to_path)
           p.to_path
         else
           String(p) rescue nil
         end
-      end.compact.sort
+      end.sort
     end
 
     def retrieve_files_to_require_from_load_path
@@ -171,16 +171,12 @@ module IRB
 
       case tok.tok
       when 'require'
-        retrieve_files_to_require_from_load_path.select { |path|
-          path.start_with?(actual_target)
-        }.map { |path|
-          quote + path
+        retrieve_files_to_require_from_load_path.filter_map { |path|
+          quote + path if path.start_with?(actual_target)
         }
       when 'require_relative'
-        retrieve_files_to_require_relative_from_current_dir.select { |path|
-          path.start_with?(actual_target)
-        }.map { |path|
-          quote + path
+        retrieve_files_to_require_relative_from_current_dir.filter_map { |path|
+          quote + path if path.start_with?(actual_target)
         }
       end
     end
