@@ -877,7 +877,7 @@ module TestIRB
       end
 
       assert_match(/irbtest-.*\.rb:2:in (`|'Object#)foo': error \(RuntimeError\)/, output)
-      frame_traces = output.split("\n").filter_map { |line| line.strip if line.strip.match?(/from /) }
+      frame_traces = output.split("\n").map(&:strip).grep(/from /)
 
       expected_traces = if RUBY_VERSION >= "3.3.0"
         [
