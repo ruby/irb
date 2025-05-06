@@ -947,4 +947,59 @@ module TestIRB
       end
     end
   end
+
+  class ArgumentTest < TestIRB::IntegrationTestCase
+    def test_pre_commands
+      write_ruby <<~'RUBY'
+        ninty_nine = "It's a #{100 - 1}"
+        ninty_eight = "It's a #{100 - 2}"
+
+        require 'irb' # need to pass an argument to binding.irb(see also: https://github.com/ruby/ruby/pull/12796)
+        binding.irb(pre: 'p ninty_nine ;; p ninty_eight')
+      RUBY
+
+      output = run_ruby_file do
+        type "exit"
+      end
+
+      assert_include output, "It's a 98"
+      assert_include output, "It's a 99"
+    end
+
+    def test_do_cmds
+      @envs['IRB_COPY_COMMAND'] = "#{EnvUtil.rubybin} -e \"puts 'foo' + STDIN.read\""
+
+      write_ruby <<~'RUBY'
+        ninty_nine = "It's a #{100 - 1}"
+
+        require 'irb' # need to pass an argument to binding.irb(see also: https://github.com/ruby/ruby/pull/12796)
+        binding.irb(do: 'copy "foo"')
+        puts ninty_nine
+      RUBY
+
+      output = run_ruby_file {}
+
+      assert_match("foo", output)
+      assert_match(/Copied to system clipboard/, output)
+      assert_match("It's a 99", output)
+    end
+
+    def test_pre_commands_takes_priority_over_do_commands
+      @envs['IRB_COPY_COMMAND'] = "#{EnvUtil.rubybin} -e \"puts 'foo' + STDIN.read\""
+
+      write_ruby <<~'RUBY'
+        ninty_nine = "It's a #{100 - 1}"
+
+        require 'irb' # need to pass an argument to binding.irb(see also: https://github.com/ruby/ruby/pull/12796)
+        binding.irb(pre: 'p ninty_nine', do: 'copy ninty_nine')
+      RUBY
+
+      output = run_ruby_file do
+        type "exit"
+      end
+
+      assert_not_match(/Copied to system clipboard/, output)
+      assert_match("It's a 99", output)
+    end
+  end
 end
