@@ -159,7 +159,7 @@ module IRB
       else
         return nil # It's not String literal
       end
-      tokens = RubyLex.ripper_lex_without_warning(preposing.gsub(/\s*\z/, ''))
+      tokens = RubyLex.ripper_lex_without_warning(preposing.rstrip)
       tok = nil
       tokens.reverse_each do |t|
         unless [:on_lparen, :on_sp, :on_ignored_sp, :on_nl, :on_ignored_nl, :on_comment].include?(t.event)
