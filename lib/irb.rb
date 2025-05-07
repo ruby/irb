@@ -612,12 +612,10 @@ module IRB
         when "N"
           @context.irb_name
         when "m"
-          main_str = @context.safe_method_call_on_main(:to_s) rescue "!#{$!.class}"
-          main_str = main_str || "!#{@context.safe_method_call_on_main(:class)}"
+          main_str = "#{@context.safe_method_call_on_main(:to_s)}" rescue "!#{$!.class}"
           truncate_prompt_main(main_str)
         when "M"
-          main_str = @context.safe_method_call_on_main(:inspect) rescue "!#{$!.class}"
-          main_str = main_str || "!#{@context.safe_method_call_on_main(:class)}"
+          main_str = "#{@context.safe_method_call_on_main(:inspect)}" rescue "!#{$!.class}"
           truncate_prompt_main(main_str)
         when "l"
           ltype

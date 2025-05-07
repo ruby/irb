@@ -72,8 +72,8 @@ module TestIRB
         type "continue"
       end
 
-      assert_match(/irb\(!ToSReturnsNil\):001> debug/, output)
-      assert_match(/irb:rdbg\(!ToSReturnsNil\):002> next/, output)
+      assert_match(/irb\(\):001> debug/, output)
+      assert_match(/irb:rdbg\(\):002> next/, output)
     end
 
     def test_debug_command_only_runs_once
