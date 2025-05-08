@@ -51,6 +51,31 @@ module TestIRB
       assert_match(/=>   2\| puts "hello"/, output)
     end
 
+    def test_debug_class_to_s_return_nil
+      write_ruby <<~'ruby'
+        class ToSReturnsNil
+          def to_s
+            nil
+          end
+
+          def do_something
+            binding.irb
+          end
+        end
+
+        ToSReturnsNil.new.do_something
+      ruby
+
+      output = run_ruby_file do
+        type "debug"
+        type "next"
+        type "continue"
+      end
+
+      assert_match(/irb\(\):001> debug/, output)
+      assert_match(/irb:rdbg\(\):002> next/, output)
+    end
+
     def test_debug_command_only_runs_once
       write_ruby <<~'ruby'
         binding.irb
