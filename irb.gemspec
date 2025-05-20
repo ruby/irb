@@ -22,19 +22,12 @@ Gem::Specification.new do |spec|
   spec.metadata["changelog_uri"] = "#{spec.homepage}/releases"
 
   spec.files         = [
+    ".rdoc_options",
     "Gemfile",
-    "LICENSE.txt",
-    "README.md",
-    "Rakefile",
-    "bin/console",
-    "bin/setup",
-    "doc/irb/irb-tools.rd.ja",
-    "doc/irb/irb.rd.ja",
     "exe/irb",
-    "irb.gemspec",
     "man/irb.1",
   ] + Dir.chdir(File.expand_path('..', __FILE__)) do
-    Dir.glob("lib/**/*").map {|f| f unless File.directory?(f) }.compact
+    Dir.glob(%w[*.txt *.md doc/**/* lib/**/*]).select {|f| !File.directory?(f) }
   end
   spec.bindir        = "exe"
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
