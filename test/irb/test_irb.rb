@@ -879,7 +879,14 @@ module TestIRB
       assert_match(/irbtest-.*\.rb:2:in (`|'Object#)foo': error \(RuntimeError\)/, output)
       frame_traces = output.split("\n").select { |line| line.strip.match?(/from /) }.map(&:strip)
 
-      expected_traces = if RUBY_VERSION >= "3.3.0"
+      expected_traces = if RUBY_VERSION >= "3.5.0"
+        [
+          /from .*\/irbtest-.*.rb:6:in (`|'Object#)bar'/,
+          /from .*\/irbtest-.*.rb\(irb\):1:in [`']<main>'/,
+          /from .*\/irbtest-.*.rb:9:in (`|'Binding#)irb'/,
+          /from .*\/irbtest-.*.rb:9:in [`']<main>'/
+        ]
+      elsif RUBY_VERSION >= "3.3.0"
         [
           /from .*\/irbtest-.*.rb:6:in (`|'Object#)bar'/,
           /from .*\/irbtest-.*.rb\(irb\):1:in [`']<main>'/,
@@ -934,11 +941,20 @@ module TestIRB
       assert_match(/irbtest-.*\.rb:2:in (`|'Object#)foo': error \(RuntimeError\)/, output)
       frame_traces = output.split("\n").select { |line| line.strip.match?(/from /) }.map(&:strip)
 
-      expected_traces = [
-        /from .*\/irbtest-.*.rb:6:in (`|'Object#)bar'/,
-        /from .*\/irbtest-.*.rb\(irb\):1:in [`']<main>'/,
-        /from .*\/irbtest-.*.rb:9:in [`']<main>'/
-      ]
+      expected_traces = if RUBY_VERSION >= "3.5.0"
+        [
+          /from .*\/irbtest-.*.rb:6:in (`|'Object#)bar'/,
+          /from .*\/irbtest-.*.rb\(irb\):1:in [`']<main>'/,
+          /from .*\/irbtest-.*.rb:9:in (`|'Binding#)irb'/,
+          /from .*\/irbtest-.*.rb:9:in [`']<main>'/
+        ]
+      else
+        [
+          /from .*\/irbtest-.*.rb:6:in (`|'Object#)bar'/,
+          /from .*\/irbtest-.*.rb\(irb\):1:in [`']<main>'/,
+          /from .*\/irbtest-.*.rb:9:in [`']<main>'/
+        ]
+      end
 
       expected_traces.reverse! if RUBY_VERSION < "3.0.0"
 
