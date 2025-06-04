@@ -49,7 +49,7 @@ module IRB
           def DEBUGGER__.capture_frames(*args)
             frames = capture_frames_without_irb(*args)
             frames.reject! do |frame|
-              frame.realpath&.start_with?(IRB_DIR) || frame.path == "<internal:prelude>"
+              frame.realpath&.start_with?(IRB_DIR) || frame.path.start_with?("<internal:")
             end
             frames
           end
