@@ -256,11 +256,11 @@ During the session, method `conf.ignore_eof?` returns the setting, and method `c
 
 ### SIGINT
 
-By default, `IRB.conf[:IGNORE_SIGINT]` is `true`, which means that typing the interrupt character `Ctrl-C` causes the session to exit.
+By default, `IRB.conf[:IGNORE_SIGINT]` is `true`, which means that typing the interrupt character `Ctrl-C` does not cause the session to exit.
 
-You can reverse that behavior by adding `IRB.conf[:IGNORE_SIGING] = false` to the configuration file.
+You can reverse that behavior by adding `IRB.conf[:IGNORE_SIGINT] = false` to the configuration file.
 
-During the session, method `conf.ignore_siging?` returns the setting, and method `conf.ignore_sigint = *boolean*` sets it.
+During the session, method `conf.ignore_sigint?` returns the setting, and method `conf.ignore_sigint = *boolean*` sets it.
 
 ### Automatic Completion
 
