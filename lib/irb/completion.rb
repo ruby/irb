@@ -193,8 +193,15 @@ module IRB
 
       # It doesn't make sense to propose commands with other preposing
       commands = [] unless preposing.empty?
+      @encoding_warning_shown ||= false
 
-      completion_data = retrieve_completion_data(target, bind: bind, doc_namespace: false).compact.map{ |i| i.encode(Encoding.default_external) }
+      completion_data = retrieve_completion_data(target, bind: bind, doc_namespace: false).compact.map do |i|
+        i.encode(Encoding.default_external)
+      rescue Encoding::UndefinedConversionError
+        warn "Warning: Invalid encoding in method name '#{i}'. can't be converted to the locale #{Encoding.default_external}." unless @encoding_warning_shown
+        @encoding_warning_shown = true
+        nil
+      end.compact
       commands | completion_data
     end
 

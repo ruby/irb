@@ -314,4 +314,47 @@ module TestIRB
       assert_equal(IRB::InputCompletor.retrieve_completion_data('a.abs', bind: bind, doc_namespace: true), 'Integer.abs')
     end
   end
+
+  class InvalidEncodingMethodTest < TestCase
+    def test_invalid_encoding_method_warning
+      if RUBY_ENGINE == 'truffleruby'
+        omit "TruffleRuby does not support invalid encoding methods."
+      end
+
+      invalid_method_name = "b\xff".force_encoding(Encoding::ASCII_8BIT)
+
+      test_obj = Object.new
+      test_obj.define_singleton_method(invalid_method_name) {}
+      test_bind = test_obj.instance_eval { binding }
+
+      original_stderr = $stderr
+      original_encoding = Encoding.default_external
+      original_verbose = $VERBOSE
+
+      begin
+        stderr_buffer = StringIO.new
+        $stderr = stderr_buffer
+        $VERBOSE = nil
+        Encoding.default_external = Encoding::UTF_8
+        $VERBOSE = original_verbose
+
+        completor = IRB::RegexpCompletor.new
+        result = completor.completion_candidates('', 'b', '', bind: test_bind)
+
+        assert_equal("Warning: Invalid encoding in method name 'b\xff'. can't be converted to the locale UTF-8.\n".force_encoding(Encoding::ASCII_8BIT), stderr_buffer.string.force_encoding(Encoding::ASCII_8BIT))
+        assert_not_include(result, nil)
+
+        stderr_buffer.truncate(0)
+        stderr_buffer.rewind
+        stderr_buffer = StringIO.new
+
+        completor.completion_candidates('', 'b', '', bind: test_bind)
+        assert_empty(stderr_buffer.string)
+      ensure
+        $stderr = original_stderr
+        Encoding.default_external = original_encoding
+        $VERBOSE = original_verbose
+      end
+    end
+  end
 end
