@@ -80,6 +80,28 @@ module TestIRB
       assert_include(@completor.completion_candidates('', 'show_s', '', bind: binding), 'show_source')
       assert_not_include(@completor.completion_candidates(';', 'show_s', '', bind: binding), 'show_source')
     end
+
+    def test_type_completor_handles_encoding_errors_gracefully
+      invalid_method_name = "b\xff".dup.force_encoding(Encoding::ASCII_8BIT)
+
+      test_obj = Object.new
+      test_obj.define_singleton_method(invalid_method_name) {}
+      test_bind = test_obj.instance_eval { binding }
+
+      original_encoding = Encoding.default_external
+
+      begin
+        Encoding.default_external = Encoding::UTF_8
+
+        assert_nothing_raised do
+          result = @completor.completion_candidates('', 'b', '', bind: test_bind)
+          assert_include(result, 'block_given?')
+          assert_not_include(result, nil)
+        end
+      ensure
+        Encoding.default_external = original_encoding
+      end
+    end
   end
 
   class TypeCompletorIntegrationTest < IntegrationTestCase
