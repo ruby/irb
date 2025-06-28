@@ -107,7 +107,14 @@ module IRB
 
       return commands unless result
 
-      commands | result.completion_candidates.map { target + _1 }
+      encoded_candidates = result.completion_candidates.filter_map do |i|
+        encoded = i.encode(Encoding.default_external)
+        target + encoded
+      rescue Encoding::UndefinedConversionError
+        # If the string cannot be converted, we just ignore it
+        nil
+      end
+      commands | encoded_candidates
     end
 
     def doc_namespace(preposing, matched, _postposing, bind:)
