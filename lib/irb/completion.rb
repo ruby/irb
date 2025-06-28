@@ -201,12 +201,12 @@ module IRB
       # It doesn't make sense to propose commands with other preposing
       commands = [] unless preposing.empty?
 
-      completion_data = retrieve_completion_data(target, bind: bind, doc_namespace: false).compact.map do |i|
+      completion_data = retrieve_completion_data(target, bind: bind, doc_namespace: false).compact.filter_map do |i|
         i.encode(Encoding.default_external)
       rescue Encoding::UndefinedConversionError
         # If the string cannot be converted, we just ignore it
         nil
-      end.compact
+      end
       commands | completion_data
     end
 
