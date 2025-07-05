@@ -314,4 +314,34 @@ module TestIRB
       assert_equal(IRB::InputCompletor.retrieve_completion_data('a.abs', bind: bind, doc_namespace: true), 'Integer.abs')
     end
   end
+
+  class InvalidEncodingMethodTest < TestCase
+    def test_regexp_completor_handles_encoding_errors_gracefully
+      if RUBY_ENGINE == 'truffleruby'
+        omit "TruffleRuby does not support invalid encoding methods."
+      end
+
+      invalid_method_name = "b\xff".force_encoding(Encoding::ASCII_8BIT)
+
+      test_obj = Object.new
+      test_obj.define_singleton_method(invalid_method_name) {}
+      test_bind = test_obj.instance_eval { binding }
+
+      original_encoding = Encoding.default_external
+
+      begin
+        Encoding.default_external = Encoding::UTF_8
+
+        completor = IRB::RegexpCompletor.new
+
+        assert_nothing_raised do
+          result = completor.completion_candidates('', 'b', '', bind: test_bind)
+          assert_include(result, 'block_given?')
+          assert_not_include(result, nil)
+        end
+      ensure
+        Encoding.default_external = original_encoding
+      end
+    end
+  end
 end

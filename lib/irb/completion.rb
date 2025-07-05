@@ -107,7 +107,14 @@ module IRB
 
       return commands unless result
 
-      commands | result.completion_candidates.map { target + _1 }
+      encoded_candidates = result.completion_candidates.filter_map do |i|
+        encoded = i.encode(Encoding.default_external)
+        target + encoded
+      rescue Encoding::UndefinedConversionError
+        # If the string cannot be converted, we just ignore it
+        nil
+      end
+      commands | encoded_candidates
     end
 
     def doc_namespace(preposing, matched, _postposing, bind:)
@@ -194,7 +201,12 @@ module IRB
       # It doesn't make sense to propose commands with other preposing
       commands = [] unless preposing.empty?
 
-      completion_data = retrieve_completion_data(target, bind: bind, doc_namespace: false).compact.map{ |i| i.encode(Encoding.default_external) }
+      completion_data = retrieve_completion_data(target, bind: bind, doc_namespace: false).compact.filter_map do |i|
+        i.encode(Encoding.default_external)
+      rescue Encoding::UndefinedConversionError
+        # If the string cannot be converted, we just ignore it
+        nil
+      end
       commands | completion_data
     end
 
