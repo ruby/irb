@@ -376,6 +376,23 @@ module TestIRB
       assert_match(%r[Defined in binary file:.+io/console], out)
     end
 
+    def test_show_source_method_overrided
+      write_ruby <<~RUBY
+        class Request
+          def method; 'POST'; end
+          def path; '/'; end
+        end
+        request = Request.new
+        binding.irb
+      RUBY
+
+      out = run_ruby_file do
+        type "show_source request.path"
+        type "exit"
+      end
+      assert_match(%r[#{@ruby_file.to_path}:3\s+def path; '/'; end], out)
+    end
+
     def test_show_source_with_constant_lookup
       write_ruby <<~RUBY
         X = 1

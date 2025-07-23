@@ -114,7 +114,7 @@ module IRB
       when "owner"
         target_method = owner_receiver.instance_method(method)
       when "receiver"
-        target_method = owner_receiver.method(method)
+        target_method = Kernel.instance_method(:method).bind_call(owner_receiver, method)
       end
       super_level.times do |s|
         target_method = target_method.super_method if target_method
