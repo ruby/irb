@@ -97,7 +97,7 @@ To learn more about debugging with IRB, see [Debugging with IRB](#label-Debuggin
 
 At startup, IRB:
 
-1. Interprets (as Ruby code) the content of the [configuration file](#label-Configuration) (if given).
+1. Interprets (as Ruby code) the content of the [configuration file](rdoc-ref:Configurations.md) (if given).
 2. Constructs the initial session context from [hash IRB.conf](#label-Hash+IRB.conf) and from default values; the hash content may have been affected by [command-line options](#command-line-options), and by direct assignments in the configuration file.
 3. Assigns the context to variable `conf`.
 4. Assigns command-line arguments to variable `ARGV`.
