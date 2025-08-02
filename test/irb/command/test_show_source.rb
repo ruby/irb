@@ -423,5 +423,29 @@ module TestIRB
       assert_match(%r[#{@ruby_file.to_path}:7\s+Z = 1], out)
       assert_match(%r[#{@ruby_file.to_path}:8\s+Array = 1], out)
     end
+
+    def test_show_source_with_prism_returns_invalid_utf8_string
+      write_ruby <<~RUBY
+        class A
+          def call
+            if true
+              nil
+            # あああああああああああああああああああああああ
+            # あああああああああああああああああああああああ
+            end
+          end
+        end
+
+        binding.irb
+      RUBY
+
+      out = run_ruby_file do
+        type "inst = A.new"
+        type "show_source inst.call"
+        type "exit"
+      end
+
+      assert_match(/def call/, out)
+    end
   end
 end

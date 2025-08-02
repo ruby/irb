@@ -73,6 +73,48 @@ module IRB
       yield
     ]
 
+    SYNTAX_ERROR_PATTERNS = {
+      # "syntax error, unexpected keyword_end"
+      #
+      #   example:
+      #     if (
+      #     end
+      #
+      #   example:
+      #     end
+      "unexpected keyword_end" => :unrecoverable_error,
+      # "syntax error, unexpected '.'"
+      #
+      #   example:
+      #     .
+      "unexpected '.'" => :unrecoverable_error,
+      # "syntax error, unexpected tREGEXP_BEG, expecting keyword_do or '{' or '('"
+      #
+      #   example:
+      #     method / f /
+      "unexpected tREGEXP_BEG" => :unrecoverable_error,
+      # "unterminated regexp meets end of file"
+      #
+      #   example:
+      #     /
+      #
+      # "unterminated string meets end of file"
+      #
+      #   example:
+      #     '
+      "unterminated string meets end of file" => :recoverable_error,
+      "unterminated regexp meets end of file" => :recoverable_error,
+      # "syntax error, unexpected end-of-input, expecting keyword_end"
+      #
+      #   example:
+      #     if true
+      #       hoge
+      #       if false
+      #         fuga
+      #       end
+      "unexpected end-of-input" => :recoverable_error,
+    }.freeze
+
     class TerminateLineInput < StandardError
       def initialize
         super("Terminate Line Input")
@@ -252,53 +294,11 @@ module IRB
         # This is for a hash with invalid encoding symbol, {"\xAE": 1}
         :unrecoverable_error
       rescue SyntaxError => e
-        case e.message
-        when /unexpected keyword_end/
-          # "syntax error, unexpected keyword_end"
-          #
-          #   example:
-          #     if (
-          #     end
-          #
-          #   example:
-          #     end
-          return :unrecoverable_error
-        when /unexpected '\.'/
-          # "syntax error, unexpected '.'"
-          #
-          #   example:
-          #     .
-          return :unrecoverable_error
-        when /unexpected tREGEXP_BEG/
-          # "syntax error, unexpected tREGEXP_BEG, expecting keyword_do or '{' or '('"
-          #
-          #   example:
-          #     method / f /
-          return :unrecoverable_error
-        when /unterminated (?:string|regexp) meets end of file/
-          # "unterminated regexp meets end of file"
-          #
-          #   example:
-          #     /
-          #
-          # "unterminated string meets end of file"
-          #
-          #   example:
-          #     '
-          return :recoverable_error
-        when /unexpected end-of-input/
-          # "syntax error, unexpected end-of-input, expecting keyword_end"
-          #
-          #   example:
-          #     if true
-          #       hoge
-          #       if false
-          #         fuga
-          #       end
-          return :recoverable_error
-        else
-          return :other_error
+        SYNTAX_ERROR_PATTERNS.each do |pattern, error|
+          return error if e.message.include?(pattern)
         end
+
+        return :other_error
       ensure
         $VERBOSE = verbose
       end
