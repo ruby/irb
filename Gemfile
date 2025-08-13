@@ -25,5 +25,6 @@ gem "debug", github: "ruby/debug", platforms: [:mri, :mswin]
 gem "rdoc", ">= 6.11.0"
 
 if RUBY_VERSION >= "3.0.0" && !is_truffleruby
+  gem "rbs", github: "ruby/rbs" if RUBY_VERSION >= "3.2"
   gem "repl_type_completor"
 end
