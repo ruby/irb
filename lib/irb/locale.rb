@@ -118,7 +118,6 @@ module IRB # :nodoc:
           full_path = File.join(libpath, lc_path)
           return full_path if File.readable?(full_path)
         end
-        redo if defined?(Gem) and Gem.try_activate(lc_path)
       end
       nil
     end
