@@ -223,7 +223,7 @@ module IRB
       Readline.input = @stdin
       Readline.output = @stdout
       if l = Readline.readline(@prompt, false)
-        Readline::HISTORY.push(l) if !l.empty? && l != Readline::HISTORY.last
+        Readline::HISTORY.push(l) if !l.empty? && l != Readline::HISTORY.to_a.last
         @line[@line_no += 1] = l + "\n"
       else
         @eof = true
@@ -480,7 +480,7 @@ module IRB
       Reline.prompt_proc = @prompt_proc
       Reline.auto_indent_proc = @auto_indent_proc if @auto_indent_proc
       if l = Reline.readmultiline(@prompt, false, &@check_termination_proc)
-        Reline::HISTORY.push(l) if !l.empty? && l != Reline::HISTORY.last
+        Reline::HISTORY.push(l) if !l.empty? && l != Reline::HISTORY.to_a.last
         @line[@line_no += 1] = l + "\n"
       else
         @eof = true
