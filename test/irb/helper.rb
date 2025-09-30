@@ -114,7 +114,7 @@ module TestIRB
 
   class IntegrationTestCase < TestCase
     LIB = File.expand_path("../../lib", __dir__)
-    TIMEOUT_SEC = 3
+    TIMEOUT_SEC = ENV["CI"] ? 30 : 3
 
     def setup
       @envs = {}
