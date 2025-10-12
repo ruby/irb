@@ -121,6 +121,7 @@ module IRB
           interrupted = false
           prev_trap = trap("SIGINT") { interrupted = true }
           canvas = Canvas.new(Reline.get_screen_size)
+          otio = Reline::IOGate.prep
           Reline::IOGate.set_winch_handler do
             canvas = Canvas.new(Reline.get_screen_size)
           end
@@ -139,6 +140,7 @@ module IRB
           end
         rescue Interrupt
         ensure
+          Reline::IOGate.deprep(otio)
           print "\e[?25h" # show cursor
           trap("SIGINT", prev_trap)
         end
