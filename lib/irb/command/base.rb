@@ -34,7 +34,7 @@ module IRB
         def execute(irb_context, arg)
           new(irb_context).execute(arg)
         rescue CommandArgumentError => e
-          puts e.message
+          irb_context.io.puts e.message
         end
 
         private
@@ -52,6 +52,16 @@ module IRB
 
       def execute(arg)
         #nop
+      end
+
+      private
+
+      def puts(...)
+        irb_context.io.puts(...)
+      end
+
+      def print(...)
+        irb_context.io.print(...)
       end
     end
 

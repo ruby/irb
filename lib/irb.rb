@@ -567,6 +567,14 @@ module IRB
 
     private
 
+    def puts(...)
+      @context.io.puts(...)
+    end
+
+    def print(...)
+      @context.io.print(...)
+    end
+
     def generate_prompt(opens, continue, line_offset)
       ltype = @scanner.ltype_from_open_tokens(opens)
       indent = @scanner.calc_indent_level(opens)
