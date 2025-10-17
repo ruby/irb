@@ -87,6 +87,7 @@ module IRB
     # Creates a new irb session
     def initialize(workspace = nil, input_method = nil, from_binding: false)
       @from_binding = from_binding
+      @prompt_part_cache = nil
       @context = Context.new(self, workspace, input_method)
       @context.workspace.load_helper_methods_to_main
       @signal_status = :IN_IRB
@@ -239,6 +240,7 @@ module IRB
     end
 
     def readmultiline
+      @prompt_part_cache = {}
       prompt = generate_prompt([], false, 0)
 
       # multiline
@@ -263,6 +265,8 @@ module IRB
         continue = @scanner.should_continue?(tokens)
         prompt = generate_prompt(opens, continue, line_offset)
       end
+    ensure
+      @prompt_part_cache = nil
     end
 
     def each_top_level_statement
@@ -598,25 +602,28 @@ module IRB
     end
 
     def truncate_prompt_main(str) # :nodoc:
-      str = str.tr(CONTROL_CHARACTERS_PATTERN, ' ')
-      if str.size <= PROMPT_MAIN_TRUNCATE_LENGTH
-        str
-      else
-        str[0, PROMPT_MAIN_TRUNCATE_LENGTH - PROMPT_MAIN_TRUNCATE_OMISSION.size] + PROMPT_MAIN_TRUNCATE_OMISSION
+      if str.size > PROMPT_MAIN_TRUNCATE_LENGTH
+        str = str[0, PROMPT_MAIN_TRUNCATE_LENGTH - PROMPT_MAIN_TRUNCATE_OMISSION.size] + PROMPT_MAIN_TRUNCATE_OMISSION
       end
+      str.tr(CONTROL_CHARACTERS_PATTERN, ' ')
     end
 
     def format_prompt(format, ltype, indent, line_no) # :nodoc:
+      part_cache = @prompt_part_cache || {}
       format.gsub(/%([0-9]+)?([a-zA-Z%])/) do
         case $2
         when "N"
           @context.irb_name
         when "m"
-          main_str = "#{@context.safe_method_call_on_main(:to_s)}" rescue "!#{$!.class}"
-          truncate_prompt_main(main_str)
+          part_cache[:m] ||= (
+            main_str = "#{@context.safe_method_call_on_main(:to_s)}" rescue "!#{$!.class}"
+            truncate_prompt_main(main_str)
+          )
         when "M"
-          main_str = "#{@context.safe_method_call_on_main(:inspect)}" rescue "!#{$!.class}"
-          truncate_prompt_main(main_str)
+          part_cache[:M] ||= (
+            main_str = "#{@context.safe_method_call_on_main(:inspect)}" rescue "!#{$!.class}"
+            truncate_prompt_main(main_str)
+          )
         when "l"
           ltype
         when "i"
