@@ -112,6 +112,36 @@ class IRB::RenderingTest < Yamatanooroti::TestCase
     close
   end
 
+  def test_main_to_s_call_cached
+    start_terminal(25, 80, %W{ruby -I#{@pwd}/lib #{@pwd}/exe/irb}, startup_message: /irb\(main\)/)
+    write(<<~'EOC')
+      @count = 0
+      def self.to_s; @count += 1; "[#{@count}]"; end
+      if false
+        123
+      end
+      if false
+        123
+      end
+    EOC
+    assert_screen(<<~'EOC')
+      irb(main):001> @count = 0
+      => 0
+      irb(main):002> def self.to_s; @count += 1; "[#{@count}]"; end
+      => :to_s
+      irb([1]):003* if false
+      irb([1]):004*   123
+      irb([1]):005> end
+      => nil
+      irb([2]):006* if false
+      irb([2]):007*   123
+      irb([2]):008> end
+      => nil
+      irb([3]):009>
+    EOC
+    close
+  end
+
   def test_multiline_paste
     start_terminal(25, 80, %W{ruby -I#{@pwd}/lib #{@pwd}/exe/irb}, startup_message: /irb\(main\)/)
     write(<<~EOC)
