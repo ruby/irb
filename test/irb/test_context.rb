@@ -652,13 +652,14 @@ module TestIRB
       format = '[%m %M %m %M]>'
       pattern = /\A\[(to_s[\d.]+) (inspect[\d.]+) \1 \2\]>\z/
 
-      irb.instance_variable_set(:@prompt_part_cache, {})
-      prompt1 = irb.send(:format_prompt, format, nil, 1, 1)
-      prompt2 = irb.send(:format_prompt, format, nil, 1, 1)
+      prompt1, prompt2 = nil
+      irb.send(:with_prompt_part_cached) do
+        prompt1 = irb.send(:format_prompt, format, nil, 1, 1)
+        prompt2 = irb.send(:format_prompt, format, nil, 1, 1)
+      end
       assert_equal(prompt1, prompt2)
       assert_match(pattern, prompt1)
 
-      irb.instance_variable_set(:@prompt_part_cache, nil)
       prompt3 = irb.send(:format_prompt, format, nil, 1, 1)
       assert_not_equal(prompt1, prompt3)
       assert_match(pattern, prompt3)

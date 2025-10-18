@@ -239,14 +239,7 @@ module IRB
       end
     end
 
-    def readmultiline
-      @prompt_part_cache = {}
-      prompt = generate_prompt([], false, 0)
-
-      # multiline
-      return read_input(prompt) if @context.io.respond_to?(:check_termination)
-
-      # nomultiline
+    def read_input_nomultiline(prompt)
       code = +''
       line_offset = 0
       loop do
@@ -265,8 +258,20 @@ module IRB
         continue = @scanner.should_continue?(tokens)
         prompt = generate_prompt(opens, continue, line_offset)
       end
-    ensure
-      @prompt_part_cache = nil
+    end
+
+    def readmultiline
+      with_prompt_part_cached do
+        prompt = generate_prompt([], false, 0)
+
+        if @context.io.respond_to?(:check_termination)
+          # multiline
+          read_input(prompt)
+        else
+          # nomultiline
+          read_input_nomultiline(prompt)
+        end
+      end
     end
 
     def each_top_level_statement
@@ -570,6 +575,13 @@ module IRB
     end
 
     private
+
+    def with_prompt_part_cached
+      @prompt_part_cache = {}
+      yield
+    ensure
+      @prompt_part_cache = nil
+    end
 
     def generate_prompt(opens, continue, line_offset)
       ltype = @scanner.ltype_from_open_tokens(opens)
