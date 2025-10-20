@@ -202,6 +202,8 @@ module IRB
       @eof = false
       @completor = RegexpCompletor.new
 
+      save_readline_settings
+
       if Readline.respond_to?("basic_word_break_characters=")
         Readline.basic_word_break_characters = BASIC_WORD_BREAK_CHARACTERS
       end
@@ -210,6 +212,25 @@ module IRB
         bind = IRB.conf[:MAIN_CONTEXT].workspace.binding
         @completor.completion_candidates('', target, '', bind: bind)
       }
+    end
+
+    def save_readline_settings
+      @original_readline_settings = {}
+      if Readline.respond_to?("basic_word_break_characters")
+        @original_readline_settings[:basic_word_break_characters] = Readline.basic_word_break_characters
+      end
+      @original_readline_settings[:completion_append_character] = Readline.completion_append_character
+      @original_readline_settings[:completion_proc] = Readline.completion_proc
+    end
+
+    def restore_reline_settings
+      return if !@original_readline_settings || @original_readline_settings.empty?
+
+      if @original_readline_settings.key?(:basic_word_break_characters) && Readline.respond_to?("basic_word_break_characters=")
+        Readline.basic_word_break_characters = @original_readline_settings[:basic_word_break_characters]
+      end
+      Readline.completion_append_character = @original_readline_settings[:completion_append_character]
+      Readline.completion_proc = @original_readline_settings[:completion_proc]
     end
 
     def completion_info
@@ -265,6 +286,8 @@ module IRB
       @eof = false
       @completor = completor
 
+      save_reline_settings
+
       Reline.basic_word_break_characters = BASIC_WORD_BREAK_CHARACTERS
       Reline.completion_append_character = nil
       Reline.completer_quote_characters = ''
@@ -286,6 +309,30 @@ module IRB
         rescue LoadError
         end
       end
+    end
+
+    def save_reline_settings
+      @original_reline_settings = {
+        basic_word_break_characters: Reline.basic_word_break_characters,
+        completion_append_character: Reline.completion_append_character,
+        completer_quote_characters: Reline.completer_quote_characters,
+        completion_proc: Reline.completion_proc,
+        output_modifier_proc: Reline.output_modifier_proc,
+        dig_perfect_match_proc: Reline.dig_perfect_match_proc,
+        autocompletion: Reline.autocompletion
+      }
+    end
+
+    def restore_reline_settings
+      return unless @original_reline_settings
+
+      Reline.basic_word_break_characters = @original_reline_settings[:basic_word_break_characters]
+      Reline.completion_append_character = @original_reline_settings[:completion_append_character]
+      Reline.completer_quote_characters = @original_reline_settings[:completer_quote_characters]
+      Reline.completion_proc = @original_reline_settings[:completion_proc]
+      Reline.output_modifier_proc = @original_reline_settings[:output_modifier_proc]
+      Reline.dig_perfect_match_proc = @original_reline_settings[:dig_perfect_match_proc]
+      Reline.autocompletion = @original_reline_settings[:autocompletion]
     end
 
     def completion_info

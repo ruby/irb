@@ -180,6 +180,7 @@ module IRB
         trap("SIGINT", prev_trap)
         conf[:AT_EXIT].each{|hook| hook.call}
 
+        context.io.restore_reline_settings if context.io.respond_to?(:restore_reline_settings)
         context.io.save_history if save_history
         Kernel.exit if forced_exit
       end
