@@ -343,5 +343,18 @@ module TestIRB
         Encoding.default_external = original_encoding
       end
     end
+
+    def test_utf16_method_name_does_not_crash
+      # Reproduces issue #52: https://github.com/ruby/irb/issues/52
+      method_name = "a".encode(Encoding::UTF_16)
+      test_obj = Object.new
+      test_obj.define_singleton_method(method_name) {}
+      test_bind = test_obj.instance_eval { binding }
+
+      completor = IRB::RegexpCompletor.new
+      assert_nothing_raised do
+        completor.completion_candidates('', 'a', '', bind: test_bind)
+      end
+    end
   end
 end
