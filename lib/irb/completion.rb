@@ -464,6 +464,8 @@ module IRB
     def safe_grep(candidates, pattern)
       target_encoding = Encoding.default_external
       candidates.filter_map do |candidate|
+        next unless candidate
+
         converted = candidate.encoding == target_encoding ? candidate : candidate.encode(target_encoding)
 
         converted if pattern.match?(converted)
