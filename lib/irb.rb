@@ -87,6 +87,7 @@ module IRB
     # Creates a new irb session
     def initialize(workspace = nil, input_method = nil, from_binding: false)
       @from_binding = from_binding
+      @prompt_part_cache = nil
       @context = Context.new(self, workspace, input_method)
       @context.workspace.load_helper_methods_to_main
       @signal_status = :IN_IRB
@@ -238,13 +239,7 @@ module IRB
       end
     end
 
-    def readmultiline
-      prompt = generate_prompt([], false, 0)
-
-      # multiline
-      return read_input(prompt) if @context.io.respond_to?(:check_termination)
-
-      # nomultiline
+    def read_input_nomultiline(prompt)
       code = +''
       line_offset = 0
       loop do
@@ -262,6 +257,20 @@ module IRB
         line_offset += 1
         continue = @scanner.should_continue?(tokens)
         prompt = generate_prompt(opens, continue, line_offset)
+      end
+    end
+
+    def readmultiline
+      with_prompt_part_cached do
+        prompt = generate_prompt([], false, 0)
+
+        if @context.io.respond_to?(:check_termination)
+          # multiline
+          read_input(prompt)
+        else
+          # nomultiline
+          read_input_nomultiline(prompt)
+        end
       end
     end
 
@@ -567,6 +576,13 @@ module IRB
 
     private
 
+    def with_prompt_part_cached
+      @prompt_part_cache = {}
+      yield
+    ensure
+      @prompt_part_cache = nil
+    end
+
     def generate_prompt(opens, continue, line_offset)
       ltype = @scanner.ltype_from_open_tokens(opens)
       indent = @scanner.calc_indent_level(opens)
@@ -598,25 +614,29 @@ module IRB
     end
 
     def truncate_prompt_main(str) # :nodoc:
-      str = str.tr(CONTROL_CHARACTERS_PATTERN, ' ')
-      if str.size <= PROMPT_MAIN_TRUNCATE_LENGTH
-        str
-      else
-        str[0, PROMPT_MAIN_TRUNCATE_LENGTH - PROMPT_MAIN_TRUNCATE_OMISSION.size] + PROMPT_MAIN_TRUNCATE_OMISSION
+      if str.size > PROMPT_MAIN_TRUNCATE_LENGTH
+        str = str[0, PROMPT_MAIN_TRUNCATE_LENGTH - PROMPT_MAIN_TRUNCATE_OMISSION.size] + PROMPT_MAIN_TRUNCATE_OMISSION
       end
+      str.tr(CONTROL_CHARACTERS_PATTERN, ' ')
     end
 
     def format_prompt(format, ltype, indent, line_no) # :nodoc:
+      # @prompt_part_cache could be nil in unit tests
+      part_cache = @prompt_part_cache || {}
       format.gsub(/%([0-9]+)?([a-zA-Z%])/) do
         case $2
         when "N"
           @context.irb_name
         when "m"
-          main_str = "#{@context.safe_method_call_on_main(:to_s)}" rescue "!#{$!.class}"
-          truncate_prompt_main(main_str)
+          part_cache[:m] ||= (
+            main_str = "#{@context.safe_method_call_on_main(:to_s)}" rescue "!#{$!.class}"
+            truncate_prompt_main(main_str)
+          )
         when "M"
-          main_str = "#{@context.safe_method_call_on_main(:inspect)}" rescue "!#{$!.class}"
-          truncate_prompt_main(main_str)
+          part_cache[:M] ||= (
+            main_str = "#{@context.safe_method_call_on_main(:inspect)}" rescue "!#{$!.class}"
+            truncate_prompt_main(main_str)
+          )
         when "l"
           ltype
         when "i"

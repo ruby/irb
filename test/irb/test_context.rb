@@ -644,6 +644,27 @@ module TestIRB
       assert_equal("irb(main\\n main)>", irb.send(:format_prompt, 'irb(%M)>', nil, 1, 1))
     end
 
+    def test_prompt_part_cached
+      main = Object.new
+      def main.to_s; "to_s#{rand}"; end
+      def main.inspect; "inspect#{rand}"; end
+      irb = IRB::Irb.new(IRB::WorkSpace.new(main), TestInputMethod.new)
+      format = '[%m %M %m %M]>'
+      pattern = /\A\[(to_s[\d.]+) (inspect[\d.]+) \1 \2\]>\z/
+
+      prompt1, prompt2 = nil
+      irb.send(:with_prompt_part_cached) do
+        prompt1 = irb.send(:format_prompt, format, nil, 1, 1)
+        prompt2 = irb.send(:format_prompt, format, nil, 1, 1)
+      end
+      assert_equal(prompt1, prompt2)
+      assert_match(pattern, prompt1)
+
+      prompt3 = irb.send(:format_prompt, format, nil, 1, 1)
+      assert_not_equal(prompt1, prompt3)
+      assert_match(pattern, prompt3)
+    end
+
     def test_prompt_main_truncate
       main = Struct.new(:to_s).new("a" * 100)
       def main.inspect; to_s.inspect; end
