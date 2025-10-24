@@ -621,6 +621,7 @@ module IRB
     end
 
     def format_prompt(format, ltype, indent, line_no) # :nodoc:
+      # @prompt_part_cache could be nil in unit tests
       part_cache = @prompt_part_cache || {}
       format.gsub(/%([0-9]+)?([a-zA-Z%])/) do
         case $2
