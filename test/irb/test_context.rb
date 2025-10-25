@@ -646,11 +646,11 @@ module TestIRB
 
     def test_prompt_part_cached
       main = Object.new
-      def main.to_s; "to_s#{rand}"; end
-      def main.inspect; "inspect#{rand}"; end
+      def main.to_s; "to_s#{rand(10000)}"; end
+      def main.inspect; "inspect#{rand(10000)}"; end
       irb = IRB::Irb.new(IRB::WorkSpace.new(main), TestInputMethod.new)
       format = '[%m %M %m %M]>'
-      pattern = /\A\[(to_s[\d.]+) (inspect[\d.]+) \1 \2\]>\z/
+      pattern = /\A\[(to_s\d+) (inspect\d+) \1 \2\]>\z/
 
       prompt1, prompt2 = nil
       irb.send(:with_prompt_part_cached) do
