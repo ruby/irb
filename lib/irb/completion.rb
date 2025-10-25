@@ -280,7 +280,7 @@ module IRB
           rescue EncodingError
             # ignore
           end
-          candidates.grep(/^#{Regexp.quote(sym)}/)
+          safe_grep(candidates, /^#{Regexp.quote(sym)}/)
         end
       when /^::([A-Z][^:\.\(\)]*)$/
         # Absolute Constant or class methods
@@ -291,7 +291,7 @@ module IRB
         if doc_namespace
           candidates.find { |i| i == receiver }
         else
-          candidates.grep(/^#{Regexp.quote(receiver)}/).collect{|e| "::" + e}
+          safe_grep(candidates, /^#{Regexp.quote(receiver)}/).collect{|e| "::" + e}
         end
 
       when /^([A-Z].*)::([^:.]*)$/
@@ -378,7 +378,7 @@ module IRB
         if doc_namespace
           all_gvars.find{ |i| i == gvar }
         else
-          all_gvars.grep(Regexp.new(Regexp.quote(gvar)))
+          safe_grep(all_gvars, Regexp.new(Regexp.quote(gvar)))
         end
 
       when /^([^.:"].*)(\.|::)([^.]*)$/
@@ -453,7 +453,7 @@ module IRB
         else
           candidates = (bind.eval_methods | bind.eval_private_methods | bind.local_variables | bind.eval_instance_variables | bind.eval_class_constants).collect{|m| m.to_s}
           candidates |= RubyLex::RESERVED_WORDS.map(&:to_s)
-          candidates.grep(/^#{Regexp.quote(input)}/).sort
+          safe_grep(candidates, /^#{Regexp.quote(input)}/).sort
         end
       end
     end
@@ -461,8 +461,22 @@ module IRB
     # Set of available operators in Ruby
     Operators = %w[% & * ** + - / < << <= <=> == === =~ > >= >> [] []= ^ ! != !~]
 
+    def safe_grep(candidates, pattern)
+      target_encoding = Encoding.default_external
+      candidates.filter_map do |candidate|
+        next unless candidate
+
+        converted = candidate.encoding == target_encoding ? candidate : candidate.encode(target_encoding)
+
+        converted if pattern.match?(converted)
+      rescue Encoding::UndefinedConversionError, Encoding::InvalidByteSequenceError, Encoding::CompatibilityError, EncodingError
+        # Skip candidates that cannot be converted to the target encoding
+        nil
+      end
+    end
+
     def select_message(receiver, message, candidates, sep = ".")
-      candidates.grep(/^#{Regexp.quote(message)}/).collect do |e|
+      safe_grep(candidates, /^#{Regexp.quote(message)}/).collect do |e|
         case e
         when /^[a-zA-Z_]/
           receiver + sep + e
