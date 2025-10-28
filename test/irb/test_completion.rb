@@ -345,13 +345,10 @@ module TestIRB
     end
 
     def test_utf16_method_name_does_not_crash
-      if RUBY_ENGINE == 'truffleruby'
-        omit "TruffleRuby does not support UTF-16 methods."
-      end
       # Reproduces issue #52: https://github.com/ruby/irb/issues/52
-      method_name = "test_utf16_method".encode(Encoding::UTF_16)
       test_obj = Object.new
-      test_obj.define_singleton_method(method_name) {}
+
+      test_obj.define_singleton_method("test_utf16le_method".encode(Encoding::UTF_16LE)) {}
       test_bind = test_obj.instance_eval { binding }
 
       completor = IRB::RegexpCompletor.new
@@ -360,7 +357,7 @@ module TestIRB
         result = completor.completion_candidates('', 'test', '', bind: test_bind)
       end
 
-      assert_include result, "test_utf16_method"
+      assert_include result, "test_utf16le_method"
     end
   end
 end
