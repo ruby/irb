@@ -5,7 +5,7 @@
 #
 
 module IRB # :nodoc:
-  VERSION = "1.15.2"
+  VERSION = "1.15.3"
   @RELEASE_VERSION = VERSION
-  @LAST_UPDATE_DATE = "2025-04-03"
+  @LAST_UPDATE_DATE = "2025-11-01"
 end
