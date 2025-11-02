@@ -40,9 +40,11 @@ module IRB
     end
 
     # Initializes IRB and creates a new Irb.irb object at the `TOPLEVEL_BINDING`
-    def start(ap_path = nil)
+    def start(ap_path = nil, **options)
       STDOUT.sync = true
       $0 = File::basename(ap_path, ".rb") if ap_path
+      pre_cmds = options[:pre]&.rstrip
+      do_cmds = options[:do]&.rstrip
 
       setup(ap_path)
 
@@ -51,7 +53,7 @@ module IRB
       else
         irb = Irb.new
       end
-      irb.run(@CONF)
+      irb.run(@CONF, pre_cmds: pre_cmds, do_cmds: do_cmds)
     end
 
     # Quits irb
@@ -147,7 +149,7 @@ module IRB
       input
     end
 
-    def run(conf = IRB.conf)
+    def run(conf = IRB.conf, pre_cmds: nil, do_cmds: nil)
       in_nested_session = !!conf[:MAIN_CONTEXT]
       conf[:IRB_RC].call(context) if conf[:IRB_RC]
       prev_context = conf[:MAIN_CONTEXT]
@@ -168,6 +170,13 @@ module IRB
         if defined?(RubyVM.keep_script_lines)
           keep_script_lines_backup = RubyVM.keep_script_lines
           RubyVM.keep_script_lines = true
+        end
+
+        if pre_cmds
+          context.evaluate(parse_input(pre_cmds), @line_no)
+        elsif do_cmds
+          context.evaluate(parse_input(do_cmds), @line_no)
+          return
         end
 
         forced_exit = catch(:IRB_EXIT) do
@@ -723,7 +732,7 @@ class Binding
   #     Cooked potato: true
   #
   # See IRB for more information.
-  def irb(show_code: true)
+  def irb(show_code: true, **options)
     # Setup IRB with the current file's path and no command line arguments
     IRB.setup(source_location[0], argv: []) unless IRB.initialized?
     # Create a new workspace using the current binding
@@ -734,6 +743,8 @@ class Binding
     debugger_irb = IRB.instance_variable_get(:@debugger_irb)
 
     irb_path = File.expand_path(source_location[0])
+    pre_cmds = options[:pre]&.rstrip
+    do_cmds = options[:do]&.rstrip
 
     if debugger_irb
       # If we're already in a debugger session, set the workspace and irb_path for the original IRB instance
@@ -742,14 +753,14 @@ class Binding
       # If we've started a debugger session and hit another binding.irb, we don't want
       # to start an IRB session instead, we want to resume the irb:rdbg session.
       IRB::Debug.setup(debugger_irb)
-      IRB::Debug.insert_debug_break
+      IRB::Debug.insert_debug_break(pre_cmds: pre_cmds, do_cmds: do_cmds)
       debugger_irb.debug_break
     else
       # If we're not in a debugger session, create a new IRB instance with the current
       # workspace
       binding_irb = IRB::Irb.new(workspace, from_binding: true)
       binding_irb.context.irb_path = irb_path
-      binding_irb.run(IRB.conf)
+      binding_irb.run(IRB.conf, pre_cmds: pre_cmds, do_cmds: do_cmds)
       binding_irb.debug_break
     end
   end

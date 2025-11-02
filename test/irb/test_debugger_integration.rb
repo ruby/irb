@@ -403,7 +403,7 @@ module TestIRB
         type "show_source + 'Bar'"
         type "continue"
       end
-      assert_include(output, "def start(ap_path = nil)")
+      assert_include(output, "def start(ap_path = nil, **options)")
       assert_include(output, '"FooBar"')
     end
 
