@@ -16,7 +16,6 @@ gem "reline", github: "ruby/reline" if ENV["WITH_LATEST_RELINE"] == "true"
 gem "rake"
 gem "test-unit"
 gem "test-unit-ruby-core"
-gem "power_assert", "~> 2.0" if RUBY_VERSION < '3.0' # https://github.com/ruby/power_assert/pull/61
 
 gem "rubocop"
 
