@@ -183,7 +183,7 @@ module IRB
       when :other_error
         opens.empty? && !should_continue?(tokens)
       when :valid
-        !should_continue?(tokens)
+        !should_continue?(tokens, syntax_valid: true)
       end
     end
 
@@ -205,7 +205,7 @@ module IRB
       $VERBOSE = verbose
     end
 
-    def should_continue?(tokens)
+    def should_continue?(tokens, syntax_valid: nil)
       # Look at the last token and check if IRB need to continue reading next line.
       # Example code that should continue: `a\` `a +` `a.`
       # Trailing spaces, newline, comments are skipped
@@ -221,6 +221,11 @@ module IRB
         else
           # Endless range should not continue
           return false if token.event == :on_op && token.tok.match?(/\A\.\.\.?\z/)
+
+          # EXPR_BEG with on_op (* or **)
+          # If syntax is valid (`x in *`, `x in **`, `def f(*,**)=f *, **`) it should not continue
+          # If syntax validness is unknown (maybe part of case-in, multiply, power) it should continue
+          return false if syntax_valid && token.event == :on_op && token.tok.match?(/\A\*\*?\z/)
 
           # EXPR_DOT and most of the EXPR_BEG should continue
           return token.state.anybits?(Ripper::EXPR_BEG | Ripper::EXPR_DOT)
