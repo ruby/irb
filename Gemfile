@@ -20,7 +20,12 @@ gem "test-unit-ruby-core"
 gem "rubocop"
 
 gem "tracer" if !is_truffleruby
-gem "debug", github: "ruby/debug", platforms: [:mri, :mswin]
+if RUBY_VERSION >= "3.1.0"
+  gem "debug", github: "ruby/debug", platforms: [:mri, :windows]
+else
+  # TODO: Remove this after dropping support for Ruby < 3.1
+  gem "debug", github: "ruby/debug", platforms: [:mri, :mswin]
+end
 
 gem "rdoc", ">= 6.11.0"
 
