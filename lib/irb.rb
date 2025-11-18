@@ -430,7 +430,7 @@ module IRB
           end
         end
         lines = lines.reverse if order == :bottom
-        lines.map{ |l| l + "\n" }.join
+        lines.map{ |l| l + "\n" }.join('')
       }
       # The "<top (required)>" in "(irb)" may be the top level of IRB so imitate the main object.
       message = message.gsub(/\(irb\):(?<num>\d+):in (?<open_quote>[`'])<(?<frame>top \(required\))>'/) { "(irb):#{$~[:num]}:in #{$~[:open_quote]}<main>'" }
