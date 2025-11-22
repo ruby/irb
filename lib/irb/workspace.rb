@@ -55,6 +55,15 @@ EOF
           # Note that this will typically be IRB::TOPLEVEL_BINDING
           # This is to avoid RubyGems' local variables (see issue #17623)
           @binding = TOPLEVEL_BINDING.dup
+
+        when 5  # binding in Ruby::Box
+          unless defined?(Ruby::Box)
+            puts 'Context-mode 5 (binding in Ruby::Box) requires Ruby 4.0 or later.'
+            raise NameError, 'Ruby::Box not defined'
+          end
+
+          puts 'Context-mode 5 (binding in Ruby::Box) is experimental. It may be removed or changed without notice.'
+          @binding = Ruby::Box.new.eval('Kernel.binding')
         end
       end
 
