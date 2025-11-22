@@ -16,11 +16,10 @@ IRB searches for a configuration file in the following order:
 1. `$IRBRC`
 2. `$XDG_CONFIG_HOME/irb/irbrc`
 3. `$HOME/.irbrc`
-4. `$HOME/.config/irb/irbrc`
+4. `$HOME/.config/irb/irbrc` (only if `XDG_CONFIG_HOME` is _not_ set)
 5. `.irbrc` in the current directory
-6. `irb.rc` in the current directory
-7. `_irbrc` in the current directory
-8. `$irbrc` in the current directory
+6. `_irbrc` in the current directory
+7. `$irbrc` in the current directory
 
 If the `-f` command-line option is used, no configuration file is loaded.
 
@@ -34,7 +33,7 @@ Method `conf.rc?` returns `true` if a configuration file was read, `false` other
 - `IRB_COPY_COMMAND`: Overrides the default program used to interface with the system clipboard.
 - `VISUAL` / `EDITOR`: Specifies the editor for the `edit` command.
 - `IRBRC`: Specifies the rc-file for configuration.
-- `XDG_CONFIG_HOME`: Used to locate the rc-file if `IRBRC` is unset.
+- `XDG_CONFIG_HOME`: Used to locate the user-specific rc-file (i.e. `$XDG_CONFIG_HOME/irb/irbrc` instead of `$HOME/.config/irb/irbrc`).
 - `RI_PAGER` / `PAGER`: Specifies the pager for documentation.
 - `IRB_LANG`, `LC_MESSAGES`, `LC_ALL`, `LANG`: Determines the locale.
 
