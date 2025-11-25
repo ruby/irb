@@ -21,7 +21,7 @@ These are the IRB command-line options, with links to explanatory text:
 - `--colorize`: Use {color-highlighting}[rdoc-ref:IRB@Color+Highlighting]
   for input and output.
 - `--context-mode _n_`: Select method to create Binding object
-  for new {workspace}[rdoc-ref:IRB@Commands]; `n` in range `0..4`.
+  for new {workspace}[rdoc-ref:IRB@Commands]; `n` in range `0..5`.
 - `--echo`: Print ({echo}[rdoc-ref:IRB@Return-Value+Printing+-28Echoing-29])
   return values.
 - `--extra-doc-dir _dirpath_`:

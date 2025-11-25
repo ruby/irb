@@ -139,7 +139,7 @@ module TestIRB
       end
     end
 
-    def run_ruby_file(&block)
+    def run_ruby_file(timeout: TIMEOUT_SEC, &block)
       cmd = [EnvUtil.rubybin, "-I", LIB, @ruby_file.to_path]
       tmp_dir = Dir.mktmpdir
 
@@ -156,7 +156,7 @@ module TestIRB
       envs_for_spawn = @envs.merge('TERM' => 'dumb', 'TEST_IRB_FORCE_INTERACTIVE' => 'true')
 
       PTY.spawn(envs_for_spawn, *cmd) do |read, write, pid|
-        Timeout.timeout(TIMEOUT_SEC) do
+        Timeout.timeout(timeout) do
           while line = safe_gets(read)
             lines << line
 

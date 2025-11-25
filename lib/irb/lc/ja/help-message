@@ -8,7 +8,7 @@ Usage:  irb.rb [options] [programfile] [arguments]
   -w                ruby -w と同じ.
   -W[level=2]       ruby -W と同じ.
   --context-mode n  新しいワークスペースを作成した時に関連する Binding
-		    オブジェクトの作成方法を 0 から 4 のいずれかに設定する.
+		    オブジェクトの作成方法を 0 から 5 のいずれかに設定する.
   --extra-doc-dir   指定したディレクトリのドキュメントを追加で読み込む.
   --echo	    実行結果を表示する(デフォルト).
   --noecho	    実行結果を表示しない.
