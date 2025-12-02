@@ -632,14 +632,15 @@ module IRB
         command_class = Command.load_command(command)
       end
 
-      # Check visibility
-      public_method = !!KERNEL_PUBLIC_METHOD.bind_call(main, command) rescue false
-      private_method = !public_method && !!KERNEL_METHOD.bind_call(main, command) rescue false
-      if command_class && Command.execute_as_command?(command, public_method: public_method, private_method: private_method)
-        Statement::Command.new(code, command_class, arg)
-      else
-        Statement::Expression.new(code, is_assignment_expression)
+      if command_class
+        # Check whether the command conflicts with existing methods
+        public_method = !!KERNEL_PUBLIC_METHOD.bind_call(main, command) rescue false
+        private_method = !public_method && !!KERNEL_METHOD.bind_call(main, command) rescue false
+        if Command.execute_as_command?(command, public_method: public_method, private_method: private_method)
+          return Statement::Command.new(code, command_class, arg)
+        end
       end
+      Statement::Expression.new(code, is_assignment_expression)
     end
 
     def colorize_input(input, complete:)

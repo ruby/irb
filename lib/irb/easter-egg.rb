@@ -121,12 +121,13 @@ module IRB
           interrupted = false
           prev_trap = trap("SIGINT") { interrupted = true }
           canvas = Canvas.new(Reline.get_screen_size)
+          otio = Reline::IOGate.prep
           Reline::IOGate.set_winch_handler do
             canvas = Canvas.new(Reline.get_screen_size)
           end
           ruby_model = RubyModel.new
           print "\e[?25l" # hide cursor
-          0.step do |i| # TODO (0..).each needs Ruby 2.6 or later
+          (0..).each do |i|
             buff = canvas.draw do
               ruby_model.render_frame(i) do |p1, p2|
                 canvas.line(p1, p2)
@@ -139,6 +140,7 @@ module IRB
           end
         rescue Interrupt
         ensure
+          Reline::IOGate.deprep(otio)
           print "\e[?25h" # show cursor
           trap("SIGINT", prev_trap)
         end

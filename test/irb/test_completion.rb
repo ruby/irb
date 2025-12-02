@@ -110,7 +110,7 @@ module TestIRB
         FileUtils.remove_entry(temp_dir) if temp_dir
       end
 
-      def test_complete_require_with_string_convertable_in_load_path
+      def test_complete_require_with_string_convertible_in_load_path
         temp_dir = Dir.mktmpdir
         File.write(File.join(temp_dir, "foo.rb"), "test")
         object = Object.new
@@ -342,6 +342,22 @@ module TestIRB
       ensure
         Encoding.default_external = original_encoding
       end
+    end
+
+    def test_utf16_method_name_does_not_crash
+      # Reproduces issue #52: https://github.com/ruby/irb/issues/52
+      test_obj = Object.new
+
+      test_obj.define_singleton_method("test_utf16le_method".encode(Encoding::UTF_16LE)) {}
+      test_bind = test_obj.instance_eval { binding }
+
+      completor = IRB::RegexpCompletor.new
+      result = nil
+      assert_nothing_raised do
+        result = completor.completion_candidates('', 'test', '', bind: test_bind)
+      end
+
+      assert_include result, "test_utf16le_method"
     end
   end
 end

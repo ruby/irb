@@ -275,7 +275,7 @@ module IRB
           nil
         else
           sym = $1
-          candidates = Symbol.all_symbols.collect do |s|
+          candidates = Symbol.all_symbols.filter_map do |s|
             s.inspect
           rescue EncodingError
             # ignore
@@ -453,6 +453,13 @@ module IRB
         else
           candidates = (bind.eval_methods | bind.eval_private_methods | bind.local_variables | bind.eval_instance_variables | bind.eval_class_constants).collect{|m| m.to_s}
           candidates |= RubyLex::RESERVED_WORDS.map(&:to_s)
+
+          target_encoding = Encoding.default_external
+          candidates = candidates.compact.filter_map do |candidate|
+            candidate.encoding == target_encoding ? candidate : candidate.encode(target_encoding)
+          rescue EncodingError
+            nil
+          end
           candidates.grep(/^#{Regexp.quote(input)}/).sort
         end
       end
