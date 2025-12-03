@@ -376,7 +376,7 @@ module TestIRB
       assert_match(%r[Defined in binary file:.+io/console], out)
     end
 
-    def test_show_source_method_overrided
+    def test_show_source_method_overridden
       write_ruby <<~RUBY
         class Request
           def method; 'POST'; end
@@ -391,6 +391,23 @@ module TestIRB
         type "exit"
       end
       assert_match(%r[#{@ruby_file.to_path}:3\s+def path; '/'; end], out)
+    end
+
+    def test_show_source_with_wrong_line
+      write_ruby <<~RUBY.chomp
+        eval 'def foo; end', binding, __FILE__, 4 # Line 4 doesn't exist
+        binding.irb if
+        def bar; end # Line 3
+      RUBY
+
+      out = run_ruby_file do
+        type "show_source foo"
+        type "show_source bar"
+        type "exit"
+      end
+
+      assert_match(%r[#{@ruby_file.to_path}:4\s+Source not available], out)
+      assert_match(%r[#{@ruby_file.to_path}:3\s+def bar; end], out)
     end
 
     def test_show_source_with_constant_lookup
