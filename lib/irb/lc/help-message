@@ -9,7 +9,7 @@ Usage:  irb.rb [options] [programfile] [arguments]
   -w                Enable warnings (same as 'ruby -w' or 'ruby -W1').
   -W[level=2]       Set warning level: 0=silence, 1=medium, 2=verbose
                     (same as 'ruby -W').
-  --context-mode n  Set n[0-4] to method to create Binding Object,
+  --context-mode n  Set n[0-5] to method to create Binding Object,
                     when new workspace was created.
   --extra-doc-dir   Add an extra doc dir for the doc dialog.
   --echo            Show result (default).

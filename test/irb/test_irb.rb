@@ -963,4 +963,34 @@ module TestIRB
       end
     end
   end
+
+  class ContextModeTest < TestIRB::IntegrationTestCase
+    # RUBY_BOX=1 may need more time to start IRB
+    TIMEOUT_SEC = TestIRB::IntegrationTestCase::TIMEOUT_SEC + 5
+
+    def test_context_mode_ruby_box
+      omit if RUBY_VERSION < "4.0.0"
+      @envs['RUBY_BOX'] = '1'
+
+      write_rc <<~'RUBY'
+        IRB.conf[:CONTEXT_MODE] = 5
+      RUBY
+
+      write_ruby <<~'RUBY'
+        require 'irb'
+        puts 'binding.irb' # Mark for breakpoint trigger
+        IRB.start
+        p answer2: 1 + 2
+      RUBY
+
+      output = run_ruby_file(timeout: TIMEOUT_SEC) do
+        type 'class Integer; def +(_other) = 42; end'
+        type 'p answer1: 1 + 2'
+        type 'exit'
+      end
+
+      assert_include(output, '{answer1: 42}')
+      assert_include(output, '{answer2: 3}')
+    end
+  end
 end
