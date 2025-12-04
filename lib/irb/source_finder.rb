@@ -29,10 +29,13 @@ module IRB
 
       def colorized_content
         if !binary_file? && file_exist?
-          end_line = find_end
           # To correctly colorize, we need to colorize full content and extract the relevant lines.
-          colored = IRB::Color.colorize_code(file_content)
-          colored.lines[@line - 1...end_line].join
+          colored_lines = IRB::Color.colorize_code(file_content).lines
+
+          # Handle wrong line number case: line_no passed to eval is wrong, file is edited after load, etc
+          return if colored_lines.size < @line
+
+          colored_lines[@line - 1...find_end].join
         elsif @ast_source
           IRB::Color.colorize_code(@ast_source)
         end
