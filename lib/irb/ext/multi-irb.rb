@@ -65,6 +65,7 @@ module IRB
       @current_job = irb
       th.run
       Thread.stop
+      Thread.pass
       @current_job = irb(Thread.current)
     end
 
@@ -220,6 +221,7 @@ module IRB
       end
     end
     Thread.stop
+    Thread.pass
     @JobManager.current_job = @JobManager.irb(Thread.current)
   end
 
