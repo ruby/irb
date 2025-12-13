@@ -649,7 +649,7 @@ module IRB
         parsed_input = parse_input(input, false)
         if parsed_input.is_a?(Statement::Command)
           name, sep, arg = input.split(/(\s+)/, 2)
-          arg = IRB::Color.colorize_code(arg, complete: complete, local_variables: lvars)
+          arg = IRB::Color.colorize_code(arg, complete: complete, local_variables: lvars) if arg
           "#{IRB::Color.colorize(name, [:BOLD])}\e[m#{sep}#{arg}"
         else
           IRB::Color.colorize_code(input, complete: complete, local_variables: lvars)
