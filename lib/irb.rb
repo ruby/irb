@@ -5,6 +5,7 @@
 #       by Keiju ISHITSUKA(keiju@ruby-lang.org)
 #
 
+require "prism"
 require "ripper"
 require "reline"
 
@@ -323,15 +324,13 @@ module IRB
       end
       if @context.io.respond_to?(:dynamic_prompt)
         @context.io.dynamic_prompt do |lines|
-          tokens = RubyLex.ripper_lex_without_warning(lines.map{ |l| l + "\n" }.join, local_variables: @context.local_variables)
-          line_results = IRB::NestingParser.parse_by_line(tokens)
+          code = lines.map{ |l| l + "\n" }.join
+          tokens = RubyLex.ripper_lex_without_warning(code, local_variables: @context.local_variables)
+          parse_lex_result = Prism.parse_lex(code, scopes: [@context.local_variables])
+          line_results = IRB::NestingParser.parse_by_line(parse_lex_result)
           tokens_until_line = []
-          line_results.map.with_index do |(line_tokens, _prev_opens, next_opens, _min_depth), line_num_offset|
-            line_tokens.each do |token, _s|
-              # Avoid appending duplicated token. Tokens that include "n" like multiline
-              # tstring_content can exist in multiple lines.
-              tokens_until_line << token if token != tokens_until_line.last
-            end
+          line_results.map.with_index do |(_prev_opens, next_opens, _min_depth), line_num_offset|
+            tokens_until_line << tokens.shift while !tokens.empty? && tokens.first.pos[0] <= line_num_offset + 1
             continue = @scanner.should_continue?(tokens_until_line)
             generate_prompt(next_opens, continue, line_num_offset)
           end
@@ -345,7 +344,8 @@ module IRB
 
           code = lines[0..line_index].map { |l| "#{l}\n" }.join
           tokens = RubyLex.ripper_lex_without_warning(code, local_variables: @context.local_variables)
-          @scanner.process_indent_level(tokens, lines, line_index, is_newline)
+          parse_lex_result = Prism.parse_lex(code, scopes: [@context.local_variables])
+          @scanner.process_indent_level(tokens, parse_lex_result, lines, line_index, is_newline)
         end
       end
     end
