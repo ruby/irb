@@ -399,9 +399,8 @@ class IRB::RenderingTest < Yamatanooroti::TestCase
     LINES
     start_terminal(10, 80, %W{ruby -I#{@pwd}/lib #{@pwd}/exe/irb}, startup_message: /irb\(main\)/)
     write("IRB::Pager.page_content('a' * (80 * 7))\n")
-    write("'foo' + 'bar'\n") # eval something to make sure IRB resumes
-
     assert_screen(/a{80}/)
+    write("'foo' + 'bar'\n") # eval something to make sure IRB resumes
     # because pager is not invoked, foobar will be evaluated
     assert_screen(/foobar/)
     close
@@ -413,9 +412,11 @@ class IRB::RenderingTest < Yamatanooroti::TestCase
     LINES
     start_terminal(10, 80, %W{ruby -I#{@pwd}/lib #{@pwd}/exe/irb}, startup_message: /irb\(main\)/)
     write("'a' * 80 * 11\n")
-    write("'foo' + 'bar'\n") # eval something to make sure IRB resumes
-
     assert_screen(/"a{79}\n(a{80}\n){7}/)
+
+    write("'foo' + 'bar'\n")
+    write("q\n") # quit pager
+    assert_screen(/irb\(main\):002>/) # make sure IRB resumes
     # because pager is invoked, foobar will not be evaluated
     assert_screen(/\A(?!foobar)/)
     close
@@ -443,6 +444,7 @@ class IRB::RenderingTest < Yamatanooroti::TestCase
     LINES
     start_terminal(10, 80, %W{ruby -I#{@pwd}/lib #{@pwd}/exe/irb}, startup_message: /irb\(main\)/)
     write("'a' * 80 * 11\n")
+    assert_screen(/(a{80}\n){6}/) # wait for pager to show up
     write("q") # quit pager
     write("'foo' + 'bar'\n") # eval something to make sure IRB resumes
 
