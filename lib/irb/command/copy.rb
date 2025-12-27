@@ -39,8 +39,12 @@ module IRB
       private
 
       def copy_to_clipboard(text)
-        IO.popen(clipboard_program, 'w') do |io|
-          io.write(text)
+        if Gem.win_platform?
+          Kernel.system("powershell.exe", "-NoProfile", "-Command", "Set-Clipboard", "-Value", text)
+        else
+          IO.popen(clipboard_program, 'w') do |io|
+            io.write(text)
+          end
         end
 
         raise IOError.new("Copying to clipboard failed") unless $? == 0
@@ -54,6 +58,8 @@ module IRB
       def clipboard_program
         @clipboard_program ||= if IRB.conf[:COPY_COMMAND]
                                  IRB.conf[:COPY_COMMAND]
+                               elsif executable?("clip.exe")
+                                 "clip.exe"
                                elsif executable?("pbcopy")
                                  "pbcopy"
                                elsif executable?("xclip")
@@ -66,7 +72,7 @@ module IRB
       end
 
       def clipboard_available?
-        !!clipboard_program
+        Gem.win_platform? || !!clipboard_program
       end
     end
   end
