@@ -39,12 +39,8 @@ module IRB
       private
 
       def copy_to_clipboard(text)
-        if windows?
-          Kernel.system("powershell.exe", "-NoProfile", "-Command", "Set-Clipboard", "-Value", text)
-        else
-          IO.popen(clipboard_program, 'w') do |io|
-            io.write(text)
-          end
+        IO.popen(clipboard_program, 'w') do |io|
+          io.write(text)
         end
 
         raise IOError.new("Copying to clipboard failed") unless $? == 0
@@ -68,7 +64,11 @@ module IRB
       end
 
       def executable?(command)
-        system("which #{command} > /dev/null 2>&1")
+        if windows?
+          system("where #{command} > NUL 2>&1")
+        else
+          system("which #{command} > /dev/null 2>&1")
+        end
       end
 
       def clipboard_available?
