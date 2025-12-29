@@ -39,7 +39,7 @@ module IRB
       private
 
       def copy_to_clipboard(text)
-        if Gem.win_platform?
+        if windows?
           Kernel.system("powershell.exe", "-NoProfile", "-Command", "Set-Clipboard", "-Value", text)
         else
           IO.popen(clipboard_program, 'w') do |io|
@@ -72,7 +72,11 @@ module IRB
       end
 
       def clipboard_available?
-        Gem.win_platform? || !!clipboard_program
+        windows? || !!clipboard_program
+      end
+
+      def windows?
+        /mingw|mswin/.match?(RUBY_PLATFORM)
       end
     end
   end
