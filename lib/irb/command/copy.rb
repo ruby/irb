@@ -72,7 +72,7 @@ module IRB
       end
 
       def clipboard_available?
-        windows? || !!clipboard_program
+        !!clipboard_program
       end
 
       def windows?
