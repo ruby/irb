@@ -4,6 +4,8 @@
 #   	by Keiju ISHITSUKA(keiju@ruby-lang.org)
 #
 
+require 'set'
+
 module IRB # :nodoc:
   @CONF = {}
   @INITIALIZED = false
