@@ -77,6 +77,15 @@ module IRB
     PROMPT_MAIN_TRUNCATE_OMISSION = '...'
     CONTROL_CHARACTERS_PATTERN = "\x00-\x1F"
 
+    # Track the nesting depth of run loops. This is used for history management
+    # only the outermost run loop should load/save history.
+    @run_nesting_depth = 0
+
+    class << self
+      # TODO: When refactoring to v2.0, find a better way to manage and track nesting sessions.
+      attr_accessor :run_nesting_depth
+    end
+
     # Returns the current context of this irb session
     attr_reader :context
     # The lexer used by this irb session
@@ -148,7 +157,10 @@ module IRB
     end
 
     def run(conf = IRB.conf)
-      in_nested_session = !!conf[:MAIN_CONTEXT]
+      # Use run_nesting_depth to determine if we're in a nested session.
+      in_nested_session = Irb.run_nesting_depth > 0
+      Irb.run_nesting_depth += 1
+
       conf[:IRB_RC].call(context) if conf[:IRB_RC]
       prev_context = conf[:MAIN_CONTEXT]
       conf[:MAIN_CONTEXT] = context
@@ -174,6 +186,8 @@ module IRB
           eval_input
         end
       ensure
+        Irb.run_nesting_depth -= 1
+
         # Do not restore to nil. It will cause IRB crash when used with threads.
         IRB.conf[:MAIN_CONTEXT] = prev_context if prev_context
 
