@@ -686,7 +686,7 @@ module TestIRB
 
       def assert_indent_level(lines, expected)
         code = lines.map { |l| "#{l}\n" }.join # code should end with "\n"
-        _tokens, opens, _ = @irb.scanner.check_code_state(code, local_variables: [])
+        _continue, opens, _ = @irb.scanner.check_code_state(code, local_variables: [])
         indent_level = @irb.scanner.calc_indent_level(opens)
         error_message = "Calculated the wrong number of indent level for:\n #{lines.join("\n")}"
         assert_equal(expected, indent_level, error_message)
@@ -713,6 +713,24 @@ module TestIRB
           ['002:0: :> ', %q()],
         ]
 
+        assert_dynamic_prompt(input_with_prompt)
+      end
+
+      def test_multiline_string_literal
+        input_with_prompt = [
+          ['001:0:":* ', %q("a)],
+          ['002:0:":* ', %q(bbb"; "cc)],
+          ['003:0: :> ', %q(c")],
+        ]
+        assert_dynamic_prompt(input_with_prompt)
+      end
+
+      def test_backslash_continue
+        input_with_prompt = [
+          ['001:0: :* ', %q("a"\\)],
+          ['002:0: :* ', %q("b" \\)],
+          ['003:0: :> ', %q("c")],
+        ]
         assert_dynamic_prompt(input_with_prompt)
       end
 
