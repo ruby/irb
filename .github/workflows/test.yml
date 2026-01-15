@@ -50,6 +50,26 @@ jobs:
         run: bundle exec rake test
       - name: Run tests in isolation
         run: bundle exec rake test_in_isolation
+  prism-version-test:
+    needs: ruby-versions
+    name: rake test prism-${{ matrix.prism_version }}
+    strategy:
+      matrix:
+        prism_version: ['1.3.0', '1.7.0', 'latest']
+      fail-fast: false
+    runs-on: ubuntu-latest
+    env:
+      PRISM_VERSION: ${{matrix.prism_version}}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ fromJson(needs.ruby-versions.outputs.latest) }}
+          bundler-cache: true
+      - name: Run tests
+        run: bundle exec rake test
   debug-test:
     if: github.repository == 'ruby/irb' || github.event_name != 'schedule'
     name: Debug compatibility test
