@@ -28,6 +28,8 @@ if ENV['PRISM_VERSION'] == 'latest'
   gem "prism", github: "ruby/prism"
 elsif ENV['PRISM_VERSION']
   gem "prism", ENV['PRISM_VERSION']
+else
+  gem "prism", "!= 1.8.0"
 end
 
 if RUBY_VERSION >= "3.0.0" && !is_truffleruby
