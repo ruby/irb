@@ -24,6 +24,12 @@ gem "debug", github: "ruby/debug"
 
 gem "rdoc", ">= 6.11.0"
 
+if ENV['PRISM_VERSION'] == 'latest'
+  gem "prism", github: "ruby/prism"
+elsif ENV['PRISM_VERSION']
+  gem "prism", ENV['PRISM_VERSION']
+end
+
 if RUBY_VERSION >= "3.0.0" && !is_truffleruby
   # TODO: Remove this after rbs is released with tsort in its dependencies
   gem "rbs", github: "ruby/rbs" if RUBY_VERSION >= "3.2"

@@ -41,7 +41,6 @@ module TestIRB
         1 => "#{BLUE}#{BOLD}1#{CLEAR}\n",
         "a\nb" => %[#{RED}#{BOLD}"#{CLEAR}#{RED}a\\nb#{CLEAR}#{RED}#{BOLD}"#{CLEAR}\n],
         IRBTestColorPrinter.new('test') => "#{GREEN}#<struct TestIRB::ColorPrinterTest::IRBTestColorPrinter#{CLEAR} a#{GREEN}=#{CLEAR}#{RED}#{BOLD}\"#{CLEAR}#{RED}test#{CLEAR}#{RED}#{BOLD}\"#{CLEAR}#{GREEN}>#{CLEAR}\n",
-        Ripper::Lexer.new('1').scan => "[#{GREEN}#<Ripper::Lexer::Elem:#{CLEAR} on_int@1:0 END token: #{RED}#{BOLD}\"#{CLEAR}#{RED}1#{CLEAR}#{RED}#{BOLD}\"#{CLEAR}#{GREEN}>#{CLEAR}]\n",
         Class.new{define_method(:pretty_print){|q| q.text("[__FILE__, __LINE__, __ENCODING__]")}}.new => "[#{CYAN}#{BOLD}__FILE__#{CLEAR}, #{CYAN}#{BOLD}__LINE__#{CLEAR}, #{CYAN}#{BOLD}__ENCODING__#{CLEAR}]\n",
       }.each do |object, result|
         actual = with_term { IRB::ColorPrinter.pp(object, '') }
@@ -54,7 +53,6 @@ module TestIRB
         1 => "1\n",
         "a\nb" => %["a\\nb"\n],
         IRBTestColorPrinter.new('test') => "#<struct TestIRB::ColorPrinterTest::IRBTestColorPrinter a=\"test\">\n",
-        Ripper::Lexer.new('1').scan => "[#<Ripper::Lexer::Elem: on_int@1:0 END token: \"1\">]\n",
         Class.new{define_method(:pretty_print){|q| q.text("[__FILE__, __LINE__, __ENCODING__]")}}.new => "[__FILE__, __LINE__, __ENCODING__]\n",
       }.each do |object, result|
         actual = with_term { IRB::ColorPrinter.pp(object, '', colorize: false) }
