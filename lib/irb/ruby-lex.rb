@@ -4,6 +4,7 @@
 #   	by Keiju ISHITSUKA(keiju@ruby-lang.org)
 #
 
+require "prism"
 require "ripper"
 require "jruby" if RUBY_ENGINE == "jruby"
 require_relative "nesting_parser"
@@ -170,7 +171,7 @@ module IRB
 
     def check_code_state(code, local_variables:)
       tokens = self.class.ripper_lex_without_warning(code, local_variables: local_variables)
-      opens = NestingParser.open_tokens(tokens)
+      opens = NestingParser.open_nestings(Prism.parse_lex(code, scopes: [local_variables]))
       [tokens, opens, code_terminated?(code, tokens, opens, local_variables: local_variables)]
     end
 
@@ -307,11 +308,11 @@ module IRB
 
     def calc_indent_level(opens)
       indent_level = 0
-      opens.each_with_index do |t, index|
-        case t.event
+      opens.each_with_index do |elem, index|
+        case elem.event
         when :on_heredoc_beg
           if opens[index + 1]&.event != :on_heredoc_beg
-            if t.tok.match?(/^<<[~-]/)
+            if elem.tok.match?(/^<<[~-]/)
               indent_level += 1
             else
               indent_level = 0
@@ -320,50 +321,50 @@ module IRB
         when :on_tstring_beg, :on_regexp_beg, :on_symbeg, :on_backtick
           # No indent: "", //, :"", ``
           # Indent: %(), %r(), %i(), %x()
-          indent_level += 1 if t.tok.start_with? '%'
+          indent_level += 1 if elem.tok.start_with? '%'
         when :on_embdoc_beg
           indent_level = 0
         else
-          indent_level += 1 unless t.tok == 'alias' || t.tok == 'undef'
+          indent_level += 1 unless elem.tok == 'alias' || elem.tok == 'undef'
         end
       end
       indent_level
     end
 
-    FREE_INDENT_TOKENS = %i[on_tstring_beg on_backtick on_regexp_beg on_symbeg]
+    FREE_INDENT_NESTINGS = %i[on_tstring_beg on_backtick on_regexp_beg on_symbeg]
 
-    def free_indent_token?(token)
-      FREE_INDENT_TOKENS.include?(token&.event)
+    def free_indent_nesting_element?(elem)
+      FREE_INDENT_NESTINGS.include?(elem&.event)
     end
 
     # Calculates the difference of pasted code's indent and indent calculated from tokens
     def indent_difference(lines, line_results, line_index)
       loop do
-        _tokens, prev_opens, _next_opens, min_depth = line_results[line_index]
-        open_token = prev_opens.last
-        if !open_token || (open_token.event != :on_heredoc_beg && !free_indent_token?(open_token))
+        prev_opens, _next_opens, min_depth = line_results[line_index]
+        open_elem = prev_opens.last
+        if !open_elem || (open_elem.event != :on_heredoc_beg && !free_indent_nesting_element?(open_elem))
           # If the leading whitespace is an indent, return the difference
           indent_level = calc_indent_level(prev_opens.take(min_depth))
           calculated_indent = 2 * indent_level
           actual_indent = lines[line_index][/^ */].size
           return actual_indent - calculated_indent
-        elsif open_token.event == :on_heredoc_beg && open_token.tok.match?(/^<<[^-~]/)
+        elsif open_elem.event == :on_heredoc_beg && open_elem.tok.match?(/^<<[^-~]/)
           return 0
         end
         # If the leading whitespace is not an indent but part of a multiline token
         # Calculate base_indent of the multiline token's beginning line
-        line_index = open_token.pos[0] - 1
+        line_index = open_elem.pos[0] - 1
       end
     end
 
-    def process_indent_level(tokens, lines, line_index, is_newline)
-      line_results = NestingParser.parse_by_line(tokens)
+    def process_indent_level(parse_lex_result, lines, line_index, is_newline)
+      line_results = NestingParser.parse_by_line(parse_lex_result)
       result = line_results[line_index]
       if result
-        _tokens, prev_opens, next_opens, min_depth = result
+        prev_opens, next_opens, min_depth = result
       else
         # When last line is empty
-        prev_opens = next_opens = line_results.last[2]
+        prev_opens = next_opens = line_results.last[1]
         min_depth = next_opens.size
       end
 
@@ -373,39 +374,39 @@ module IRB
 
       preserve_indent = lines[line_index - (is_newline ? 1 : 0)][/^ */].size
 
-      prev_open_token = prev_opens.last
-      next_open_token = next_opens.last
+      prev_open_elem = prev_opens.last
+      next_open_elem = next_opens.last
 
-      # Calculates base indent for pasted code on the line where prev_open_token is located
-      # irb(main):001:1*   if a # base_indent is 2, indent calculated from tokens is 0
-      # irb(main):002:1*         if b # base_indent is 6, indent calculated from tokens is 2
-      # irb(main):003:0>           c # base_indent is 6, indent calculated from tokens is 4
-      if prev_open_token
-        base_indent = [0, indent_difference(lines, line_results, prev_open_token.pos[0] - 1)].max
+      # Calculates base indent for pasted code on the line where prev_open_elem is located
+      # irb(main):001:1*   if a # base_indent is 2, indent calculated from nestings is 0
+      # irb(main):002:1*         if b # base_indent is 6, indent calculated from nestings is 2
+      # irb(main):003:0>           c # base_indent is 6, indent calculated from nestings is 4
+      if prev_open_elem
+        base_indent = [0, indent_difference(lines, line_results, prev_open_elem.pos[0] - 1)].max
       else
         base_indent = 0
       end
 
-      if free_indent_token?(prev_open_token)
-        if is_newline && prev_open_token.pos[0] == line_index
+      if free_indent_nesting_element?(prev_open_elem)
+        if is_newline && prev_open_elem.pos[0] == line_index
           # First newline inside free-indent token
           base_indent + indent
         else
           # Accept any number of indent inside free-indent token
           preserve_indent
         end
-      elsif prev_open_token&.event == :on_embdoc_beg || next_open_token&.event == :on_embdoc_beg
-        if prev_open_token&.event == next_open_token&.event
+      elsif prev_open_elem&.event == :on_embdoc_beg || next_open_elem&.event == :on_embdoc_beg
+        if prev_open_elem&.event == next_open_elem&.event
           # Accept any number of indent inside embdoc content
           preserve_indent
         else
           # =begin or =end
           0
         end
-      elsif prev_open_token&.event == :on_heredoc_beg
-        tok = prev_open_token.tok
+      elsif prev_open_elem&.event == :on_heredoc_beg
+        tok = prev_open_elem.tok
         if prev_opens.size <= next_opens.size
-          if is_newline && lines[line_index].empty? && line_results[line_index - 1][1].last != next_open_token
+          if is_newline && lines[line_index].empty? && line_results[line_index - 1][0].last != next_open_elem
             # First line in heredoc
             tok.match?(/^<<[-~]/) ? base_indent + indent : indent
           elsif tok.match?(/^<<~/)
@@ -425,15 +426,15 @@ module IRB
       end
     end
 
-    def ltype_from_open_tokens(opens)
-      start_token = opens.reverse_each.find do |tok|
-        LTYPE_TOKENS.include?(tok.event)
+    def ltype_from_open_nestings(opens)
+      start_nesting = opens.reverse_each.find do |elem|
+        LTYPE_TOKENS.include?(elem.event)
       end
-      return nil unless start_token
+      return nil unless start_nesting
 
-      case start_token&.event
+      case start_nesting&.event
       when :on_tstring_beg
-        case start_token&.tok
+        case start_nesting&.tok
         when ?"      then ?"
         when /^%.$/  then ?"
         when /^%Q.$/ then ?"
@@ -448,7 +449,7 @@ module IRB
       when :on_qsymbols_beg then ?]
       when :on_symbols_beg  then ?]
       when :on_heredoc_beg
-        start_token&.tok =~ /<<[-~]?(['"`])\w+\1/
+        start_nesting&.tok =~ /<<[-~]?(['"`])\w+\1/
         $1 || ?"
       else
         nil
@@ -485,7 +486,7 @@ module IRB
         if first_token && first_token.state != Ripper::EXPR_DOT
           tokens_without_last_line = tokens[0..index]
           code_without_last_line = tokens_without_last_line.map(&:tok).join
-          opens_without_last_line = NestingParser.open_tokens(tokens_without_last_line)
+          opens_without_last_line = NestingParser.open_nestings(Prism.parse_lex(code_without_last_line, scopes: [local_variables]))
           if code_terminated?(code_without_last_line, tokens_without_last_line, opens_without_last_line, local_variables: local_variables)
             return last_line_tokens.map(&:tok).join
           end

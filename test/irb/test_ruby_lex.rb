@@ -123,8 +123,7 @@ module TestIRB
 
     def test_unterminated_heredoc_string_literal
       ['<<A;<<B', "<<A;<<B\n", "%W[\#{<<A;<<B", "%W[\#{<<A;<<B\n"].each do |code|
-        tokens = IRB::RubyLex.ripper_lex_without_warning(code)
-        string_literal = IRB::NestingParser.open_tokens(tokens).last
+        string_literal = IRB::NestingParser.open_nestings(Prism.parse_lex(code)).last
         assert_equal('<<A', string_literal&.tok)
       end
     end

@@ -604,18 +604,17 @@ module TestIRB
           [%q(          [1), 10, 12, 3],
           [%q(          ]+[["a), 10, 14, 4],
           [%q(b" + <<~A + <<-B + <<C), 0, 16, 5],
-          [%q(                a#{), 16, 18, 6],
-          [%q(                1), 18, 18, 6],
-          [%q(                }), 16, 16, 5],
+          [%q(                a), 16, 16, 5],
           [%q(              A), 14, 16, 5],
-          [%q(                b#{), 16, 18, 6],
-          [%q(                1), 18, 18, 6],
-          [%q(                }), 16, 16, 5],
+          [%q(                b), 16, 16, 5],
           [%q(              B), 14, 0, 0],
-          [%q(c#{), 0, 2, 1],
-          [%q(1), 2, 2, 1],
-          [%q(}), 0, 0, 0],
+          [%q(c), 0, 0, 0],
           [%q(C), 0, 14, 4],
+          [%q(            .itself + <<D), 14, 0, 0],
+          [%q(#{), 0, 2, 1],
+          [%q(  1), 2, 2, 1],
+          [%q(}), 0, 0, 0],
+          [%q(D), 0, 14, 4],
           [%q(            ]), 12, 12, 3],
           [%q(          ]), 10, 10, 2],
           [%q(        end), 8, 6, 1],
@@ -814,7 +813,7 @@ module TestIRB
       def assert_dynamic_prompt(input_with_prompt)
         expected_prompt_list, lines = input_with_prompt.transpose
         def @irb.generate_prompt(opens, continue, line_offset)
-          ltype = @scanner.ltype_from_open_tokens(opens)
+          ltype = @scanner.ltype_from_open_nestings(opens)
           indent = @scanner.calc_indent_level(opens)
           continue = opens.any? || continue
           line_no = @line_no + line_offset

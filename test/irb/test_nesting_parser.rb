@@ -14,10 +14,10 @@ module TestIRB
     end
 
     def parse_by_line(code)
-      IRB::NestingParser.parse_by_line(IRB::RubyLex.ripper_lex_without_warning(code))
+      IRB::NestingParser.parse_by_line(Prism.parse_lex(code))
     end
 
-    def test_open_tokens
+    def test_open_nestings
       code = <<~'EOS'
         class A
           def f
@@ -27,7 +27,7 @@ module TestIRB
                   x: "
                     #{p(1, 2, 3
       EOS
-      opens = IRB::NestingParser.open_tokens(IRB::RubyLex.ripper_lex_without_warning(code))
+      opens = IRB::NestingParser.open_nestings(Prism.parse_lex(code))
       assert_equal(%w[class def if do { " #{ (], opens.map(&:tok))
     end
 
@@ -36,7 +36,7 @@ module TestIRB
         (((((1+2
         ).to_s())).tap do (((
       EOS
-      _tokens, prev_opens, next_opens, min_depth = parse_by_line(code).last
+      prev_opens, next_opens, min_depth = parse_by_line(code).last
       assert_equal(%w[( ( ( ( (], prev_opens.map(&:tok))
       assert_equal(%w[( ( do ( ( (], next_opens.map(&:tok))
       assert_equal(2, min_depth)
@@ -80,9 +80,9 @@ module TestIRB
       line_results = parse_by_line(code)
       assert_equal(code.lines.size, line_results.size)
       class_open, *inner_line_results, class_close = line_results
-      assert_equal(['class'], class_open[2].map(&:tok))
-      inner_line_results.each {|result| assert_equal(['class'], result[2].map(&:tok)) }
-      assert_equal([], class_close[2].map(&:tok))
+      assert_equal(['class'], class_open[1].map(&:tok))
+      inner_line_results.each {|result| assert_equal(['class'], result[1].map(&:tok)) }
+      assert_equal([], class_close[1].map(&:tok))
     end
 
     def test_multiline_string
@@ -98,15 +98,11 @@ module TestIRB
       EOS
       line_results = parse_by_line(code)
       assert_equal(code.lines.size, line_results.size)
-      string_content_line, string_opens = line_results[1]
-      assert_equal("\naaa\nbbb\n", string_content_line.first.first.tok)
-      assert_equal("aaa\n", string_content_line.first.last)
+      string_opens, = line_results[1]
       assert_equal(['"'], string_opens.map(&:tok))
-      heredoc_content_line, heredoc_opens = line_results[6]
-      assert_equal("aaa\nbbb\n", heredoc_content_line.first.first.tok)
-      assert_equal("bbb\n", heredoc_content_line.first.last)
+      heredoc_opens, = line_results[6]
       assert_equal(['<<A'], heredoc_opens.map(&:tok))
-      _line, _prev_opens, next_opens, _min_depth = line_results.last
+      _prev_opens, next_opens, _min_depth = line_results.last
       assert_equal([], next_opens)
     end
 
@@ -126,8 +122,8 @@ module TestIRB
         while
       EOS
       line_results = parse_by_line(code)
-      assert_equal(%w[: <<A #{], line_results[2][2].map(&:tok))
-      assert_equal(%w[while], line_results.last[2].map(&:tok))
+      assert_equal(%w[<<A #{], line_results[2][1].map(&:tok))
+      assert_equal(%w[while], line_results.last[1].map(&:tok))
     end
 
     def test_oneliner_def
@@ -177,9 +173,25 @@ module TestIRB
           # nested oneliner def
           def f(x = def f() = 1) = def f() = 1
       EOC
-      _tokens, _prev_opens, next_opens, min_depth = parse_by_line(code).last
+      _prev_opens, next_opens, min_depth = parse_by_line(code).last
       assert_equal(['if'], next_opens.map(&:tok))
       assert_equal(1, min_depth)
+    end
+
+    def test_heredoc_sorting
+      # Heredocs appears in the order of B,A,D,C in syntax tree, but should be processed in A,B,C,D order.
+      code = <<~'EOS'
+        if (<<A if <<B); (<<C if <<D); end
+        A
+        B
+        C
+        D
+      EOS
+      line_results = parse_by_line(code)
+      heredoc_opens = line_results[0][1]
+      assert_equal(%w[<<D <<C <<B <<A], heredoc_opens.map(&:tok))
+      last_opens = line_results.last[1]
+      assert_empty(last_opens)
     end
 
     def test_heredoc_embexpr
@@ -202,9 +214,9 @@ module TestIRB
         )
       EOS
       line_results = parse_by_line(code)
-      last_opens = line_results.last[-2]
+      last_opens = line_results.last[1]
       assert_equal([], last_opens)
-      _tokens, _prev_opens, next_opens, _min_depth = line_results[4]
+      _prev_opens, next_opens, _min_depth = line_results[4]
       assert_equal(%w[( <<E <<D <<C <<B <<A #{ " <<~G <<~F #{], next_opens.map(&:tok))
     end
 
@@ -235,9 +247,9 @@ module TestIRB
           here
         end
       EOS
-      line_results = parse_by_line(code).select { |tokens,| tokens.map(&:last).include?('here') }
+      line_results = parse_by_line(code).zip(code.lines).filter_map {|res, line| res if line&.include?('here') }
       assert_equal(7, line_results.size)
-      line_results.each do |_tokens, _prev_opens, next_opens, _min_depth|
+      line_results.each do |_prev_opens, next_opens, _min_depth|
         assert_equal(['for'], next_opens.map(&:tok))
       end
     end
@@ -273,9 +285,9 @@ module TestIRB
       EOS
       %w[while until].each do |keyword|
         code = base_code.gsub('while_or_until', keyword)
-        line_results = parse_by_line(code).select { |tokens,| tokens.map(&:last).include?('here') }
+        line_results = parse_by_line(code).zip(code.lines).filter_map {|res, line| res if line&.include?('here') }
         assert_equal(7, line_results.size)
-        line_results.each do |_tokens, _prev_opens, next_opens, _min_depth|
+        line_results.each do |_prev_opens, next_opens, _min_depth|
           assert_equal([keyword], next_opens.map(&:tok) )
         end
       end
@@ -314,7 +326,7 @@ module TestIRB
         do
       EOS
       [*codes, code_with_comment, code_with_heredoc].each do |code|
-        opens = IRB::NestingParser.open_tokens(IRB::RubyLex.ripper_lex_without_warning('(' + code + "\nif"))
+        opens = IRB::NestingParser.open_nestings(Prism.parse_lex('(' + code + "\nif"))
         assert_equal(%w[( if], opens.map(&:tok))
       end
     end
@@ -329,9 +341,9 @@ module TestIRB
           here
         end
       EOS
-      line_results = parse_by_line(code).select { |tokens,| tokens.map(&:last).include?('here') }
+      line_results = parse_by_line(code).zip(code.lines).filter_map {|res, line| res if line&.include?('here') }
       assert_equal(2, line_results.size)
-      line_results.each do |_tokens, _prev_opens, next_opens, _min_depth|
+      line_results.each do |_prev_opens, next_opens, _min_depth|
         assert_equal(['in'], next_opens.map(&:tok))
       end
     end
