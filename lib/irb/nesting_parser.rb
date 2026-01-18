@@ -330,7 +330,7 @@ module IRB
 
     class << self
 
-      # Return a list of open nestings at last token position
+      # Return a list of open nesting elements at EOF position
       def open_nestings(parse_lex_result)
         parse_by_line(parse_lex_result).last[1]
       end

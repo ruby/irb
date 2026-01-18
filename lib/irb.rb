@@ -583,7 +583,7 @@ module IRB
     end
 
     def generate_prompt(opens, continue, line_offset)
-      ltype = @scanner.ltype_from_open_tokens(opens)
+      ltype = @scanner.ltype_from_open_nestings(opens)
       indent = @scanner.calc_indent_level(opens)
       continue = opens.any? || continue
       line_no = @line_no + line_offset
