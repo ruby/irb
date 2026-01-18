@@ -178,6 +178,22 @@ module TestIRB
       assert_equal(1, min_depth)
     end
 
+    def test_heredoc_sorting
+      # Heredocs appears in the ordef B,A,D,C in syntax tree, but should be processed in A,B,C,D order.
+      code = <<~'EOS'
+        if (<<A if <<B); (<<C if <<D); end
+        A
+        B
+        C
+        D
+      EOS
+      line_results = parse_by_line(code)
+      heredoc_opens = line_results[0][1]
+      assert_equal(%w[<<D <<C <<B <<A], heredoc_opens.map(&:tok))
+      last_opens = line_results.last[1]
+      assert_empty(last_opens)
+    end
+
     def test_heredoc_embexpr
       code = <<~'EOS'
         <<A+<<B+<<C+(<<D+(<<E)

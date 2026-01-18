@@ -23,7 +23,7 @@ module IRB
               nesting.pop
             end
           end
-          @heredocs[line_index]&.sort_by { |_node, (_line, col)| col }&.reverse_each do |elem|
+          @heredocs[line_index]&.sort_by { |elem| elem.pos[1] }&.reverse_each do |elem|
             nesting << elem
           end
           nesting.dup
