@@ -179,7 +179,7 @@ module TestIRB
     end
 
     def test_heredoc_sorting
-      # Heredocs appears in the ordef B,A,D,C in syntax tree, but should be processed in A,B,C,D order.
+      # Heredocs appears in the order of B,A,D,C in syntax tree, but should be processed in A,B,C,D order.
       code = <<~'EOS'
         if (<<A if <<B); (<<C if <<D); end
         A

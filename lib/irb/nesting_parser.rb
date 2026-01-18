@@ -8,7 +8,16 @@ module IRB
 
     class NestingVisitor < Prism::Visitor
       def initialize
+        # Array of [column, priority(+1/-1), NestingElem(open) or nil(close)] per line.
+        # priority is +1 for open, -1 for close so that close comes before open when sorted.
+        # Example:
+        #   if cond
+        #   else
+        #   end
+        # `else` closes `if` at column 0 first and then opens `else` at column 0 next.
         @lines = []
+
+        # Array of open heredoc NestingElem per line
         @heredocs = []
       end
 
@@ -43,6 +52,8 @@ module IRB
         (@lines[line - 1] ||= []) << [column, -1]
       end
 
+      # Checks if a node (if, while, etc) is a modifier form that does not need `end` closing.
+      # modifier node: `a if b`, non-modifier node: `if a; b; end`
       def modifier_node?(node, keyword_loc)
         !(keyword_loc && node.location.start_line == keyword_loc.start_line && node.location.start_column == keyword_loc.start_column)
       end
