@@ -49,7 +49,7 @@ module IRB
           def DEBUGGER__.capture_frames(*args)
             frames = capture_frames_without_irb(*args)
             frames.reject! do |frame|
-              frame.realpath&.start_with?(IRB_DIR) || frame.path.start_with?("<internal:")
+              frame.realpath&.start_with?(IRB_DIR) || frame.path&.start_with?("<internal:")
             end
             frames
           end
@@ -87,7 +87,7 @@ module IRB
       module SkipPathHelperForIRB
         def skip_internal_path?(path)
           # The latter can be removed once https://github.com/ruby/debug/issues/866 is resolved
-          super || path.match?(IRB_DIR) || path.match?('<internal:prelude>')
+          super || path&.match?(IRB_DIR) || path&.match?('<internal:prelude>')
         end
       end
 
