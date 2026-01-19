@@ -565,6 +565,29 @@ module TestIRB
       assert_include(output, "0: old_history_1")
     end
 
+    def test_history_saving_with_irb_start_after_debug_console_setup
+      # this makes debug.gem run activate_irb_integration, which sets up IRB context for debug.gem
+      @envs['RUBY_DEBUG_IRB_CONSOLE'] = "1"
+      write_history ""
+
+      write_ruby <<~'RUBY'
+        require 'debug' # this starts the debug.gem session, which runs activate_irb_integration
+        require 'irb'
+        puts 'binding.irb' # integration test uses binding.irb to identify the start of the IRB session
+        IRB.start
+      RUBY
+
+      run_ruby_file do
+        type "puts 'from_irb_start'"
+        type "exit"
+      end
+
+      assert_equal <<~HISTORY, @history_file.open.read
+        puts 'from_irb_start'
+        exit
+      HISTORY
+    end
+
     private
 
     def write_history(history)
