@@ -123,6 +123,25 @@ module TestIRB
       assert_match(/=>   2\| puts "hello"/, output)
     end
 
+    def test_next_with_irb_script
+      # Regression test for https://github.com/ruby/irb/issues/1159
+      # Running `irb file.rb` creates C frames with nil path that must be handled
+      write_ruby <<~'ruby'
+        binding.irb
+        puts "hello"
+      ruby
+
+      output = run_ruby_file(via_irb: true) do
+        type "next"
+        type "continue"
+      end
+
+      assert_not_match(/NoMethodError/, output)
+      assert_not_match(/undefined method.*start_with\?.*nil/, output)
+
+      assert_match(/irb\(main\):001>/, output)
+    end
+
     def test_break
       write_ruby <<~'RUBY'
         binding.irb

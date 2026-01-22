@@ -139,8 +139,13 @@ module TestIRB
       end
     end
 
-    def run_ruby_file(timeout: TIMEOUT_SEC, &block)
-      cmd = [EnvUtil.rubybin, "-I", LIB, @ruby_file.to_path]
+    def run_ruby_file(timeout: TIMEOUT_SEC, via_irb: false, &block)
+      if via_irb
+        irb_path = File.expand_path("../../exe/irb", __dir__)
+        cmd = [EnvUtil.rubybin, "-I", LIB, irb_path, @ruby_file.to_path]
+      else
+        cmd = [EnvUtil.rubybin, "-I", LIB, @ruby_file.to_path]
+      end
       tmp_dir = Dir.mktmpdir
 
       @commands = []
