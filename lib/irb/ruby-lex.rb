@@ -497,6 +497,3 @@ module IRB
   end
   # :startdoc:
 end
-
-RubyLex = IRB::RubyLex
-Object.deprecate_constant(:RubyLex)
