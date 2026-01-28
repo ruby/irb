@@ -75,7 +75,7 @@ module IRB
       end
 
       def close_closing_loc(node)
-        close_location(node.closing_loc) unless node.closing.nil? || node.closing.empty?
+        close_location(node.closing_loc) if node.closing_loc && !node.closing.empty?
       end
 
       def visit_for_node(node)
@@ -220,7 +220,7 @@ module IRB
         if node.opening&.start_with?('<<')
           heredoc_open(node)
           # Heredoc closing contains trailing newline. We need to exclude it
-          close_location_start(node.closing_loc) unless node.closing.empty?
+          close_location_start(node.closing_loc) if node.closing_loc && !node.closing.empty?
         elsif node.opening
           open_location(node.location, type, node.opening)
           if node.closing && node.closing != ''
@@ -283,7 +283,7 @@ module IRB
 
         if type
           open_location(node.opening_loc, type, node.opening)
-          close_location(node.closing_loc) unless node.closing.empty?
+          close_closing_loc(node)
         end
       end
 
@@ -298,7 +298,7 @@ module IRB
       def visit_lambda_node(node)
         super
         open_location(node.opening_loc, :on_tlambeg, node.opening)
-        close_location(node.closing_loc) unless node.closing.empty?
+        close_closing_loc(node)
       end
 
       def visit_super_node(node)
