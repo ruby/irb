@@ -26,6 +26,7 @@ require_relative "command/ls"
 require_relative "command/measure"
 require_relative "command/next"
 require_relative "command/pushws"
+require_relative "command/reload"
 require_relative "command/show_doc"
 require_relative "command/show_source"
 require_relative "command/step"
@@ -252,6 +253,7 @@ module IRB
 
     register(:cd, Command::CD)
     register(:copy, Command::Copy)
+    register(:reload, Command::Reload)
   end
 
   ExtendCommand = Command
