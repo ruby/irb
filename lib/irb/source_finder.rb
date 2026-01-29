@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative "ruby-lex"
+require 'prism'
 
 module IRB
   class SourceFinder
@@ -44,21 +44,12 @@ module IRB
       private
 
       def find_end
-        lex = RubyLex.new
         code = file_content
         lines = code.lines[(@line - 1)..-1]
-        tokens = RubyLex.ripper_lex_without_warning(lines.join)
-        prev_tokens = []
 
-        # chunk with line number
-        tokens.chunk { |tok| tok.pos[0] }.each do |lnum, chunk|
-          code = lines[0..lnum].join
-          prev_tokens.concat chunk
-          continue = lex.should_continue?(prev_tokens)
-          syntax = lex.check_code_syntax(code, local_variables: [])
-          if !continue && syntax == :valid
-            return @line + lnum
-          end
+        lines.each_with_index do |line, index|
+          sub_code = lines.take(index + 1).join
+          return @line + index if Prism.parse_success?(sub_code)
         end
         @line
       end
