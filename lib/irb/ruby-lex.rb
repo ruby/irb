@@ -11,40 +11,6 @@ require_relative "nesting_parser"
 module IRB
   # :stopdoc:
   class RubyLex
-    ASSIGNMENT_NODE_TYPES = [
-      # Local, instance, global, class, constant, instance, and index assignment:
-      #   "foo = bar",
-      #   "@foo = bar",
-      #   "$foo = bar",
-      #   "@@foo = bar",
-      #   "::Foo = bar",
-      #   "a::Foo = bar",
-      #   "Foo = bar"
-      #   "foo.bar = 1"
-      #   "foo[1] = bar"
-      :assign,
-
-      # Operation assignment:
-      #   "foo += bar"
-      #   "foo -= bar"
-      #   "foo ||= bar"
-      #   "foo &&= bar"
-      :opassign,
-
-      # Multiple assignment:
-      #   "foo, bar = 1, 2
-      :massign,
-    ]
-
-    ERROR_TOKENS = [
-      :on_parse_error,
-      :compile_error,
-      :on_assign_error,
-      :on_alias_error,
-      :on_class_name_error,
-      :on_param_error
-    ]
-
     LTYPE_TOKENS = %i[
       on_heredoc_beg on_tstring_beg
       on_regexp_beg on_symbeg on_backtick
@@ -76,25 +42,6 @@ module IRB
     class TerminateLineInput < StandardError
       def initialize
         super("Terminate Line Input")
-      end
-    end
-
-    class << self
-      def compile_with_errors_suppressed(code, line_no: 1)
-        begin
-          result = yield code, line_no
-        rescue ArgumentError
-          # Ruby can issue an error for the code if there is an
-          # incomplete magic comment for encoding in it. Force an
-          # expression with a new line before the code in this
-          # case to prevent magic comment handling.  To make sure
-          # line numbers in the lexed code remain the same,
-          # decrease the line number by one.
-          code = ";\n#{code}"
-          line_no -= 1
-          result = yield code, line_no
-        end
-        result
       end
     end
 
