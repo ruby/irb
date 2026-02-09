@@ -54,6 +54,8 @@ module TestIRB
     end
 
     def test_callback_delay
+      omit if RUBY_ENGINE == "truffleruby"
+
       actual_events = []
       overflow_callback = ->(lines) do
         actual_events << [:callback_called, lines]

@@ -14,6 +14,8 @@ module TestIRB
     end
 
     def test_interpolate_token_with_heredoc_and_unclosed_embexpr
+      omit if RUBY_ENGINE == "truffleruby"
+
       code = <<~'EOC'
         ①+<<A-②
         #{③*<<B/④
