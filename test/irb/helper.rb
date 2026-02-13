@@ -76,6 +76,14 @@ module TestIRB
       end
     end
 
+    def with_default_external(encoding)
+      original = Encoding.default_external
+      EnvUtil.suppress_warning { Encoding.default_external = encoding }
+      yield
+    ensure
+      EnvUtil.suppress_warning { Encoding.default_external = original }
+    end
+
     def without_rdoc(&block)
       ::Kernel.send(:alias_method, :irb_original_require, :require)
 
