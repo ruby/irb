@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'prism'
+
 module IRB
   module Command
     # Internal use only, for default command's backward compatibility.
@@ -7,9 +9,10 @@ module IRB
       def unwrap_string_literal(str)
         return if str.empty?
 
-        sexp = Ripper.sexp(str)
-        if sexp && sexp.size == 2 && sexp.last&.first&.first == :string_literal
-          @irb_context.workspace.binding.eval(str).to_s
+        result = Prism.parse(str)
+        body = result.value.statements.body
+        if result.success? && body.size == 1 && body.first.is_a?(Prism::StringNode)
+          body.first.unescaped
         else
           str
         end
