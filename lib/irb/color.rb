@@ -168,12 +168,13 @@ module IRB # :nodoc:
         # IRB::ColorPrinter skips colorizing syntax invalid fragments
         return Reline::Unicode.escape_for_print(code) if ignore_error && !result.success?
 
+        prism_node, prism_tokens = result.value
         errors = result.errors
+
         unless complete
-          errors = errors.reject { |error| error.message =~ /\Aexpected a|unexpected end-of-input|unterminated/ }
+          errors = filter_incomplete_code_errors(errors, prism_tokens)
         end
 
-        prism_node, prism_tokens = result.value
         visitor = ColorizeVisitor.new
         prism_node.accept(visitor)
 
@@ -281,6 +282,29 @@ module IRB # :nodoc:
       end
 
       private
+
+      FILTERED_ERROR_TYPES = [
+        :class_name, :module_name, # `class`, `class owner_module`
+        :write_target_unexpected, # `a, b`
+        :parameter_wild_loose_comma, # `def f(a,`
+        :argument_no_forwarding_star, # `[*`
+        :argument_no_forwarding_star_star, # `f(**`
+        :argument_no_forwarding_ampersand, # `f(&`
+        :def_endless, # `def f =`
+        :embdoc_term, # `=begin`
+      ]
+
+      # Filter out syntax errors that are likely to be caused by incomplete code, to avoid showing misleading error highlights to users.
+      def filter_incomplete_code_errors(errors, tokens)
+        last_non_comment_space_token, = tokens.reverse_each.find do |t,|
+          t.type != :COMMENT && t.type != :EOF && t.type != :IGNORED_NEWLINE && t.type != :NEWLINE
+        end
+        last_offset = last_non_comment_space_token ? last_non_comment_space_token.location.end_offset : 0
+        errors.reject do |error|
+          error.message.match?(/\Aexpected a|unexpected end-of-input|unterminated/) ||
+          (error.location.end_offset == last_offset && FILTERED_ERROR_TYPES.include?(error.type))
+        end
+      end
 
       def without_circular_ref(obj, seen:, &block)
         return false if seen.key?(obj)
