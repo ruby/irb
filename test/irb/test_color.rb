@@ -168,6 +168,29 @@ module TestIRB
       {
         "'foo' + 'bar" => "#{RED}#{BOLD}'#{CLEAR}#{RED}foo#{CLEAR}#{RED}#{BOLD}'#{CLEAR} + #{RED}#{BOLD}'#{CLEAR}#{RED}bar#{CLEAR}",
         "('foo" => "(#{RED}#{BOLD}'#{CLEAR}#{RED}foo#{CLEAR}",
+        "if true" => "#{GREEN}if#{CLEAR} #{CYAN}#{BOLD}true#{CLEAR}",
+        "tap do end end tap do" => "tap #{GREEN}do#{CLEAR} #{GREEN}end#{CLEAR} #{RED}#{REVERSE}end#{CLEAR} tap #{GREEN}do#{CLEAR}",
+
+        # Specially handled cases
+        "class" => "#{GREEN}class#{CLEAR}",
+        "class#" => "#{GREEN}class#{CLEAR}#{BLUE}#{BOLD}\##{CLEAR}",
+        "class;" => "#{RED}#{REVERSE}class#{CLEAR};",
+        "module" => "#{GREEN}module#{CLEAR}",
+        "module#" => "#{GREEN}module#{CLEAR}#{BLUE}#{BOLD}\##{CLEAR}",
+        "module;" => "#{RED}#{REVERSE}module#{CLEAR};",
+        "class owner_module" => "#{GREEN}class#{CLEAR} owner_module",
+        "module owner_module" => "#{GREEN}module#{CLEAR} owner_module",
+        "a, b" => "a, b",
+        "a, b#" => "a, b#{BLUE}#{BOLD}\##{CLEAR}",
+        "a, b;" => "#{RED}#{REVERSE}a, b#{CLEAR};",
+        "def f(a,#" => "#{GREEN}def#{CLEAR} #{BLUE}#{BOLD}f#{CLEAR}(a,#{BLUE}#{BOLD}\##{CLEAR}",
+        "def f(a,)" => "#{GREEN}def#{CLEAR} #{BLUE}#{BOLD}f#{CLEAR}(a#{RED}#{REVERSE},#{CLEAR})",
+        "[*" => "[*",
+        "f(*" => "f(*",
+        "f(**" => "f(**",
+        "f(&" => "f(&",
+        "def f =" => "#{GREEN}def#{CLEAR} #{BLUE}#{BOLD}f#{CLEAR} =",
+        "=begin" => "#{BLUE}#{BOLD}=begin#{CLEAR}",
       }.each do |code, result|
         assert_equal_with_term(result, code, complete: false)
 
