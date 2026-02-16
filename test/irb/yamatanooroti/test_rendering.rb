@@ -169,9 +169,9 @@ class IRB::RenderingTest < Yamatanooroti::TestCase
       irb(main):007> a = A.new
       => #<A>
       irb(main):008>
-      irb(main):009> a
-      irb(main):010>  .a
-      irb(main):011>  .b
+      irb(main):009* a
+      irb(main):010*  .a
+      irb(main):011*  .b
       irb(main):012> .itself
       => true
       irb(main):013>
@@ -219,26 +219,26 @@ class IRB::RenderingTest < Yamatanooroti::TestCase
       irb(main):007> a = A.new
       => #<A>
       irb(main):008>
-      irb(main):009> a
-      irb(main):010>   .b
-      irb(main):011>   # aaa
+      irb(main):009* a
+      irb(main):010*   .b
+      irb(main):011*   # aaa
       irb(main):012>   .c
       => true
       irb(main):013>
-      irb(main):014> (a)
+      irb(main):014* (a)
       irb(main):015>   &.b()
       => #<A>
       irb(main):016>
       irb(main):017> class A def b; self; end; def c; true; end; end;
       irb(main):018> a = A.new
       => #<A>
-      irb(main):019> a
-      irb(main):020>   .b
-      irb(main):021>   # aaa
+      irb(main):019* a
+      irb(main):020*   .b
+      irb(main):021*   # aaa
       irb(main):022>   .c
       => true
-      irb(main):023> (a)
-      irb(main):024>   &.b()
+      irb(main):023* (a)
+      irb(main):024*   &.b()
       irb(main):025> .itself
       => #<A>
       irb(main):026>

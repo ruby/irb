@@ -327,11 +327,7 @@ module TestIRB
       test_obj.define_singleton_method(invalid_method_name) {}
       test_bind = test_obj.instance_eval { binding }
 
-      original_encoding = Encoding.default_external
-
-      begin
-        Encoding.default_external = Encoding::UTF_8
-
+      with_default_external(Encoding::UTF_8) do
         completor = IRB::RegexpCompletor.new
 
         assert_nothing_raised do
@@ -339,8 +335,6 @@ module TestIRB
           assert_include(result, 'block_given?')
           assert_not_include(result, nil)
         end
-      ensure
-        Encoding.default_external = original_encoding
       end
     end
 

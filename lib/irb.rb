@@ -6,7 +6,6 @@
 #
 
 require "prism"
-require "ripper"
 require "reline"
 
 require_relative "irb/init"
@@ -266,11 +265,10 @@ module IRB
         code << line
         return code if command?(code)
 
-        tokens, opens, terminated = @scanner.check_code_state(code, local_variables: @context.local_variables)
+        continue, opens, terminated = @scanner.check_code_state(code, local_variables: @context.local_variables)
         return code if terminated
 
         line_offset += 1
-        continue = @scanner.should_continue?(tokens)
         prompt = generate_prompt(opens, continue, line_offset)
       end
     end
@@ -331,7 +329,7 @@ module IRB
           else
             next true if command?(code)
 
-            _tokens, _opens, terminated = @scanner.check_code_state(code, local_variables: @context.local_variables)
+            _continue, _opens, terminated = @scanner.check_code_state(code, local_variables: @context.local_variables)
             terminated
           end
         end
@@ -339,13 +337,17 @@ module IRB
       if @context.io.respond_to?(:dynamic_prompt)
         @context.io.dynamic_prompt do |lines|
           code = lines.map{ |l| l + "\n" }.join
-          tokens = RubyLex.ripper_lex_without_warning(code, local_variables: @context.local_variables)
           parse_lex_result = Prism.parse_lex(code, scopes: [@context.local_variables])
           line_results = IRB::NestingParser.parse_by_line(parse_lex_result)
+
+          tokens = parse_lex_result.value[1].map(&:first)
+          tokens_by_line = tokens.group_by {|t| t.location.start_line - 1 }
+
           tokens_until_line = []
           line_results.map.with_index do |(_prev_opens, next_opens, _min_depth), line_num_offset|
-            tokens_until_line << tokens.shift while !tokens.empty? && tokens.first.pos[0] <= line_num_offset + 1
-            continue = @scanner.should_continue?(tokens_until_line)
+            line = lines[line_num_offset]
+            tokens_until_line.concat(tokens_by_line[line_num_offset] || [])
+            continue = @scanner.should_continue?(tokens_until_line, line, line_num_offset + 1)
             generate_prompt(next_opens, continue, line_num_offset)
           end
         end

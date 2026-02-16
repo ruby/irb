@@ -13,29 +13,6 @@ module TestIRB
       restore_encodings
     end
 
-    def test_interpolate_token_with_heredoc_and_unclosed_embexpr
-      omit if RUBY_ENGINE == "truffleruby"
-
-      code = <<~'EOC'
-        ①+<<A-②
-        #{③*<<B/④
-        #{⑤&<<C|⑥
-      EOC
-      ripper_tokens = Ripper.tokenize(code)
-      rubylex_tokens = IRB::RubyLex.ripper_lex_without_warning(code)
-      # Assert no missing part
-      assert_equal(code, rubylex_tokens.map(&:tok).join)
-      # Assert ripper tokens are not removed
-      ripper_tokens.each do |tok|
-        assert(rubylex_tokens.any? { |t| t.tok == tok && t.tok != :on_ignored_by_ripper })
-      end
-      # Assert interpolated token position
-      rubylex_tokens.each do |t|
-        row, col = t.pos
-        assert_equal t.tok, code.lines[row - 1].byteslice(col, t.tok.bytesize)
-      end
-    end
-
     def test_local_variables_dependent_code
       lines = ["a /1#/ do", "2"]
       assert_indent_level(lines, 1)
@@ -69,6 +46,7 @@ module TestIRB
       assert_should_continue(['<<A', 'A'], false)
       assert_should_continue(['a...'], false)
       assert_should_continue(['a\\'], true)
+      assert_should_continue(['①\\'], true)
       assert_should_continue(['a.'], true)
       assert_should_continue(['a+'], true)
       assert_should_continue(['a; #comment', '', '=begin', 'embdoc', '=end', ''], false)
@@ -85,42 +63,10 @@ module TestIRB
 
       # unrecoverable syntax error code is terminated
       assert_code_block_open(['.; a+'], false)
-
-      # other syntax error that failed to determine if it is recoverable or not
       assert_code_block_open(['@; a'], false)
-      assert_code_block_open(['@; a+'], true)
-      assert_code_block_open(['@; (a'], true)
-    end
-
-    def test_broken_percent_literal
-      tokens = IRB::RubyLex.ripper_lex_without_warning('%wwww')
-      pos_to_index = {}
-      tokens.each_with_index { |t, i|
-        assert_nil(pos_to_index[t.pos], "There is already another token in the position of #{t.inspect}.")
-        pos_to_index[t.pos] = i
-      }
-    end
-
-    def test_broken_percent_literal_in_method
-      tokens = IRB::RubyLex.ripper_lex_without_warning(<<~EOC.chomp)
-        def foo
-          %wwww
-        end
-      EOC
-      pos_to_index = {}
-      tokens.each_with_index { |t, i|
-        assert_nil(pos_to_index[t.pos], "There is already another token in the position of #{t.inspect}.")
-        pos_to_index[t.pos] = i
-      }
-    end
-
-    def test_unterminated_code
-      ['do', '<<A'].each do |code|
-        tokens = IRB::RubyLex.ripper_lex_without_warning(code)
-        assert_equal(code, tokens.map(&:tok).join, "Cannot reconstruct code from tokens")
-        error_tokens = tokens.map(&:event).grep(/error/)
-        assert_empty(error_tokens, 'Error tokens must be ignored if there is corresponding non-error token')
-      end
+      assert_code_block_open(['}'], false)
+      assert_code_block_open(['(]'], false)
+      assert_code_block_open(['end'], false)
     end
 
     def test_unterminated_heredoc_string_literal
@@ -217,6 +163,41 @@ module TestIRB
       RUBY
     end
 
+    def test_syntax_check
+      lex = RubyLex.new
+      assert_equal(:valid, lex.check_code_syntax("b /c/; a /b\#{)", local_variables: [:a]))
+      [
+        'class A',
+        'def f',
+        'def f =',
+        '1 +',
+        'puts(',
+        'puts(a,',
+        'puts(x:',
+        'puts(*',
+        'puts(&',
+        '[',
+        '[1,',
+        '{',
+        '{x:',
+        '{x:,',
+        '[a, b ?',
+        '[a, b ? c',
+        '[a, b ? c :',
+        'def f(a,',
+        'class a', # followed by "\n::A; end"
+        'a,b', # followed by "\n= v"
+        'a,b,', # followed by "\nc = v"
+        'a,B', # followed by "\n.c = v"
+        'a,self', # followed by "\n.f = v"
+        'a,$1', # followed by "\n.f = v"
+        'p foo?:', # followed by "\nv"
+        'x in A|{x:' # followed by "\nB}"
+      ].each do |code|
+        assert_include([:recoverable_error, :other_error], lex.check_code_syntax(code, local_variables: []), code)
+      end
+    end
+
     private
 
     def assert_indent_level(lines, expected, local_variables: [])
@@ -244,9 +225,8 @@ module TestIRB
     def check_state(lines, local_variables: [])
       code = lines.map { |l| "#{l}\n" }.join # code should end with "\n"
       ruby_lex = IRB::RubyLex.new
-      tokens, opens, terminated = ruby_lex.check_code_state(code, local_variables: local_variables)
+      continue, opens, terminated = ruby_lex.check_code_state(code, local_variables: local_variables)
       indent_level = ruby_lex.calc_indent_level(opens)
-      continue = ruby_lex.should_continue?(tokens)
       [indent_level, continue, !terminated]
     end
   end

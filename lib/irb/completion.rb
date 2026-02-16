@@ -166,22 +166,13 @@ module IRB
       else
         return nil # It's not String literal
       end
-      tokens = RubyLex.ripper_lex_without_warning(preposing.rstrip)
-      tok = nil
-      tokens.reverse_each do |t|
-        unless [:on_lparen, :on_sp, :on_ignored_sp, :on_nl, :on_ignored_nl, :on_comment].include?(t.event)
-          tok = t
-          break
-        end
-      end
-      return unless tok&.event == :on_ident && tok.state == Ripper::EXPR_CMDARG
 
-      case tok.tok
-      when 'require'
+      case preposing
+      when /(^|[^\w])require\(? *\z/
         retrieve_files_to_require_from_load_path.filter_map { |path|
           quote + path if path.start_with?(actual_target)
         }
-      when 'require_relative'
+      when /(^|[^\w])require_relative\(? *\z/
         retrieve_files_to_require_relative_from_current_dir.filter_map { |path|
           quote + path if path.start_with?(actual_target)
         }
