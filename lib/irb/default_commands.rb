@@ -31,6 +31,7 @@ require_relative "command/show_source"
 require_relative "command/step"
 require_relative "command/subirb"
 require_relative "command/whereami"
+require_relative "command/fix"
 
 module IRB
   module Command
@@ -248,6 +249,11 @@ module IRB
 
     _register_with_aliases(:irb_disable_irb, Command::DisableIrb,
       [:disable_irb, NO_OVERRIDE]
+    )
+
+    _register_with_aliases(:irb_fix, Command::Fix,
+      [:fix, NO_OVERRIDE],
+      [:dym, NO_OVERRIDE]
     )
 
     register(:cd, Command::CD)

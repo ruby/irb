@@ -227,7 +227,15 @@ module IRB
           rescue SystemExit, SignalException
             raise
           rescue Interrupt, Exception => exc
+            if exc.respond_to?(:corrections) && !exc.corrections.to_a.empty?
+              Command::LastError.store(statement.code, exc, line_no)
+            else
+              Command::LastError.clear
+            end
             handle_exception(exc)
+            if Command::Fix.fixable?
+              puts "\e[2mType `fix` to rerun with the correction.\e[0m"
+            end
             @context.workspace.local_variable_set(:_, exc)
           end
         end
