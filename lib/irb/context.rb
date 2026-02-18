@@ -235,6 +235,10 @@ module IRB
     # - the file path of the current IRB context in a binding.irb session
     attr_reader :irb_path
 
+    # Path used for evaluating code (e.g. in backtraces). Same as irb_path for
+    # non-file contexts; for file paths, includes IRB name postfix.
+    attr_reader :eval_path
+
     # Sets @irb_path to the given +path+ as well as @eval_path
     # @eval_path is used for evaluating code in the context of IRB session
     # It's the same as irb_path, but with the IRB name postfix

@@ -253,7 +253,7 @@ module IRB
 
     _register_with_aliases(:irb_fix, Command::Fix,
       [:fix, NO_OVERRIDE],
-      [:dym, NO_OVERRIDE]
+      [:retry, NO_OVERRIDE]
     )
 
     register(:cd, Command::CD)

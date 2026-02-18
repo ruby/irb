@@ -234,7 +234,8 @@ module IRB
             end
             handle_exception(exc)
             if Command::Fix.fixable?
-              puts "\e[2mType `fix` to rerun with the correction.\e[0m"
+              hint = Command::Fix::HINT
+              puts Color.colorable? ? Color.colorize(hint, [:BOLD]) : hint
             end
             @context.workspace.local_variable_set(:_, exc)
           end
