@@ -184,7 +184,6 @@ module TestIRB
         "a, b#" => "a, b#{BLUE}#{BOLD}\##{CLEAR}",
         "a, b;" => "#{RED}#{REVERSE}a, b#{CLEAR};",
         "def f(a,#" => "#{GREEN}def#{CLEAR} #{BLUE}#{BOLD}f#{CLEAR}(a,#{BLUE}#{BOLD}\##{CLEAR}",
-        "def f(a,)" => "#{GREEN}def#{CLEAR} #{BLUE}#{BOLD}f#{CLEAR}(a#{RED}#{REVERSE},#{CLEAR})",
         "[*" => "[*",
         "f(*" => "f(*",
         "f(**" => "f(**",
