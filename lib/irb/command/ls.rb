@@ -56,10 +56,10 @@ module IRB
         o = Output.new(grep: grep)
 
         klass = Kernel.instance_method(:class).bind(obj).call
-        is_class_or_module = klass == Class || klass == Module
-        klass = is_class_or_module ? obj : klass
+        obj_is_module = Kernel.instance_method(:is_a?).bind(obj).call(Module) # Class is also a Module
+        klass = obj_is_module ? obj : klass
 
-        o.dump("constants", obj.constants) if is_class_or_module
+        o.dump("constants", obj.constants) if obj_is_module
         dump_methods(o, klass, obj)
         o.dump("instance variables", Kernel.instance_method(:instance_variables).bind(obj).call)
         o.dump("class variables", klass.class_variables)
