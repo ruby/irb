@@ -255,6 +255,16 @@ module IRB
 
   class RelineInputMethod < StdioInputMethod
     HISTORY = Reline::HISTORY
+    ALT_KEY_NAME = RUBY_PLATFORM.match?(/darwin/) ? "Option" : "Alt"
+    PRESS_ALT_D_TO_READ_FULL_DOC = "Press #{ALT_KEY_NAME}+d to read the full document".freeze
+    PRESS_ALT_D_TO_SEE_MORE = "Press #{ALT_KEY_NAME}+d to see more".freeze
+    ALT_D_SEQUENCES = [
+      [27, 100], # Normal Alt+d when convert-meta isn't used.
+      # When option/alt is not configured as a meta key in terminal emulator,
+      # option/alt + d will send a unicode character depend on OS keyboard setting.
+      [195, 164], # "ä" in somewhere (FIXME: environment information is unknown).
+      [226, 136, 130] # "∂" Alt+d on Mac keyboard.
+    ].freeze
     include HistorySavingAbility
     # Creates a new input method object using Reline
     def initialize(completor)
@@ -328,19 +338,12 @@ module IRB
       input_method = self # self is changed in the lambda below.
       ->() {
         dialog.trap_key = nil
-        alt_d = [
-          [27, 100], # Normal Alt+d when convert-meta isn't used.
-          # When option/alt is not configured as a meta key in terminal emulator,
-          # option/alt + d will send a unicode character depend on OS keyboard setting.
-          [195, 164], # "ä" in somewhere (FIXME: environment information is unknown).
-          [226, 136, 130] # "∂" Alt+d on Mac keyboard.
-        ]
 
-        if just_cursor_moving and completion_journey_data.nil?
+        if just_cursor_moving && completion_journey_data.nil?
           return nil
         end
         cursor_pos_to_render, result, pointer, autocomplete_dialog = context.pop(4)
-        return nil if result.nil? or pointer.nil? or pointer < 0
+        return nil if result.nil? || pointer.nil? || pointer < 0
 
         name = input_method.retrieve_doc_namespace(result[pointer])
         # Use first one because document dialog does not support multiple namespaces.
@@ -348,105 +351,106 @@ module IRB
 
         show_easter_egg = name&.match?(/\ARubyVM/) && !ENV['RUBY_YES_I_AM_NOT_A_NORMAL_USER']
 
-        driver = input_method.rdoc_ri_driver
+        x, width = input_method.dialog_doc_position(cursor_pos_to_render, autocomplete_dialog, screen_width)
+        return nil unless x
 
-        if key.match?(dialog.name)
-          if show_easter_egg
-            IRB.__send__(:easter_egg)
-          else
-            # RDoc::RI::Driver#display_names uses pager command internally.
-            # Some pager command like `more` doesn't use alternate screen
-            # so we need to turn on and off alternate screen manually.
-            begin
-              print "\e[?1049h"
-              driver.display_names([name])
-            rescue RDoc::RI::Driver::NotFoundError
-            ensure
-              print "\e[?1049l"
-            end
-          end
-        end
+        dialog.trap_key = ALT_D_SEQUENCES
+        open_doc = key.match?(dialog.name)
 
-        begin
-          name = driver.expand_name(name)
-        rescue RDoc::RI::Driver::NotFoundError
-          return nil
-        rescue
-          return nil # unknown error
-        end
-        doc = nil
-        used_for_class = false
-        if not name =~ /#|\./
-          found, klasses, includes, extends = driver.classes_and_includes_and_extends_for(name)
-          if not found.empty?
-            doc = driver.class_document(name, found, klasses, includes, extends)
-            used_for_class = true
-          end
-        end
-        unless used_for_class
-          doc = RDoc::Markup::Document.new
-          begin
-            driver.add_method(doc, name)
-          rescue RDoc::RI::Driver::NotFoundError
-            doc = nil
-          rescue
-            return nil # unknown error
-          end
-        end
-        return nil if doc.nil?
-        width = 40
-
-        right_x = cursor_pos_to_render.x + autocomplete_dialog.width
-        if right_x + width > screen_width
-          right_width = screen_width - (right_x + 1)
-          left_x = autocomplete_dialog.column - width
-          left_x = 0 if left_x < 0
-          left_width = width > autocomplete_dialog.column ? autocomplete_dialog.column : width
-          if right_width.positive? and left_width.positive?
-            if right_width >= left_width
-              width = right_width
-              x = right_x
-            else
-              width = left_width
-              x = left_x
-            end
-          elsif right_width.positive? and left_width <= 0
-            width = right_width
-            x = right_x
-          elsif right_width <= 0 and left_width.positive?
-            width = left_width
-            x = left_x
-          else # Both are negative width.
-            return nil
-          end
+        contents = if show_easter_egg
+          input_method.easter_egg_dialog_contents(open_doc: open_doc)
         else
-          x = right_x
+          input_method.rdoc_dialog_contents(name, width, open_doc: open_doc)
         end
-        formatter = RDoc::Markup::ToAnsi.new
-        formatter.width = width
-        dialog.trap_key = alt_d
-        mod_key = RUBY_PLATFORM.match?(/darwin/) ? "Option" : "Alt"
-        if show_easter_egg
-          type = STDOUT.external_encoding == Encoding::UTF_8 ? :unicode : :ascii
-          contents = IRB.send(:easter_egg_logo, type).split("\n")
-          message = "Press #{mod_key}+d to see more"
-          contents[0][0, message.size] = message
-        else
-          message = "Press #{mod_key}+d to read the full document"
-          contents = [message] + doc.accept(formatter).split("\n")
-        end
+        return nil unless contents
+
         contents = contents.take(preferred_dialog_height)
-
         y = cursor_pos_to_render.y
         Reline::DialogRenderInfo.new(pos: Reline::CursorPos.new(x, y), contents: contents, width: width, bg_color: '49')
       }
+    end
+
+    def easter_egg_dialog_contents(open_doc: false)
+      IRB.__send__(:easter_egg) if open_doc
+      type = STDOUT.external_encoding == Encoding::UTF_8 ? :unicode : :ascii
+      lines = IRB.send(:easter_egg_logo, type).split("\n")
+      lines[0][0, PRESS_ALT_D_TO_SEE_MORE.size] = PRESS_ALT_D_TO_SEE_MORE
+      lines
+    end
+
+    def rdoc_dialog_contents(name, width, open_doc: false)
+      driver = rdoc_ri_driver
+      return unless driver
+
+      if open_doc
+        begin
+          print "\e[?1049h"
+          driver.display_names([name])
+        rescue RDoc::RI::Driver::NotFoundError
+        ensure
+          print "\e[?1049l"
+        end
+      end
+
+      name = driver.expand_name(name)
+
+      doc = if name =~ /#|\./
+        d = RDoc::Markup::Document.new
+        driver.add_method(d, name)
+        d
+      else
+        found, klasses, includes, extends = driver.classes_and_includes_and_extends_for(name)
+        if found.empty?
+          d = RDoc::Markup::Document.new
+          driver.add_method(d, name)
+          d
+        else
+          driver.class_document(name, found, klasses, includes, extends)
+        end
+      end
+
+      formatter = RDoc::Markup::ToAnsi.new
+      formatter.width = width
+      [PRESS_ALT_D_TO_READ_FULL_DOC] + doc.accept(formatter).split("\n")
+    rescue RDoc::RI::Driver::NotFoundError
+    end
+
+    def dialog_doc_position(cursor_pos_to_render, autocomplete_dialog, screen_width)
+      width = 40
+      right_x = cursor_pos_to_render.x + autocomplete_dialog.width
+      if right_x + width > screen_width
+        right_width = screen_width - (right_x + 1)
+        left_x = autocomplete_dialog.column - width
+        left_x = 0 if left_x < 0
+        left_width = width > autocomplete_dialog.column ? autocomplete_dialog.column : width
+        if right_width.positive? && left_width.positive?
+          if right_width >= left_width
+            width = right_width
+            x = right_x
+          else
+            width = left_width
+            x = left_x
+          end
+        elsif right_width.positive? && left_width <= 0
+          width = right_width
+          x = right_x
+        elsif right_width <= 0 && left_width.positive?
+          width = left_width
+          x = left_x
+        else
+          return nil
+        end
+      else
+        x = right_x
+      end
+      [x, width]
     end
 
     def display_document(matched)
       driver = rdoc_ri_driver
       return unless driver
 
-      if matched =~ /\A(?:::)?RubyVM/ and not ENV['RUBY_YES_I_AM_NOT_A_NORMAL_USER']
+      if matched =~ /\A(?:::)?RubyVM/ && !ENV['RUBY_YES_I_AM_NOT_A_NORMAL_USER']
         IRB.__send__(:easter_egg)
         return
       end
