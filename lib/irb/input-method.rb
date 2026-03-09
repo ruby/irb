@@ -361,16 +361,24 @@ module IRB
         return nil unless x
 
         dialog.trap_key = ALT_D_SEQUENCES
-        open_doc = key.match?(dialog.name)
+
+        if key.match?(dialog.name)
+          begin
+            print "\e[?1049h"
+            input_method.display_document(matched_text)
+          ensure
+            print "\e[?1049l"
+          end
+        end
 
         contents = case target
         when CommandDocument
-          input_method.command_doc_dialog_contents(target.name, width, open_doc: open_doc)
+          input_method.command_doc_dialog_contents(target.name, width)
         when MethodDocument
-          input_method.rdoc_dialog_contents(target.name, width, open_doc: open_doc)
+          input_method.rdoc_dialog_contents(target.name, width)
         else
           if show_easter_egg
-            input_method.easter_egg_dialog_contents(open_doc: open_doc)
+            input_method.easter_egg_dialog_contents
           end
         end
         return nil unless contents
@@ -381,44 +389,23 @@ module IRB
       }
     end
 
-    def command_doc_dialog_contents(command_name, width, open_doc: false)
+    def command_doc_dialog_contents(command_name, width)
       command_class = IRB::Command.load_command(command_name)
       return unless command_class
-
-      if open_doc
-        content = command_class.help_message || command_class.description
-        begin
-          print "\e[?1049h"
-          Pager.page_content(content)
-        ensure
-          print "\e[?1049l"
-        end
-      end
 
       [PRESS_ALT_D_TO_READ_FULL_DOC, ""] + command_class.doc_dialog_content(command_name, width)
     end
 
-    def easter_egg_dialog_contents(open_doc: false)
-      IRB.__send__(:easter_egg) if open_doc
+    def easter_egg_dialog_contents
       type = STDOUT.external_encoding == Encoding::UTF_8 ? :unicode : :ascii
       lines = IRB.send(:easter_egg_logo, type).split("\n")
       lines[0][0, PRESS_ALT_D_TO_SEE_MORE.size] = PRESS_ALT_D_TO_SEE_MORE
       lines
     end
 
-    def rdoc_dialog_contents(name, width, open_doc: false)
+    def rdoc_dialog_contents(name, width)
       driver = rdoc_ri_driver
       return unless driver
-
-      if open_doc
-        begin
-          print "\e[?1049h"
-          driver.display_names([name])
-        rescue RDoc::RI::Driver::NotFoundError
-        ensure
-          print "\e[?1049l"
-        end
-      end
 
       name = driver.expand_name(name)
 
@@ -483,7 +470,9 @@ module IRB
         command_class = IRB::Command.load_command(target.name)
         if command_class
           content = command_class.help_message || command_class.description
-          Pager.page_content(content)
+          Pager.page(retain_content: true) do |io|
+            io.puts content
+          end
         end
       when MethodDocument
         driver = rdoc_ri_driver
