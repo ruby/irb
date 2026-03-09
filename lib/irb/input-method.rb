@@ -315,9 +315,17 @@ module IRB
       @auto_indent_proc = block
     end
 
-    def retrieve_doc_namespace(matched)
+    def retrieve_document_target(matched)
       preposing, _target, postposing, bind = @completion_params
-      @completor.doc_namespace(preposing, matched, postposing, bind: bind)
+      result = @completor.doc_namespace(preposing, matched, postposing, bind: bind)
+      case result
+      when DocumentTarget, nil
+        result
+      when Array
+        MethodDocument.new(*result)
+      when String
+        MethodDocument.new(result)
+      end
     end
 
     def rdoc_ri_driver
@@ -345,11 +353,9 @@ module IRB
         cursor_pos_to_render, result, pointer, autocomplete_dialog = context.pop(4)
         return nil if result.nil? || pointer.nil? || pointer < 0
 
-        name = input_method.retrieve_doc_namespace(result[pointer])
-        # Use first one because document dialog does not support multiple namespaces.
-        name = name.first if name.is_a?(Array)
-
-        show_easter_egg = name&.match?(/\ARubyVM/) && !ENV['RUBY_YES_I_AM_NOT_A_NORMAL_USER']
+        matched_text = result[pointer]
+        show_easter_egg = matched_text&.match?(/\ARubyVM/) && !ENV['RUBY_YES_I_AM_NOT_A_NORMAL_USER']
+        target = show_easter_egg ? nil : input_method.retrieve_document_target(matched_text)
 
         x, width = input_method.dialog_doc_position(cursor_pos_to_render, autocomplete_dialog, screen_width)
         return nil unless x
@@ -357,10 +363,15 @@ module IRB
         dialog.trap_key = ALT_D_SEQUENCES
         open_doc = key.match?(dialog.name)
 
-        contents = if show_easter_egg
-          input_method.easter_egg_dialog_contents(open_doc: open_doc)
+        contents = case target
+        when CommandDocument
+          input_method.command_doc_dialog_contents(target.name, width, open_doc: open_doc)
+        when MethodDocument
+          input_method.rdoc_dialog_contents(target.name, width, open_doc: open_doc)
         else
-          input_method.rdoc_dialog_contents(name, width, open_doc: open_doc)
+          if show_easter_egg
+            input_method.easter_egg_dialog_contents(open_doc: open_doc)
+          end
         end
         return nil unless contents
 
@@ -368,6 +379,23 @@ module IRB
         y = cursor_pos_to_render.y
         Reline::DialogRenderInfo.new(pos: Reline::CursorPos.new(x, y), contents: contents, width: width, bg_color: '49')
       }
+    end
+
+    def command_doc_dialog_contents(command_name, width, open_doc: false)
+      command_class = IRB::Command.load_command(command_name)
+      return unless command_class
+
+      if open_doc
+        content = command_class.help_message || command_class.description
+        begin
+          print "\e[?1049h"
+          Pager.page_content(content)
+        ensure
+          print "\e[?1049l"
+        end
+      end
+
+      [PRESS_ALT_D_TO_READ_FULL_DOC, ""] + command_class.doc_dialog_content(command_name, width)
     end
 
     def easter_egg_dialog_contents(open_doc: false)
@@ -447,30 +475,39 @@ module IRB
     end
 
     def display_document(matched)
-      driver = rdoc_ri_driver
-      return unless driver
+      target = retrieve_document_target(matched)
+      return unless target
 
-      if matched =~ /\A(?:::)?RubyVM/ && !ENV['RUBY_YES_I_AM_NOT_A_NORMAL_USER']
-        IRB.__send__(:easter_egg)
-        return
-      end
+      case target
+      when CommandDocument
+        command_class = IRB::Command.load_command(target.name)
+        if command_class
+          content = command_class.help_message || command_class.description
+          Pager.page_content(content)
+        end
+      when MethodDocument
+        driver = rdoc_ri_driver
+        return unless driver
 
-      namespace = retrieve_doc_namespace(matched)
-      return unless namespace
+        if matched =~ /\A(?:::)?RubyVM/ && !ENV['RUBY_YES_I_AM_NOT_A_NORMAL_USER']
+          IRB.__send__(:easter_egg)
+          return
+        end
 
-      if namespace.is_a?(Array)
-        out = RDoc::Markup::Document.new
-        namespace.each do |m|
+        if target.names.length > 1
+          out = RDoc::Markup::Document.new
+          target.names.each do |m|
+            begin
+              driver.add_method(out, m)
+            rescue RDoc::RI::Driver::NotFoundError
+            end
+          end
+          driver.display(out)
+        else
           begin
-            driver.add_method(out, m)
+            driver.display_names([target.name])
           rescue RDoc::RI::Driver::NotFoundError
           end
-        end
-        driver.display(out)
-      else
-        begin
-          driver.display_names([namespace])
-        rescue RDoc::RI::Driver::NotFoundError
         end
       end
     end

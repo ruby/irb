@@ -8,6 +8,29 @@
 require_relative 'ruby-lex'
 
 module IRB
+  class DocumentTarget # :nodoc:
+    attr_reader :name
+
+    def initialize(name)
+      @name = name
+    end
+  end
+
+  class CommandDocument < DocumentTarget # :nodoc:
+  end
+
+  # Represents a method/class documentation target. May hold multiple names
+  # when the receiver is ambiguous (e.g. `{}.any?` could be Hash#any? or Proc#any?).
+  # The dialog popup uses only the first name; the full-screen display renders all.
+  class MethodDocument < DocumentTarget # :nodoc:
+    attr_reader :names
+
+    def initialize(*names)
+      super(names.first)
+      @names = names
+    end
+  end
+
   class BaseCompletor # :nodoc:
 
     # Set of reserved words used by Ruby, you should not use these for
@@ -76,6 +99,12 @@ module IRB
       end
     end
 
+    def command_document_target(preposing, matched)
+      if preposing.empty? && IRB::Command.command_names.include?(matched)
+        CommandDocument.new(matched)
+      end
+    end
+
     def retrieve_files_to_require_relative_from_current_dir
       @files_from_current_dir ||= Dir.glob("**/*.{rb,#{RbConfig::CONFIG['DLEXT']}}", base: '.').map { |path|
         path.sub(/\.(rb|#{RbConfig::CONFIG['DLEXT']})\z/, '')
@@ -118,8 +147,10 @@ module IRB
     end
 
     def doc_namespace(preposing, matched, _postposing, bind:)
-      result = ReplTypeCompletor.analyze(preposing + matched, binding: bind, filename: @context.irb_path)
-      result&.doc_namespace('')
+      command_document_target(preposing, matched) || begin
+        result = ReplTypeCompletor.analyze(preposing + matched, binding: bind, filename: @context.irb_path)
+        result&.doc_namespace('')
+      end
     end
   end
 
@@ -201,8 +232,8 @@ module IRB
       commands | completion_data
     end
 
-    def doc_namespace(_preposing, matched, _postposing, bind:)
-      retrieve_completion_data(matched, bind: bind, doc_namespace: true)
+    def doc_namespace(preposing, matched, _postposing, bind:)
+      command_document_target(preposing, matched) || retrieve_completion_data(matched, bind: bind, doc_namespace: true)
     end
 
     def retrieve_completion_data(input, bind:, doc_namespace:)
