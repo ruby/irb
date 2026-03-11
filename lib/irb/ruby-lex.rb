@@ -107,6 +107,7 @@ module IRB
             t.type != :NEWLINE &&
             t.type != :EOF
           trailing = line.byteslice(t.location.end_column..)
+          trailing ||= '' # in case end_line is wrong (e.g. `"\C-`)
           break
         end
       end
