@@ -828,6 +828,12 @@ module TestIRB
         assert_dynamic_prompt(input_with_prompt)
       end
 
+      def test_dynamic_prompt_with_incomplete_ctrl_meta_sequence_string
+        assert_dynamic_prompt([['001:0:":* ', %q("\C-)]])
+        assert_dynamic_prompt([['001:0:":* ', %q("\M-)]])
+        assert_dynamic_prompt([['001:0:":* ', %q("\C-\M-)]])
+      end
+
       def assert_dynamic_prompt(input_with_prompt)
         expected_prompt_list, lines = input_with_prompt.transpose
         def @irb.generate_prompt(opens, continue, line_offset)
