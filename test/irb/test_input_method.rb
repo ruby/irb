@@ -244,5 +244,19 @@ module TestIRB
         assert_operator stripped.length, :<=, 30, "Line exceeds width: #{line.inspect}"
       end
     end
+
+    def test_wrap_lines_preserves_whitespace_alignment
+      text = <<~TEXT
+        -g [query]  Filter the output with a query.
+        -a [aa]     Foo bar
+      TEXT
+      lines = IRB::Command::Base.send(:wrap_lines, text, 30)
+      expected = <<~EXPECTED.chomp
+        -g [query]  Filter the output
+        with a query.
+        -a [aa]     Foo bar
+      EXPECTED
+      assert_equal expected, lines.join("\n")
+    end
   end
 end

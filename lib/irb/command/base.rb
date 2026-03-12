@@ -63,20 +63,17 @@ module IRB
             next [line] if line.length <= width
 
             indent = line[/\A\s*/]
-            words = line.strip.split(/\s+/)
+            parts = line.strip.split(/(\s+)/)
             result = []
             current = indent.dup
-            words.each do |word|
-              if current == indent
-                current << word
-              elsif current.length + 1 + word.length <= width
-                current << ' ' << word
-              else
-                result << current
-                current = indent.dup + word
+            parts.each do |part|
+              if current != indent && current.length + part.length > width
+                result << current.rstrip
+                current = indent.dup
               end
+              current << part unless current == indent && part.match?(/\A\s+\z/)
             end
-            result << current unless current == indent
+            result << current.rstrip unless current == indent
             result
           end
         end
