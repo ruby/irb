@@ -25,6 +25,22 @@ module TestIRB
         assert_include(completor.completion_candidates('', 'show_s', '', bind: binding), 'show_source')
         assert_not_include(completor.completion_candidates(';', 'show_s', '', bind: binding), 'show_source')
       end
+
+      def test_command_document_target
+        completor = IRB::RegexpCompletor.new
+        # Command with empty preposing should return a CommandDocument
+        result = completor.doc_namespace('', 'help', '', bind: binding)
+        assert_instance_of(IRB::CommandDocument, result)
+        assert_equal('help', result.name)
+
+        result = completor.doc_namespace('', 'show_source', '', bind: binding)
+        assert_instance_of(IRB::CommandDocument, result)
+        assert_equal('show_source', result.name)
+
+        # Command with non-empty preposing should not return a CommandDocument
+        result = completor.doc_namespace(';', 'help', '', bind: binding)
+        refute_instance_of(IRB::CommandDocument, result)
+      end
     end
 
     class MethodCompletionTest < CompletionTest

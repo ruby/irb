@@ -37,10 +37,45 @@ module IRB
           puts e.message
         end
 
+        # Returns formatted lines for display in the doc dialog popup.
+        def doc_dialog_content(name, width)
+          lines = []
+          lines << Color.colorize(name, [:BOLD, :BLUE]) + Color.colorize(" (command)", [:CYAN])
+          lines << ""
+          lines.concat(wrap_lines(description, width))
+          if help_message
+            lines << ""
+            lines.concat(wrap_lines(help_message, width))
+          end
+          lines
+        end
+
         private
 
         def highlight(text)
           Color.colorize(text, [:BOLD, :BLUE])
+        end
+
+        def wrap_lines(text, width)
+          text.lines.flat_map do |line|
+            line = line.chomp
+            next [''] if line.empty?
+            next [line] if line.length <= width
+
+            indent = line[/\A\s*/]
+            parts = line.strip.split(/(\s+)/)
+            result = []
+            current = indent.dup
+            parts.each do |part|
+              if current != indent && current.length + part.length > width
+                result << current.rstrip
+                current = indent.dup
+              end
+              current << part unless current == indent && part.match?(/\A\s+\z/)
+            end
+            result << current.rstrip unless current == indent
+            result
+          end
         end
       end
 

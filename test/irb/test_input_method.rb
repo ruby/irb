@@ -186,10 +186,77 @@ module TestIRB
       assert_empty(out)
     end
 
+    def test_command_doc_display_with_help_message
+      out, _err = capture_output do
+        display_document("show_source", binding)
+      end
+
+      # When help_message is available, it is displayed
+      assert_include(out, "Usage: show_source")
+    end
+
+    def test_command_doc_display_without_help_message
+      out, _err = capture_output do
+        display_document("history", binding)
+      end
+
+      # When no help_message, description is displayed
+      assert_include(out, IRB::Command::History.description)
+    end
+
     private
 
     def has_rdoc_content?
       File.exist?(RDoc::RI::Paths::BASE)
     end
   end if defined?(RDoc)
+
+  class CommandDocDialogContentTest < TestCase
+    def setup
+      @conf_backup = IRB.conf.dup
+      IRB.init_config(nil)
+    end
+
+    def teardown
+      IRB.conf.replace(@conf_backup)
+    end
+
+    def test_doc_dialog_content_with_description_only
+      lines = IRB::Command::History.doc_dialog_content("history", 40)
+      assert lines[0].include?("(command)")
+      # Description words should all be present (may be wrapped across lines)
+      content = lines.join(" ")
+      IRB::Command::History.description.split.each do |word|
+        assert_include content, word
+      end
+    end
+
+    def test_doc_dialog_content_with_help_message
+      lines = IRB::Command::ShowSource.doc_dialog_content("show_source", 60)
+      assert lines[0].include?("(command)")
+      assert_include lines.join("\n"), "Usage: show_source"
+    end
+
+    def test_doc_dialog_content_wraps_long_lines
+      lines = IRB::Command::Help.doc_dialog_content("help", 30)
+      lines.each do |line|
+        stripped = line.gsub(/\e\[[0-9;]*m/, '') # strip ANSI codes
+        assert_operator stripped.length, :<=, 30, "Line exceeds width: #{line.inspect}"
+      end
+    end
+
+    def test_wrap_lines_preserves_whitespace_alignment
+      text = <<~TEXT
+        -g [query]  Filter the output with a query.
+        -a [aa]     Foo bar
+      TEXT
+      lines = IRB::Command::Base.send(:wrap_lines, text, 30)
+      expected = <<~EXPECTED.chomp
+        -g [query]  Filter the output
+        with a query.
+        -a [aa]     Foo bar
+      EXPECTED
+      assert_equal expected, lines.join("\n")
+    end
+  end
 end
