@@ -111,10 +111,14 @@ module TestIRB
     end
 
     def display_document(target, bind, driver = nil)
+      use_pager = IRB.conf[:USE_PAGER]
+      IRB.conf[:USE_PAGER] = false
       input_method = IRB::RelineInputMethod.new(IRB::RegexpCompletor.new)
       input_method.instance_variable_set(:@rdoc_ri_driver, driver) if driver
       input_method.instance_variable_set(:@completion_params, ['', target, '', bind])
       input_method.display_document(target)
+    ensure
+      IRB.conf[:USE_PAGER] = use_pager
     end
 
     def test_perfectly_matched_namespace_triggers_document_display
