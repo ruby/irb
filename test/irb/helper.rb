@@ -166,7 +166,7 @@ module TestIRB
       @envs["XDG_CONFIG_HOME"] ||= tmp_dir
       @envs["IRBRC"] = nil unless @envs.key?("IRBRC")
 
-      envs_for_spawn = @envs.merge('TERM' => 'dumb', 'TEST_IRB_FORCE_INTERACTIVE' => 'true')
+      envs_for_spawn = {'TERM' => 'dumb', 'TEST_IRB_FORCE_INTERACTIVE' => 'true'}.merge(@envs)
 
       PTY.spawn(envs_for_spawn, *cmd) do |read, write, pid|
         Timeout.timeout(timeout) do
