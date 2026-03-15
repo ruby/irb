@@ -135,11 +135,22 @@ module IRB
 
     def check_code_syntax(code, local_variables:)
       result = Prism.lex(code, scopes: [local_variables])
-      return :valid if result.success?
+      if result.success?
+        :valid
+      elsif result.respond_to?(:continuable?)
+        result.continuable? ? :recoverable_error : :unrecoverable_error
+      else # For Prism <= 1.9.0. Drop this branch when IRB requires Prism >= 1.10.0.
+        check_syntax_error_heuristics(result)
+      end
+    end
+
+    # Prism <= 1.9.0 does not have `ParseResult#continuable?` method.
+    # Fallback to legacy heuristics based on error messages and error locations.
+    def check_syntax_error_heuristics(prism_parse_result)
 
       # Get the token excluding trailing comments and newlines
       # to compare error location with the last or second-last meaningful token location
-      tokens = result.value.map(&:first)
+      tokens = prism_parse_result.value.map(&:first)
       until tokens.empty?
         case tokens.last.type
         when :COMMENT, :NEWLINE, :IGNORED_NEWLINE, :EMBDOC_BEGIN, :EMBDOC_LINE, :EMBDOC_END, :EOF
@@ -150,7 +161,7 @@ module IRB
       end
 
       unknown = false
-      result.errors.each do |error|
+      prism_parse_result.errors.each do |error|
         case error.message
         when /unexpected character literal|incomplete expression at|unexpected .%.|too short escape sequence/i
           # Ignore these errors. Likely to appear only at the end of code.
