@@ -93,6 +93,31 @@ You can use IRB as a debugging console with `debug.gem` with these options:
 
 To learn more about debugging with IRB, see [Debugging with IRB](#label-Debugging+with+IRB).
 
+### Agent Mode (Experimental)
+
+`binding.irb(agent: true)` starts a non-interactive IRB session designed for AI agents and scripts. Instead of opening a REPL, it exposes an IRB session over a Unix socket using a simple request/response protocol.
+
+The behavior depends on the `IRB_SOCK_PATH` environment variable:
+
+- **Not set**: prints instructions explaining the workflow, then exits. This lets the agent discover the breakpoint and learn the protocol.
+- **Set**: starts a Unix socket server at the given path. Each connection accepts one command, evaluates it, returns the result, and closes. The IRB session state persists across connections. Send `exit` to end the session and resume app execution.
+
+```console
+# 1. First run — discover the breakpoint:
+$ ruby app.rb
+IRB agent breakpoint hit at app.rb:14 in `cook!`
+...
+
+# 2. Re-run in background with a socket path:
+$ IRB_SOCK_PATH=/tmp/irb-debug.sock ruby app.rb &
+
+# 3. Send commands:
+$ ruby -e 'require "socket"; s = UNIXSocket.new("/tmp/irb-debug.sock"); s.puts "ls"; s.close_write; puts s.read; s.close'
+$ ruby -e 'require "socket"; s = UNIXSocket.new("/tmp/irb-debug.sock"); s.puts "exit"; s.close_write; puts s.read; s.close'
+```
+
+See IRB::RemoteServer for more details.
+
 ## Startup
 
 At startup, IRB:
