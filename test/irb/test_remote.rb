@@ -8,6 +8,7 @@ module TestIRB
   class RemoteTest < IntegrationTestCase
     def test_phase1_prints_instructions_and_exits
       write_ruby <<~'RUBY'
+        require "irb"
         puts "BEFORE"
         binding.irb(agent: true)
         puts "AFTER"
@@ -26,6 +27,7 @@ module TestIRB
 
     def test_phase2_basic_eval
       write_ruby <<~'RUBY'
+        require "irb"
         binding.irb(agent: true)
       RUBY
 
@@ -39,9 +41,10 @@ module TestIRB
 
     def test_phase2_ls_command
       write_ruby <<~'RUBY'
+        require "irb"
         class Potato
           attr_accessor :name
-          def initialize(name) = @name = name
+          def initialize(name); @name = name; end
         end
         Potato.new("Russet").instance_eval { binding.irb(agent: true) }
       RUBY
@@ -57,8 +60,9 @@ module TestIRB
 
     def test_phase2_show_source_command
       write_ruby <<~'RUBY'
+        require "irb"
         class Potato
-          def cook! = "done"
+          def cook!; "done"; end
         end
         Potato.new.instance_eval { binding.irb(agent: true) }
       RUBY
@@ -73,6 +77,7 @@ module TestIRB
 
     def test_phase2_error_handling
       write_ruby <<~'RUBY'
+        require "irb"
         binding.irb(agent: true)
       RUBY
 
@@ -86,6 +91,7 @@ module TestIRB
 
     def test_phase2_multiline_expression
       write_ruby <<~'RUBY'
+        require "irb"
         binding.irb(agent: true)
       RUBY
 
@@ -101,6 +107,7 @@ module TestIRB
 
     def test_phase2_session_state_persists
       write_ruby <<~'RUBY'
+        require "irb"
         binding.irb(agent: true)
       RUBY
 
@@ -116,6 +123,7 @@ module TestIRB
 
     def test_phase2_resumes_execution_after_exit
       write_ruby <<~'RUBY'
+        require "irb"
         puts "BEFORE"
         binding.irb(agent: true)
         puts "AFTER"
@@ -131,6 +139,7 @@ module TestIRB
 
     def test_phase2_help_command
       write_ruby <<~'RUBY'
+        require "irb"
         binding.irb(agent: true)
       RUBY
 
