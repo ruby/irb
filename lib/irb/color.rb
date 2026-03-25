@@ -114,7 +114,7 @@ module IRB # :nodoc:
     CLEAR_SEQ = "\e[#{CLEAR}m"
     OPERATORS = [
       :!=, :!~, :=~, :==, :===, :<=>, :>, :>=, :<, :<=, :&, :|, :^, :>>, :<<, :-, :+, :%, :/, :*, :**,
-      :-@, :+@, :~, :!
+      :-@, :+@, :~, :!, :[], :[]=
     ]
     private_constant :TOKEN_SEQS, :CLEAR_SEQ, :OPERATORS
 

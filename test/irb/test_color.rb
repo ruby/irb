@@ -117,10 +117,17 @@ module TestIRB
         "alias $x $1" => "#{GREEN}alias#{CLEAR} #{GREEN}#{BOLD}$x#{CLEAR} #{RED}#{REVERSE}$1#{CLEAR}",
         "class bad; end" => "#{GREEN}class#{CLEAR} #{RED}#{REVERSE}bad#{CLEAR}; #{GREEN}end#{CLEAR}",
         "def req(@a) end" => "#{GREEN}def#{CLEAR} #{BLUE}#{BOLD}req#{CLEAR}(#{RED}#{REVERSE}@a#{CLEAR}) #{GREEN}end#{CLEAR}",
+        "a.foo" => "#{BLUE}a#{CLEAR}.#{BLUE}foo#{CLEAR}",
         "a.foo = 1" => "#{BLUE}a#{CLEAR}.#{BLUE}foo#{CLEAR} = #{BLUE}#{BOLD}1#{CLEAR}",
         "a.foo += 1" => "#{BLUE}a#{CLEAR}.#{BLUE}foo#{CLEAR} += #{BLUE}#{BOLD}1#{CLEAR}",
         "a.foo &&= 1" => "#{BLUE}a#{CLEAR}.#{BLUE}foo#{CLEAR} &&= #{BLUE}#{BOLD}1#{CLEAR}",
         "a.foo ||= 1" => "#{BLUE}a#{CLEAR}.#{BLUE}foo#{CLEAR} ||= #{BLUE}#{BOLD}1#{CLEAR}",
+        "a[:foo]" => "#{BLUE}a#{CLEAR}[#{YELLOW}:#{CLEAR}#{YELLOW}foo#{CLEAR}]",
+        "a[:foo] = 1" => "#{BLUE}a#{CLEAR}[#{YELLOW}:#{CLEAR}#{YELLOW}foo#{CLEAR}] = #{BLUE}#{BOLD}1#{CLEAR}",
+        "a+1" => "#{BLUE}a#{CLEAR}+#{BLUE}#{BOLD}1#{CLEAR}",
+        "a.+(1)" => "#{BLUE}a#{CLEAR}.#{BLUE}+#{CLEAR}(#{BLUE}#{BOLD}1#{CLEAR})",
+        "-a" => "-#{BLUE}a#{CLEAR}",
+        "a.-@" => "#{BLUE}a#{CLEAR}.#{BLUE}-@#{CLEAR}",
       }
 
       tests.each do |code, result|
