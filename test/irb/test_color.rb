@@ -128,6 +128,10 @@ module TestIRB
         "a.+(1)" => "#{BLUE}a#{CLEAR}.#{BLUE}+#{CLEAR}(#{BLUE}#{BOLD}1#{CLEAR})",
         "-a" => "-#{BLUE}a#{CLEAR}",
         "a.-@" => "#{BLUE}a#{CLEAR}.#{BLUE}-@#{CLEAR}",
+        'Foo(1)' => "#{BLUE}#{BOLD}#{UNDERLINE}Foo#{CLEAR}(#{BLUE}#{BOLD}1#{CLEAR})",
+        'Foo::Bar(1)' => "#{BLUE}#{BOLD}#{UNDERLINE}Foo#{CLEAR}::#{BLUE}#{BOLD}#{UNDERLINE}Bar#{CLEAR}(#{BLUE}#{BOLD}1#{CLEAR})",
+        'Foo.Bar(1)' => "#{BLUE}#{BOLD}#{UNDERLINE}Foo#{CLEAR}.#{BLUE}Bar#{CLEAR}(#{BLUE}#{BOLD}1#{CLEAR})",
+        'Foo&.Bar(1)' => "#{BLUE}#{BOLD}#{UNDERLINE}Foo#{CLEAR}&.#{BLUE}Bar#{CLEAR}(#{BLUE}#{BOLD}1#{CLEAR})",
       }
 
       tests.each do |code, result|

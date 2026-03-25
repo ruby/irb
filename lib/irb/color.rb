@@ -311,7 +311,10 @@ module IRB # :nodoc:
         def colorize_call(node)
           if @colorize_call
             if node.call_operator_loc.nil? && OPERATORS.include?(node.name)
-              # Operators should not be highlighted
+              # Operators should not be colored as method call
+            elsif (node.call_operator_loc.nil? || node.call_operator_loc.slice == "::") &&
+                /\A\p{Upper}/.match?(node.name)
+              # Constant-like methods should not be colored as method call
             else
               dispatch node.message_loc, :message_name
             end
