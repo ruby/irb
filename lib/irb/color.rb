@@ -112,10 +112,7 @@ module IRB # :nodoc:
       styles.map { |style| "\e[#{style}m" }.join
     end
     CLEAR_SEQ = "\e[#{CLEAR}m"
-    OPERATORS = [
-      :!=, :!~, :=~, :==, :===, :<=>, :>, :>=, :<, :<=, :&, :|, :^, :>>, :<<, :-, :+, :%, :/, :*, :**,
-      :-@, :+@, :~, :!, :[], :[]=
-    ]
+    OPERATORS = %i(!= !~ =~ == === <=> > >= < <= & | ^ >> << - + % / * ** -@ +@ ~ ! [] []=)
     private_constant :TOKEN_SEQS, :CLEAR_SEQ, :OPERATORS
 
     class << self
@@ -259,22 +256,31 @@ module IRB # :nodoc:
         end
 
         def visit_call_node(node)
-          colorize_call(node)
+          if @colorize_call
+            if node.call_operator_loc.nil? && OPERATORS.include?(node.name)
+              # Operators should not be colored as method call
+            elsif (node.call_operator_loc.nil? || node.call_operator_loc.slice == "::") &&
+                /\A\p{Upper}/.match?(node.name)
+              # Constant-like methods should not be colored as method call
+            else
+              dispatch node.message_loc, :message_name
+            end
+          end
           super
         end
 
         def visit_call_operator_write_node(node)
-          colorize_call(node)
+          dispatch node.message_loc, :message_name if @colorize_call
           super
         end
 
         def visit_call_and_write_node(node)
-          colorize_call(node)
+          dispatch node.message_loc, :message_name if @colorize_call
           super
         end
 
         def visit_call_or_write_node(node)
-          colorize_call(node)
+          dispatch node.message_loc, :message_name if @colorize_call
           super
         end
 
@@ -303,21 +309,6 @@ module IRB # :nodoc:
             dispatch node.opening_loc, :symbol
             dispatch node.value_loc, :symbol
             dispatch node.closing_loc, :symbol
-          end
-        end
-
-        private
-
-        def colorize_call(node)
-          if @colorize_call
-            if node.call_operator_loc.nil? && OPERATORS.include?(node.name)
-              # Operators should not be colored as method call
-            elsif (node.call_operator_loc.nil? || node.call_operator_loc.slice == "::") &&
-                /\A\p{Upper}/.match?(node.name)
-              # Constant-like methods should not be colored as method call
-            else
-              dispatch node.message_loc, :message_name
-            end
           end
         end
       end
