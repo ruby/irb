@@ -165,7 +165,7 @@ module IRB # :nodoc:
       # If `complete` is false (code is incomplete), this does not warn compile_error.
       # This option is needed to avoid warning a user when the compile_error is happening
       # because the input is not wrong but just incomplete.
-      def colorize_code(code, complete: true, ignore_error: false, colorable: colorable?, local_variables: [])
+      def colorize_code(code, complete: true, ignore_error: false, colorable: colorable?, colorize_call: true, local_variables: [])
         return code unless colorable
 
         result = Prism.parse_lex(code, scopes: [local_variables])
@@ -180,7 +180,7 @@ module IRB # :nodoc:
           errors = filter_incomplete_code_errors(errors, prism_tokens)
         end
 
-        visitor = ColorizeVisitor.new
+        visitor = ColorizeVisitor.new(colorize_call: colorize_call)
         prism_node.accept(visitor)
 
         error_tokens = errors.map { |e| [e.location.start_line, e.location.start_column, 0, e.location.end_line, e.location.end_column, :error, e.location.slice] }
@@ -234,7 +234,8 @@ module IRB # :nodoc:
 
       class ColorizeVisitor < Prism::Visitor
         attr_reader :tokens
-        def initialize
+        def initialize(colorize_call: true)
+          @colorize_call = colorize_call
           @tokens = []
         end
 
@@ -258,10 +259,12 @@ module IRB # :nodoc:
         end
 
         def visit_call_node(node)
-          if node.call_operator_loc.nil? && OPERATORS.include?(node.name)
-            # Operators should not be highlighted
-          else
-            dispatch node.message_loc, :message_name
+          if @colorize_call
+            if node.call_operator_loc.nil? && OPERATORS.include?(node.name)
+              # Operators should not be highlighted
+            else
+              dispatch node.message_loc, :message_name
+            end
           end
           super
         end
