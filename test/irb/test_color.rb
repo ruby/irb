@@ -61,13 +61,13 @@ module TestIRB
         "8i" => "#{BLUE}#{BOLD}8i#{CLEAR}",
         "['foo', :bar]" => "[#{RED}#{BOLD}'#{CLEAR}#{RED}foo#{CLEAR}#{RED}#{BOLD}'#{CLEAR}, #{YELLOW}:#{CLEAR}#{YELLOW}bar#{CLEAR}]",
         "class A; end" => "#{GREEN}class#{CLEAR} #{BLUE}#{BOLD}#{UNDERLINE}A#{CLEAR}; #{GREEN}end#{CLEAR}",
-        "def self.foo; bar; end" => "#{GREEN}def#{CLEAR} #{CYAN}#{BOLD}self#{CLEAR}.#{BLUE}#{BOLD}foo#{CLEAR}; bar; #{GREEN}end#{CLEAR}",
-        'erb = ERB.new("a#{nil}b", trim_mode: "-")' => "erb = #{BLUE}#{BOLD}#{UNDERLINE}ERB#{CLEAR}.new(#{RED}#{BOLD}\"#{CLEAR}#{RED}a#{CLEAR}#{RED}\#{#{CLEAR}#{CYAN}#{BOLD}nil#{CLEAR}#{RED}}#{CLEAR}#{RED}b#{CLEAR}#{RED}#{BOLD}\"#{CLEAR}, #{MAGENTA}trim_mode:#{CLEAR} #{RED}#{BOLD}\"#{CLEAR}#{RED}-#{CLEAR}#{RED}#{BOLD}\"#{CLEAR})",
+        "def self.foo; bar; end" => "#{GREEN}def#{CLEAR} #{CYAN}#{BOLD}self#{CLEAR}.#{BLUE}#{BOLD}foo#{CLEAR}; #{BLUE}bar#{CLEAR}; #{GREEN}end#{CLEAR}",
+        'erb = ERB.new("a#{nil}b", trim_mode: "-")' => "erb = #{BLUE}#{BOLD}#{UNDERLINE}ERB#{CLEAR}.#{BLUE}new#{CLEAR}(#{RED}#{BOLD}\"#{CLEAR}#{RED}a#{CLEAR}#{RED}\#{#{CLEAR}#{CYAN}#{BOLD}nil#{CLEAR}#{RED}}#{CLEAR}#{RED}b#{CLEAR}#{RED}#{BOLD}\"#{CLEAR}, #{MAGENTA}trim_mode:#{CLEAR} #{RED}#{BOLD}\"#{CLEAR}#{RED}-#{CLEAR}#{RED}#{BOLD}\"#{CLEAR})",
         "# comment" => "#{BLUE}#{BOLD}# comment#{CLEAR}",
-        "def f;yield(hello);end" => "#{GREEN}def#{CLEAR} #{BLUE}#{BOLD}f#{CLEAR};#{GREEN}yield#{CLEAR}(hello);#{GREEN}end#{CLEAR}",
+        "def f;yield(hello);end" => "#{GREEN}def#{CLEAR} #{BLUE}#{BOLD}f#{CLEAR};#{GREEN}yield#{CLEAR}(#{BLUE}hello#{CLEAR});#{GREEN}end#{CLEAR}",
         '"##@var]"' => "#{RED}#{BOLD}\"#{CLEAR}#{RED}\##{CLEAR}#{RED}\##{CLEAR}@var#{RED}]#{CLEAR}#{RED}#{BOLD}\"#{CLEAR}",
-        '"foo#{a} #{b}"' => "#{RED}#{BOLD}\"#{CLEAR}#{RED}foo#{CLEAR}#{RED}\#{#{CLEAR}a#{RED}}#{CLEAR}#{RED} #{CLEAR}#{RED}\#{#{CLEAR}b#{RED}}#{CLEAR}#{RED}#{BOLD}\"#{CLEAR}",
-        '/r#{e}g/' => "#{RED}#{BOLD}/#{CLEAR}#{RED}r#{CLEAR}#{RED}\#{#{CLEAR}e#{RED}}#{CLEAR}#{RED}g#{CLEAR}#{RED}#{BOLD}/#{CLEAR}",
+        '"foo#{a} #{b}"' => "#{RED}#{BOLD}\"#{CLEAR}#{RED}foo#{CLEAR}#{RED}\#{#{CLEAR}#{BLUE}a#{CLEAR}#{RED}}#{CLEAR}#{RED} #{CLEAR}#{RED}\#{#{CLEAR}#{BLUE}b#{CLEAR}#{RED}}#{CLEAR}#{RED}#{BOLD}\"#{CLEAR}",
+        '/r#{e}g/' => "#{RED}#{BOLD}/#{CLEAR}#{RED}r#{CLEAR}#{RED}\#{#{CLEAR}#{BLUE}e#{CLEAR}#{RED}}#{CLEAR}#{RED}g#{CLEAR}#{RED}#{BOLD}/#{CLEAR}",
         "'a\nb'" => "#{RED}#{BOLD}'#{CLEAR}#{RED}a#{CLEAR}\n#{RED}b#{CLEAR}#{RED}#{BOLD}'#{CLEAR}",
         "%[str]" => "#{RED}#{BOLD}%[#{CLEAR}#{RED}str#{CLEAR}#{RED}#{BOLD}]#{CLEAR}",
         "%Q[str]" => "#{RED}#{BOLD}%Q[#{CLEAR}#{RED}str#{CLEAR}#{RED}#{BOLD}]#{CLEAR}",
@@ -90,26 +90,26 @@ module TestIRB
         "[:end, 2]" => "[#{YELLOW}:#{CLEAR}#{YELLOW}end#{CLEAR}, #{BLUE}#{BOLD}2#{CLEAR}]",
         "[:>, 3]" => "[#{YELLOW}:#{CLEAR}#{YELLOW}>#{CLEAR}, #{BLUE}#{BOLD}3#{CLEAR}]",
         "[:`, 4]" => "[#{YELLOW}:#{CLEAR}#{YELLOW}`#{CLEAR}, #{BLUE}#{BOLD}4#{CLEAR}]",
-        ":Hello ? world : nil" => "#{YELLOW}:#{CLEAR}#{YELLOW}Hello#{CLEAR} ? world : #{CYAN}#{BOLD}nil#{CLEAR}",
-        'raise "foo#{bar}baz"' => "raise #{RED}#{BOLD}\"#{CLEAR}#{RED}foo#{CLEAR}#{RED}\#{#{CLEAR}bar#{RED}}#{CLEAR}#{RED}baz#{CLEAR}#{RED}#{BOLD}\"#{CLEAR}",
-        '["#{obj.inspect}"]' => "[#{RED}#{BOLD}\"#{CLEAR}#{RED}\#{#{CLEAR}obj.inspect#{RED}}#{CLEAR}#{RED}#{BOLD}\"#{CLEAR}]",
-        'URI.parse "#{}"' => "#{BLUE}#{BOLD}#{UNDERLINE}URI#{CLEAR}.parse #{RED}#{BOLD}\"#{CLEAR}#{RED}\#{#{CLEAR}#{RED}}#{CLEAR}#{RED}#{BOLD}\"#{CLEAR}",
+        ":Hello ? world : nil" => "#{YELLOW}:#{CLEAR}#{YELLOW}Hello#{CLEAR} ? #{BLUE}world#{CLEAR} : #{CYAN}#{BOLD}nil#{CLEAR}",
+        'raise "foo#{bar}baz"' => "#{BLUE}raise#{CLEAR} #{RED}#{BOLD}\"#{CLEAR}#{RED}foo#{CLEAR}#{RED}\#{#{CLEAR}#{BLUE}bar#{CLEAR}#{RED}}#{CLEAR}#{RED}baz#{CLEAR}#{RED}#{BOLD}\"#{CLEAR}",
+        '["#{obj.inspect}"]' => "[#{RED}#{BOLD}\"#{CLEAR}#{RED}\#{#{CLEAR}#{BLUE}obj#{CLEAR}.#{BLUE}inspect#{CLEAR}#{RED}}#{CLEAR}#{RED}#{BOLD}\"#{CLEAR}]",
+        'URI.parse "#{}"' => "#{BLUE}#{BOLD}#{UNDERLINE}URI#{CLEAR}.#{BLUE}parse#{CLEAR} #{RED}#{BOLD}\"#{CLEAR}#{RED}\#{#{CLEAR}#{RED}}#{CLEAR}#{RED}#{BOLD}\"#{CLEAR}",
         "begin\nrescue\nend" => "#{GREEN}begin#{CLEAR}\n#{GREEN}rescue#{CLEAR}\n#{GREEN}end#{CLEAR}",
-        "foo %w[bar]" => "foo #{RED}#{BOLD}%w[#{CLEAR}#{RED}bar#{CLEAR}#{RED}#{BOLD}]#{CLEAR}",
-        "foo %i[bar]" => "foo #{YELLOW}%i[#{CLEAR}#{YELLOW}bar#{CLEAR}#{YELLOW}]#{CLEAR}",
-        "foo :@bar, baz, :@@qux, :$quux" => "foo #{YELLOW}:#{CLEAR}#{YELLOW}@bar#{CLEAR}, baz, #{YELLOW}:#{CLEAR}#{YELLOW}@@qux#{CLEAR}, #{YELLOW}:#{CLEAR}#{YELLOW}$quux#{CLEAR}",
+        "foo %w[bar]" => "#{BLUE}foo#{CLEAR} #{RED}#{BOLD}%w[#{CLEAR}#{RED}bar#{CLEAR}#{RED}#{BOLD}]#{CLEAR}",
+        "foo %i[bar]" => "#{BLUE}foo#{CLEAR} #{YELLOW}%i[#{CLEAR}#{YELLOW}bar#{CLEAR}#{YELLOW}]#{CLEAR}",
+        "foo :@bar, baz, :@@qux, :$quux" => "#{BLUE}foo#{CLEAR} #{YELLOW}:#{CLEAR}#{YELLOW}@bar#{CLEAR}, #{BLUE}baz#{CLEAR}, #{YELLOW}:#{CLEAR}#{YELLOW}@@qux#{CLEAR}, #{YELLOW}:#{CLEAR}#{YELLOW}$quux#{CLEAR}",
         "`echo`" => "#{RED}#{BOLD}`#{CLEAR}#{RED}echo#{CLEAR}#{RED}#{BOLD}`#{CLEAR}",
         "\t" => Reline::Unicode.escape_for_print("\t") == '  ' ? '  ' : "\t", # not ^I
-        "foo(*%W(bar))" => "foo(*#{RED}#{BOLD}%W(#{CLEAR}#{RED}bar#{CLEAR}#{RED}#{BOLD})#{CLEAR})",
+        "foo(*%W(bar))" => "#{BLUE}foo#{CLEAR}(*#{RED}#{BOLD}%W(#{CLEAR}#{RED}bar#{CLEAR}#{RED}#{BOLD})#{CLEAR})",
         "$stdout" => "#{GREEN}#{BOLD}$stdout#{CLEAR}",
         "$&" => "#{GREEN}#{BOLD}$&#{CLEAR}",
         "$1" => "#{GREEN}#{BOLD}$1#{CLEAR}",
         "__END__" => "#{GREEN}__END__#{CLEAR}",
-        "foo\n__END__\nbar" => "foo\n#{GREEN}__END__#{CLEAR}\nbar",
-        "foo\n<<A\0\0bar\nA\nbaz" => "foo\n#{RED}<<A#{CLEAR}^@^@bar\n#{RED}A#{CLEAR}\nbaz",
+        "foo\n__END__\nbar" => "#{BLUE}foo#{CLEAR}\n#{GREEN}__END__#{CLEAR}\nbar",
+        "foo\n<<A\0\0bar\nA\nbaz" => "#{BLUE}foo#{CLEAR}\n#{RED}<<A#{CLEAR}^@^@bar\n#{RED}A#{CLEAR}\nbaz",
         "<<A+1\nA" => "#{RED}<<A#{CLEAR}+#{BLUE}#{BOLD}1#{CLEAR}\n#{RED}A#{CLEAR}",
         "4.5.6" => "#{MAGENTA}#{BOLD}4.5#{CLEAR}#{RED}#{REVERSE}.6#{CLEAR}",
-        "\e[0m\n" => "#{RED}#{REVERSE}^[#{CLEAR}[#{BLUE}#{BOLD}0#{CLEAR}m\n",
+        "\e[0m\n" => "#{RED}#{REVERSE}^[#{CLEAR}[#{BLUE}#{BOLD}0#{CLEAR}#{BLUE}m#{CLEAR}\n",
         "<<EOS\nhere\nEOS" => "#{RED}<<EOS#{CLEAR}\n#{RED}here#{CLEAR}\n#{RED}EOS#{CLEAR}",
         "[1]]]\u0013" => "[#{BLUE}#{BOLD}1#{CLEAR}]#{RED}#{REVERSE}]#{CLEAR}#{RED}#{REVERSE}]#{CLEAR}#{RED}#{REVERSE}^S#{CLEAR}",
         "def req(true) end" => "#{GREEN}def#{CLEAR} #{BLUE}#{BOLD}req#{CLEAR}(#{RED}#{REVERSE}true#{CLEAR}#{RED}#{REVERSE})#{CLEAR} #{GREEN}end#{CLEAR}",
@@ -138,9 +138,9 @@ module TestIRB
 
     def test_colorize_code_with_local_variables
       code = "a /(b +1)/i"
-      result_without_lvars = "a #{RED}#{BOLD}/#{CLEAR}#{RED}(b +1)#{CLEAR}#{RED}#{BOLD}/i#{CLEAR}"
-      result_with_lvar = "a /(b #{BLUE}#{BOLD}+1#{CLEAR})/i"
-      result_with_lvars = "a /(b +#{BLUE}#{BOLD}1#{CLEAR})/i"
+      result_without_lvars = "#{BLUE}a#{CLEAR} #{RED}#{BOLD}/#{CLEAR}#{RED}(b +1)#{CLEAR}#{RED}#{BOLD}/i#{CLEAR}"
+      result_with_lvar = "a /(#{BLUE}b#{CLEAR} #{BLUE}#{BOLD}+1#{CLEAR})/#{BLUE}i#{CLEAR}"
+      result_with_lvars = "a /(b +#{BLUE}#{BOLD}1#{CLEAR})/#{BLUE}i#{CLEAR}"
 
       assert_equal_with_term(result_without_lvars, code)
       assert_equal_with_term(result_with_lvar, code, local_variables: [:a])
@@ -169,7 +169,7 @@ module TestIRB
         "'foo' + 'bar" => "#{RED}#{BOLD}'#{CLEAR}#{RED}foo#{CLEAR}#{RED}#{BOLD}'#{CLEAR} + #{RED}#{BOLD}'#{CLEAR}#{RED}bar#{CLEAR}",
         "('foo" => "(#{RED}#{BOLD}'#{CLEAR}#{RED}foo#{CLEAR}",
         "if true" => "#{GREEN}if#{CLEAR} #{CYAN}#{BOLD}true#{CLEAR}",
-        "tap do end end tap do" => "tap #{GREEN}do#{CLEAR} #{GREEN}end#{CLEAR} #{RED}#{REVERSE}end#{CLEAR} tap #{GREEN}do#{CLEAR}",
+        "tap do end end tap do" => "#{BLUE}tap#{CLEAR} #{GREEN}do#{CLEAR} #{GREEN}end#{CLEAR} #{RED}#{REVERSE}end#{CLEAR} #{BLUE}tap#{CLEAR} #{GREEN}do#{CLEAR}",
 
         # Specially handled cases
         "class" => "#{GREEN}class#{CLEAR}",
@@ -178,16 +178,16 @@ module TestIRB
         "module" => "#{GREEN}module#{CLEAR}",
         "module#" => "#{GREEN}module#{CLEAR}#{BLUE}#{BOLD}\##{CLEAR}",
         "module;" => "#{RED}#{REVERSE}module#{CLEAR};",
-        "class owner_module" => "#{GREEN}class#{CLEAR} owner_module",
-        "module owner_module" => "#{GREEN}module#{CLEAR} owner_module",
+        "class owner_module" => "#{GREEN}class#{CLEAR} #{BLUE}owner_module#{CLEAR}",
+        "module owner_module" => "#{GREEN}module#{CLEAR} #{BLUE}owner_module#{CLEAR}",
         "a, b" => "a, b",
         "a, b#" => "a, b#{BLUE}#{BOLD}\##{CLEAR}",
         "a, b;" => "#{RED}#{REVERSE}a, b#{CLEAR};",
         "def f(a,#" => "#{GREEN}def#{CLEAR} #{BLUE}#{BOLD}f#{CLEAR}(a,#{BLUE}#{BOLD}\##{CLEAR}",
         "[*" => "[*",
-        "f(*" => "f(*",
-        "f(**" => "f(**",
-        "f(&" => "f(&",
+        "f(*" => "#{BLUE}f#{CLEAR}(*",
+        "f(**" => "#{BLUE}f#{CLEAR}(**",
+        "f(&" => "#{BLUE}f#{CLEAR}(&",
         "def f =" => "#{GREEN}def#{CLEAR} #{BLUE}#{BOLD}f#{CLEAR} =",
         "=begin" => "#{BLUE}#{BOLD}=begin#{CLEAR}",
       }.each do |code, result|

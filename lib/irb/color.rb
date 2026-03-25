@@ -103,6 +103,7 @@ module IRB # :nodoc:
       __END__:            [GREEN],
       # tokens from syntax tree traversal
       method_name:        [BLUE, BOLD],
+      message_name:       [BLUE],
       symbol:             [YELLOW],
       # special colorization
       error:              [RED, REVERSE],
@@ -111,7 +112,11 @@ module IRB # :nodoc:
       styles.map { |style| "\e[#{style}m" }.join
     end
     CLEAR_SEQ = "\e[#{CLEAR}m"
-    private_constant :TOKEN_SEQS, :CLEAR_SEQ
+    OPERATORS = [
+      :!=, :!~, :=~, :==, :===, :<=>, :>, :>=, :<, :<=, :&, :|, :^, :>>, :<<, :-, :+, :%, :/, :*, :**,
+      :-@, :+@, :~, :!
+    ]
+    private_constant :TOKEN_SEQS, :CLEAR_SEQ, :OPERATORS
 
     class << self
       def colorable?
@@ -249,6 +254,15 @@ module IRB # :nodoc:
 
         def visit_def_node(node)
           dispatch node.name_loc, :method_name
+          super
+        end
+
+        def visit_call_node(node)
+          if node.call_operator_loc.nil? && OPERATORS.include?(node.name)
+            # Operators should not be highlighted
+          else
+            dispatch node.message_loc, :message_name
+          end
           super
         end
 
