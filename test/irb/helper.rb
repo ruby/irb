@@ -174,7 +174,7 @@ module TestIRB
             lines << line
 
             # means the breakpoint is triggered
-            if line.match?(/binding\.irb/)
+            if line.match?(/binding(?<color>\e\[\d+m)?\.\g<color>?irb/)
               while command = @commands.shift
                 write.puts(command)
               end
