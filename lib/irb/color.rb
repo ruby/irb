@@ -259,13 +259,22 @@ module IRB # :nodoc:
         end
 
         def visit_call_node(node)
-          if @colorize_call
-            if node.call_operator_loc.nil? && OPERATORS.include?(node.name)
-              # Operators should not be highlighted
-            else
-              dispatch node.message_loc, :message_name
-            end
-          end
+          colorize_call(node)
+          super
+        end
+
+        def visit_call_operator_write_node(node)
+          colorize_call(node)
+          super
+        end
+
+        def visit_call_and_write_node(node)
+          colorize_call(node)
+          super
+        end
+
+        def visit_call_or_write_node(node)
+          colorize_call(node)
           super
         end
 
@@ -294,6 +303,18 @@ module IRB # :nodoc:
             dispatch node.opening_loc, :symbol
             dispatch node.value_loc, :symbol
             dispatch node.closing_loc, :symbol
+          end
+        end
+
+        private
+
+        def colorize_call(node)
+          if @colorize_call
+            if node.call_operator_loc.nil? && OPERATORS.include?(node.name)
+              # Operators should not be highlighted
+            else
+              dispatch node.message_loc, :message_name
+            end
           end
         end
       end
