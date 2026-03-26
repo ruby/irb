@@ -347,5 +347,15 @@ module TestIRB
         assert_equal(['in'], next_opens.map(&:tok))
       end
     end
+
+    def test_char_literal
+      code = <<~EOS
+        ?a
+      EOS
+      prev_opens, next_opens, min_depth = parse_by_line(code).last
+      assert_equal([], prev_opens)
+      assert_equal([], next_opens)
+      assert_equal(0, min_depth)
+    end
   end
 end
