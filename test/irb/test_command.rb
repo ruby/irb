@@ -757,6 +757,16 @@ module TestIRB
       assert_match(/Numeric#methods:\s+/, out)
       assert_match(/Integer#methods:\s+/, out)
     end
+
+    def test_ls_with_object_altering_comparison_methods
+      out, err = execute_lines(
+        "class BadCompare; class << self; undef >=; undef <; end; def foo; end; end\n",
+        "obj = BadCompare.new\n",
+        "ls obj\n",
+      )
+      assert_empty err
+      assert_match(/BadCompare#methods:\s+foo/, out)
+    end
   end
 
   class ShowDocTest < CommandTestCase

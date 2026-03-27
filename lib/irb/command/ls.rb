@@ -72,8 +72,8 @@ module IRB
         singleton_class = begin Kernel.instance_method(:singleton_class).bind(obj).call; rescue TypeError; nil end
         dumped_mods = Array.new
         ancestors = klass.ancestors
-        ancestors = ancestors.reject { |c| c >= Object } if klass < Object
-        singleton_ancestors = (singleton_class&.ancestors || []).reject { |c| c >= Class }
+        ancestors = ancestors.reject { |c| Object <= c } if Object > klass
+        singleton_ancestors = (singleton_class&.ancestors || []).reject { |c| Class <= c }
 
         # singleton_class' ancestors should be at the front
         maps = class_method_map(singleton_ancestors, dumped_mods) + class_method_map(ancestors, dumped_mods)
