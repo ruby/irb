@@ -107,6 +107,8 @@ module TestIRB
       # IRB should restore SIGINT handler
       status = assert_in_out_err(bundle_exec + %w[-W0 -rirb -e Signal.trap("SIGINT","DEFAULT");binding.irb;loop{Process.kill("SIGINT",$$)} -- -f --], "exit\n", //, //)
       Process.kill("SIGKILL", status.pid) if !status.exited? && !status.stopped? && !status.signaled?
+    rescue Errno::EPIPE
+      # The child process may exit before the parent finishes writing to stdin
     end
 
     def test_sigint_restore_block
@@ -114,6 +116,8 @@ module TestIRB
       # IRB should restore SIGINT handler
       status = assert_in_out_err(bundle_exec + %w[-W0 -rirb -e x=false;Signal.trap("SIGINT"){x=true};binding.irb;loop{Process.kill("SIGINT",$$);if(x);break;end} -- -f --], "exit\n", //, //)
       Process.kill("SIGKILL", status.pid) if !status.exited? && !status.stopped? && !status.signaled?
+    rescue Errno::EPIPE
+      # The child process may exit before the parent finishes writing to stdin
     end
 
     def test_no_color_environment_variable
