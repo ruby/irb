@@ -42,6 +42,14 @@ module IRB
             # SIGTERM not supported (windows)
             Process.kill("KILL", pid)
           end
+
+          begin
+            # Wait for the pager process to terminate.
+            # Reading next input from Reline before the pager process is fully terminated
+            # may cause issues like raw/cooked mode not being controlled properly.
+            Process.waitpid(pid) if pid
+          rescue Errno::ECHILD, Errno::ESRCH
+          end
         rescue Errno::ESRCH
           # Pager process already terminated
         end
