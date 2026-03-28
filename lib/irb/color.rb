@@ -102,8 +102,8 @@ module IRB # :nodoc:
       STRING_END:         [RED, BOLD],
       __END__:            [GREEN],
       # tokens from syntax tree traversal
-      method_name:        [BLUE, BOLD],
-      message_name:       [BLUE],
+      method_name:        [CYAN, BOLD],
+      message_name:       [CYAN],
       symbol:             [YELLOW],
       # special colorization
       error:              [RED, REVERSE],
