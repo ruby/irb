@@ -273,16 +273,8 @@ module IRB # :nodoc:
           dispatch node.message_loc, :message_name if @colorize_call
           super
         end
-
-        def visit_call_and_write_node(node)
-          dispatch node.message_loc, :message_name if @colorize_call
-          super
-        end
-
-        def visit_call_or_write_node(node)
-          dispatch node.message_loc, :message_name if @colorize_call
-          super
-        end
+        alias visit_call_and_write_node visit_call_operator_write_node
+        alias visit_call_or_write_node visit_call_operator_write_node
 
         def visit_interpolated_symbol_node(node)
           dispatch node.opening_loc, :symbol
