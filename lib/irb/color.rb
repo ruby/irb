@@ -255,6 +255,12 @@ module IRB # :nodoc:
           super
         end
 
+        def visit_alias_method_node(node)
+          dispatch_alias_method_name node.new_name
+          dispatch_alias_method_name node.old_name
+          super
+        end
+
         def visit_call_node(node)
           if @colorize_call
             if node.call_operator_loc.nil? && OPERATORS.include?(node.name)
@@ -301,6 +307,14 @@ module IRB # :nodoc:
             dispatch node.opening_loc, :symbol
             dispatch node.value_loc, :symbol
             dispatch node.closing_loc, :symbol
+          end
+        end
+
+        private
+
+        def dispatch_alias_method_name(node)
+          if node.type == :symbol_node && node.opening_loc.nil?
+            dispatch node.value_loc, :method_name
           end
         end
       end
