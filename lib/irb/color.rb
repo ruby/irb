@@ -107,7 +107,6 @@ module IRB # :nodoc:
       symbol:             [YELLOW],
       # special colorization
       error:              [RED, REVERSE],
-      const_env:          [CYAN, BOLD],
     }.transform_values do |styles|
       styles.map { |style| "\e[#{style}m" }.join
     end
@@ -205,9 +204,7 @@ module IRB # :nodoc:
           next if start_line - 1 < line_index || (start_line - 1 == line_index && start_column < col)
 
           flush.call(start_line - 1, start_column)
-          if type == :CONSTANT && value == 'ENV'
-            color = TOKEN_SEQS[:const_env]
-          elsif type == :__END__
+          if type == :__END__
             color = TOKEN_SEQS[type]
             end_line = start_line
             value = '__END__'

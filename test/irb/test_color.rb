@@ -134,6 +134,7 @@ module TestIRB
         'Foo::Bar(1)' => "#{BLUE}#{BOLD}#{UNDERLINE}Foo#{CLEAR}::#{BLUE}#{BOLD}#{UNDERLINE}Bar#{CLEAR}(#{BLUE}#{BOLD}1#{CLEAR})",
         'Foo.Bar(1)' => "#{BLUE}#{BOLD}#{UNDERLINE}Foo#{CLEAR}.#{CYAN}Bar#{CLEAR}(#{BLUE}#{BOLD}1#{CLEAR})",
         'Foo&.Bar(1)' => "#{BLUE}#{BOLD}#{UNDERLINE}Foo#{CLEAR}&.#{CYAN}Bar#{CLEAR}(#{BLUE}#{BOLD}1#{CLEAR})",
+        'ENV' => "#{BLUE}#{BOLD}#{UNDERLINE}ENV#{CLEAR}",
       }
 
       tests.each do |code, result|
