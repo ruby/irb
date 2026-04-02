@@ -95,7 +95,7 @@ To learn more about debugging with IRB, see [Debugging with IRB](#label-Debuggin
 
 ### Agent Mode (Experimental)
 
-`binding.irb(agent: true)` starts a non-interactive IRB session designed for AI agents and scripts. Instead of opening a REPL, it exposes an IRB session over a Unix socket using a simple request/response protocol.
+`binding.agent` starts a non-interactive IRB session designed for AI agents and scripts. Instead of opening a REPL, it exposes an IRB session over a Unix socket using a simple request/response protocol.
 
 The behavior depends on the `IRB_SOCK_PATH` environment variable:
 

@@ -10,7 +10,7 @@ module TestIRB
       write_ruby <<~'RUBY'
         require "irb"
         puts "BEFORE"
-        binding.irb(agent: true)
+        binding.agent
         puts "AFTER"
       RUBY
 
@@ -20,6 +20,7 @@ module TestIRB
 
       assert_include output, "IRB agent breakpoint hit at"
       assert_include output, "IRB_SOCK_PATH"
+      assert_include output, 'require "irb"; binding.agent'
       assert_include output, "BEFORE"
       # exit(0) means AFTER should not print
       assert_not_include output, "AFTER"
@@ -28,7 +29,7 @@ module TestIRB
     def test_phase2_basic_eval
       write_ruby <<~'RUBY'
         require "irb"
-        binding.irb(agent: true)
+        binding.agent
       RUBY
 
       output = run_agent_session do |sock_path|
@@ -46,7 +47,7 @@ module TestIRB
           attr_accessor :name
           def initialize(name); @name = name; end
         end
-        Potato.new("Russet").instance_eval { binding.irb(agent: true) }
+        Potato.new("Russet").instance_eval { binding.agent }
       RUBY
 
       output = run_agent_session do |sock_path|
@@ -64,7 +65,7 @@ module TestIRB
         class Potato
           def cook!; "done"; end
         end
-        Potato.new.instance_eval { binding.irb(agent: true) }
+        Potato.new.instance_eval { binding.agent }
       RUBY
 
       output = run_agent_session do |sock_path|
@@ -78,7 +79,7 @@ module TestIRB
     def test_phase2_error_handling
       write_ruby <<~'RUBY'
         require "irb"
-        binding.irb(agent: true)
+        binding.agent
       RUBY
 
       output = run_agent_session do |sock_path|
@@ -92,7 +93,7 @@ module TestIRB
     def test_phase2_multiline_expression
       write_ruby <<~'RUBY'
         require "irb"
-        binding.irb(agent: true)
+        binding.agent
       RUBY
 
       output = run_agent_session do |sock_path|
@@ -108,7 +109,7 @@ module TestIRB
     def test_phase2_session_state_persists
       write_ruby <<~'RUBY'
         require "irb"
-        binding.irb(agent: true)
+        binding.agent
       RUBY
 
       output = run_agent_session do |sock_path|
@@ -125,7 +126,7 @@ module TestIRB
       write_ruby <<~'RUBY'
         require "irb"
         puts "BEFORE"
-        binding.irb(agent: true)
+        binding.agent
         puts "AFTER"
       RUBY
 
@@ -140,7 +141,7 @@ module TestIRB
     def test_phase2_help_command
       write_ruby <<~'RUBY'
         require "irb"
-        binding.irb(agent: true)
+        binding.agent
       RUBY
 
       output = run_agent_session do |sock_path|

@@ -7,7 +7,7 @@ module IRB
   # A request/response server for agent-driven IRB sessions over a Unix socket
   # (experimental).
   #
-  # When <tt>binding.irb(agent: true)</tt> is called, the behavior depends on
+  # When <tt>binding.agent</tt> is called, the behavior depends on
   # the +IRB_SOCK_PATH+ environment variable:
   #
   # - *Not set* (Phase 1 — discovery): prints instructions explaining how to
@@ -122,6 +122,8 @@ module IRB
           IRB agent breakpoint hit at #{location}
 
           No IRB_SOCK_PATH set — exiting without starting a debug session.
+
+          Add breakpoints with: require "irb"; binding.agent
 
           To debug this breakpoint:
 
