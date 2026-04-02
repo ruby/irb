@@ -102,16 +102,17 @@ module IRB # :nodoc:
       STRING_END:         [RED, BOLD],
       __END__:            [GREEN],
       # tokens from syntax tree traversal
-      method_name:        [BLUE, BOLD],
+      method_name:        [CYAN, BOLD],
+      message_name:       [CYAN],
       symbol:             [YELLOW],
       # special colorization
       error:              [RED, REVERSE],
-      const_env:          [CYAN, BOLD],
     }.transform_values do |styles|
       styles.map { |style| "\e[#{style}m" }.join
     end
     CLEAR_SEQ = "\e[#{CLEAR}m"
-    private_constant :TOKEN_SEQS, :CLEAR_SEQ
+    OPERATORS = %i(!= !~ =~ == === <=> > >= < <= & | ^ >> << - + % / * ** -@ +@ ~ ! [] []=)
+    private_constant :TOKEN_SEQS, :CLEAR_SEQ, :OPERATORS
 
     class << self
       def colorable?
@@ -203,9 +204,7 @@ module IRB # :nodoc:
           next if start_line - 1 < line_index || (start_line - 1 == line_index && start_column < col)
 
           flush.call(start_line - 1, start_column)
-          if type == :CONSTANT && value == 'ENV'
-            color = TOKEN_SEQS[:const_env]
-          elsif type == :__END__
+          if type == :__END__
             color = TOKEN_SEQS[type]
             end_line = start_line
             value = '__END__'
@@ -252,6 +251,31 @@ module IRB # :nodoc:
           super
         end
 
+        def visit_alias_method_node(node)
+          dispatch_alias_method_name node.new_name
+          dispatch_alias_method_name node.old_name
+          super
+        end
+
+        def visit_call_node(node)
+          if node.call_operator_loc.nil? && OPERATORS.include?(node.name)
+            # Operators should not be colored as method call
+          elsif (node.call_operator_loc.nil? || node.call_operator_loc.slice == "::") &&
+              /\A\p{Upper}/.match?(node.name)
+            # Constant-like methods should not be colored as method call
+          else
+            dispatch node.message_loc, :message_name
+          end
+          super
+        end
+
+        def visit_call_operator_write_node(node)
+          dispatch node.message_loc, :message_name
+          super
+        end
+        alias visit_call_and_write_node visit_call_operator_write_node
+        alias visit_call_or_write_node visit_call_operator_write_node
+
         def visit_interpolated_symbol_node(node)
           dispatch node.opening_loc, :symbol
           node.parts.each do |part|
@@ -277,6 +301,14 @@ module IRB # :nodoc:
             dispatch node.opening_loc, :symbol
             dispatch node.value_loc, :symbol
             dispatch node.closing_loc, :symbol
+          end
+        end
+
+        private
+
+        def dispatch_alias_method_name(node)
+          if node.type == :symbol_node && node.opening_loc.nil?
+            dispatch node.value_loc, :method_name
           end
         end
       end
