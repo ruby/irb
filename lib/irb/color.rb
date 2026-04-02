@@ -161,7 +161,7 @@ module IRB # :nodoc:
       # If `complete` is false (code is incomplete), this does not warn compile_error.
       # This option is needed to avoid warning a user when the compile_error is happening
       # because the input is not wrong but just incomplete.
-      def colorize_code(code, complete: true, ignore_error: false, colorable: colorable?, colorize_call: true, local_variables: [])
+      def colorize_code(code, complete: true, ignore_error: false, colorable: colorable?, local_variables: [])
         return code unless colorable
 
         result = Prism.parse_lex(code, scopes: [local_variables])
@@ -176,7 +176,7 @@ module IRB # :nodoc:
           errors = filter_incomplete_code_errors(errors, prism_tokens)
         end
 
-        visitor = ColorizeVisitor.new(colorize_call: colorize_call)
+        visitor = ColorizeVisitor.new
         prism_node.accept(visitor)
 
         error_tokens = errors.map { |e| [e.location.start_line, e.location.start_column, 0, e.location.end_line, e.location.end_column, :error, e.location.slice] }
@@ -228,8 +228,7 @@ module IRB # :nodoc:
 
       class ColorizeVisitor < Prism::Visitor
         attr_reader :tokens
-        def initialize(colorize_call: true)
-          @colorize_call = colorize_call
+        def initialize
           @tokens = []
         end
 
@@ -259,21 +258,19 @@ module IRB # :nodoc:
         end
 
         def visit_call_node(node)
-          if @colorize_call
-            if node.call_operator_loc.nil? && OPERATORS.include?(node.name)
-              # Operators should not be colored as method call
-            elsif (node.call_operator_loc.nil? || node.call_operator_loc.slice == "::") &&
-                /\A\p{Upper}/.match?(node.name)
-              # Constant-like methods should not be colored as method call
-            else
-              dispatch node.message_loc, :message_name
-            end
+          if node.call_operator_loc.nil? && OPERATORS.include?(node.name)
+            # Operators should not be colored as method call
+          elsif (node.call_operator_loc.nil? || node.call_operator_loc.slice == "::") &&
+              /\A\p{Upper}/.match?(node.name)
+            # Constant-like methods should not be colored as method call
+          else
+            dispatch node.message_loc, :message_name
           end
           super
         end
 
         def visit_call_operator_write_node(node)
-          dispatch node.message_loc, :message_name if @colorize_call
+          dispatch node.message_loc, :message_name
           super
         end
         alias visit_call_and_write_node visit_call_operator_write_node

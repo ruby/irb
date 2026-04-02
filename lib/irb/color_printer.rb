@@ -49,7 +49,7 @@ module IRB
       when /\A#</, '=', '>'
         super(@colorize ? Color.colorize(str, [:GREEN]) : str, width)
       else
-        super(@colorize ? Color.colorize_code(str, ignore_error: true, colorize_call: false) : str, width)
+        super(@colorize ? Color.colorize_code(str, ignore_error: true) : str, width)
       end
     end
   end
