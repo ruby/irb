@@ -18,103 +18,114 @@ module IRB # :nodoc:
     CYAN      = 36
     WHITE     = 37
 
-    # Following pry's colors where possible
-    TOKEN_SEQS = {
-      KEYWORD_NIL:        [CYAN, BOLD],
-      KEYWORD_SELF:       [CYAN, BOLD],
-      KEYWORD_TRUE:       [CYAN, BOLD],
-      KEYWORD_FALSE:      [CYAN, BOLD],
-      KEYWORD___FILE__:   [CYAN, BOLD],
-      KEYWORD___LINE__:   [CYAN, BOLD],
-      KEYWORD___ENCODING__: [CYAN, BOLD],
-      CHARACTER_LITERAL:  [BLUE, BOLD],
-      BACK_REFERENCE:     [GREEN, BOLD],
-      BACKTICK:           [RED, BOLD],
-      COMMENT:            [BLUE, BOLD],
-      EMBDOC_BEGIN:       [BLUE, BOLD],
-      EMBDOC_LINE:        [BLUE, BOLD],
-      EMBDOC_END:         [BLUE, BOLD],
-      CONSTANT:           [BLUE, BOLD, UNDERLINE],
-      EMBEXPR_BEGIN:      [RED],
-      EMBEXPR_END:        [RED],
-      EMBVAR:             [RED],
-      FLOAT:              [MAGENTA, BOLD],
-      GLOBAL_VARIABLE:    [GREEN, BOLD],
-      HEREDOC_START:      [RED],
-      HEREDOC_END:        [RED],
-      FLOAT_IMAGINARY:    [BLUE, BOLD],
-      INTEGER_IMAGINARY:  [BLUE, BOLD],
-      FLOAT_RATIONAL_IMAGINARY:  [BLUE, BOLD],
-      INTEGER_RATIONAL_IMAGINARY:  [BLUE, BOLD],
-      INTEGER:            [BLUE, BOLD],
-      INTEGER_RATIONAL:   [BLUE, BOLD],
-      FLOAT_RATIONAL:     [BLUE, BOLD],
-      KEYWORD_END:        [GREEN],
-      KEYWORD_CLASS:      [GREEN],
-      KEYWORD_MODULE:     [GREEN],
-      KEYWORD_IF:         [GREEN],
-      KEYWORD_IF_MODIFIER: [GREEN],
-      KEYWORD_UNLESS_MODIFIER: [GREEN],
-      KEYWORD_WHILE_MODIFIER: [GREEN],
-      KEYWORD_UNTIL_MODIFIER: [GREEN],
-      KEYWORD_RESCUE_MODIFIER: [GREEN],
-      KEYWORD_THEN:       [GREEN],
-      KEYWORD_UNLESS:     [GREEN],
-      KEYWORD_ELSE:       [GREEN],
-      KEYWORD_ELSIF:      [GREEN],
-      KEYWORD_WHILE:      [GREEN],
-      KEYWORD_UNTIL:      [GREEN],
-      KEYWORD_CASE:       [GREEN],
-      KEYWORD_WHEN:       [GREEN],
-      KEYWORD_IN:         [GREEN],
-      KEYWORD_DEF:        [GREEN],
-      KEYWORD_DO:         [GREEN],
-      KEYWORD_DO_LOOP:    [GREEN],
-      KEYWORD_FOR:        [GREEN],
-      KEYWORD_BEGIN:      [GREEN],
-      KEYWORD_RESCUE:     [GREEN],
-      KEYWORD_ENSURE:     [GREEN],
-      KEYWORD_ALIAS:      [GREEN],
-      KEYWORD_UNDEF:      [GREEN],
-      KEYWORD_BEGIN_UPCASE: [GREEN],
-      KEYWORD_END_UPCASE: [GREEN],
-      KEYWORD_YIELD:      [GREEN],
-      KEYWORD_REDO:       [GREEN],
-      KEYWORD_RETRY:      [GREEN],
-      KEYWORD_NEXT:       [GREEN],
-      KEYWORD_BREAK:      [GREEN],
-      KEYWORD_SUPER:      [GREEN],
-      KEYWORD_RETURN:     [GREEN],
-      KEYWORD_DEFINED:    [GREEN],
-      KEYWORD_NOT:        [GREEN],
-      KEYWORD_AND:        [GREEN],
-      KEYWORD_OR:         [GREEN],
-      LABEL:              [MAGENTA],
-      LABEL_END:          [RED, BOLD],
-      NUMBERED_REFERENCE: [GREEN, BOLD],
-      PERCENT_UPPER_W:    [RED, BOLD],
-      PERCENT_LOWER_W:    [RED, BOLD],
-      PERCENT_LOWER_X:    [RED, BOLD],
-      REGEXP_BEGIN:       [RED, BOLD],
-      REGEXP_END:         [RED, BOLD],
-      STRING_BEGIN:       [RED, BOLD],
-      STRING_CONTENT:     [RED],
-      STRING_END:         [RED, BOLD],
-      __END__:            [GREEN],
+    TOKEN_FACES = {
+      KEYWORD_NIL:                 :pseudo_variable,
+      KEYWORD_SELF:                :pseudo_variable,
+      KEYWORD_TRUE:                :pseudo_variable,
+      KEYWORD_FALSE:               :pseudo_variable,
+      KEYWORD___FILE__:            :pseudo_variable,
+      KEYWORD___LINE__:            :pseudo_variable,
+      KEYWORD___ENCODING__:        :pseudo_variable,
+      CHARACTER_LITERAL:           :number,
+      BACK_REFERENCE:              :global_variable,
+      BACKTICK:                    :string_edge,
+      COMMENT:                     :comment,
+      EMBDOC_BEGIN:                :comment,
+      EMBDOC_LINE:                 :comment,
+      EMBDOC_END:                  :comment,
+      CONSTANT:                    :constant,
+      EMBEXPR_BEGIN:               :string_body,
+      EMBEXPR_END:                 :string_body,
+      EMBVAR:                      :string_body,
+      FLOAT:                       :float,
+      GLOBAL_VARIABLE:             :global_variable,
+      HEREDOC_START:               :string_body,
+      HEREDOC_END:                 :string_body,
+      FLOAT_IMAGINARY:             :number,
+      INTEGER_IMAGINARY:           :number,
+      FLOAT_RATIONAL_IMAGINARY:    :number,
+      INTEGER_RATIONAL_IMAGINARY:  :number,
+      INTEGER:                     :number,
+      INTEGER_RATIONAL:            :number,
+      FLOAT_RATIONAL:              :number,
+      KEYWORD_END:                 :keyword,
+      KEYWORD_CLASS:               :keyword,
+      KEYWORD_MODULE:              :keyword,
+      KEYWORD_IF:                  :keyword,
+      KEYWORD_IF_MODIFIER:         :keyword,
+      KEYWORD_UNLESS_MODIFIER:     :keyword,
+      KEYWORD_WHILE_MODIFIER:      :keyword,
+      KEYWORD_UNTIL_MODIFIER:      :keyword,
+      KEYWORD_RESCUE_MODIFIER:     :keyword,
+      KEYWORD_THEN:                :keyword,
+      KEYWORD_UNLESS:              :keyword,
+      KEYWORD_ELSE:                :keyword,
+      KEYWORD_ELSIF:               :keyword,
+      KEYWORD_WHILE:               :keyword,
+      KEYWORD_UNTIL:               :keyword,
+      KEYWORD_CASE:                :keyword,
+      KEYWORD_WHEN:                :keyword,
+      KEYWORD_IN:                  :keyword,
+      KEYWORD_DEF:                 :keyword,
+      KEYWORD_DO:                  :keyword,
+      KEYWORD_DO_LOOP:             :keyword,
+      KEYWORD_FOR:                 :keyword,
+      KEYWORD_BEGIN:               :keyword,
+      KEYWORD_RESCUE:              :keyword,
+      KEYWORD_ENSURE:              :keyword,
+      KEYWORD_ALIAS:               :keyword,
+      KEYWORD_UNDEF:               :keyword,
+      KEYWORD_BEGIN_UPCASE:        :keyword,
+      KEYWORD_END_UPCASE:          :keyword,
+      KEYWORD_YIELD:               :keyword,
+      KEYWORD_REDO:                :keyword,
+      KEYWORD_RETRY:               :keyword,
+      KEYWORD_NEXT:                :keyword,
+      KEYWORD_BREAK:               :keyword,
+      KEYWORD_SUPER:               :keyword,
+      KEYWORD_RETURN:              :keyword,
+      KEYWORD_DEFINED:             :keyword,
+      KEYWORD_NOT:                 :keyword,
+      KEYWORD_AND:                 :keyword,
+      KEYWORD_OR:                  :keyword,
+      LABEL:                       :label,
+      LABEL_END:                   :string_edge,
+      NUMBERED_REFERENCE:          :global_variable,
+      PERCENT_UPPER_W:             :string_edge,
+      PERCENT_LOWER_W:             :string_edge,
+      PERCENT_LOWER_X:             :string_edge,
+      REGEXP_BEGIN:                :string_edge,
+      REGEXP_END:                  :string_edge,
+      STRING_BEGIN:                :string_edge,
+      STRING_CONTENT:              :string_body,
+      STRING_END:                  :string_edge,
+      __END__:                     :keyword,
       # tokens from syntax tree traversal
-      method_name:        [CYAN, BOLD],
-      message_name:       [CYAN],
-      symbol:             [YELLOW],
+      method_name:                 :method_name,
+      message_name:                :message_name,
+      symbol:                      :symbol,
       # special colorization
-      error:              [RED, REVERSE],
-    }.transform_values do |styles|
-      styles.map { |style| "\e[#{style}m" }.join
-    end
+      error:                       :error,
+    }
+
+    TOKEN_SEQS = {}
     CLEAR_SEQ = "\e[#{CLEAR}m"
     OPERATORS = %i(!= !~ =~ == === <=> > >= < <= & | ^ >> << - + % / * ** -@ +@ ~ ! [] []=)
-    private_constant :TOKEN_SEQS, :CLEAR_SEQ, :OPERATORS
+    private_constant :TOKEN_FACES, :TOKEN_SEQS, :CLEAR_SEQ, :OPERATORS
 
     class << self
+      def init
+        face_conf = Reline::Face[:syntax_highlighting]
+        face_seqs = {}
+        face_conf.definition.each do |key, val|
+          face_seqs[key] = normalize_sgr(val[:escape_sequence])
+        end
+        TOKEN_SEQS.clear
+        TOKEN_FACES.each do |key, val|
+          TOKEN_SEQS[key] = face_seqs[val]
+        end
+      end
+
       def colorable?
         supported = $stdout.tty? && (/mswin|mingw/.match?(RUBY_PLATFORM) || (ENV.key?('TERM') && ENV['TERM'] != 'dumb'))
 
@@ -326,6 +337,15 @@ module IRB # :nodoc:
         :embdoc_term, # `=begin`
       ]
 
+      # Normalize SGR sequences for existing test cases
+      def normalize_sgr(seq)
+        s = seq.sub(/\A\e\[0m/, "")
+        return s if s.match?(/\e\[(38|48|58);/) # Do not normalize extended colors
+        s.gsub(/\e\[([0-9;]+)m/) {
+          $1.split(/;/).map { |i| "\e[#{i}m" }.join
+        }
+      end
+
       # Filter out syntax errors that are likely to be caused by incomplete code, to avoid showing misleading error highlights to users.
       def filter_incomplete_code_errors(errors, tokens)
         last_non_comment_space_token, = tokens.reverse_each.find do |t,|
@@ -348,3 +368,23 @@ module IRB # :nodoc:
     end
   end
 end
+
+# Following pry's colors where possible
+Reline::Face.config(:syntax_highlighting) do |conf|
+  conf.define :pseudo_variable,  foreground: :cyan,     style: :bold
+  conf.define :global_variable,  foreground: :green,    style: :bold
+  conf.define :constant,         foreground: :blue,     style: [:bold, :underlined]
+  conf.define :comment,          foreground: :blue,     style: :bold
+  conf.define :string_edge,      foreground: :red,      style: :bold
+  conf.define :string_body,      foreground: :red
+  conf.define :symbol,           foreground: :yellow
+  conf.define :number,           foreground: :blue,     style: :bold
+  conf.define :float,            foreground: :magenta,  style: :bold
+  conf.define :keyword,          foreground: :green
+  conf.define :label,            foreground: :magenta
+  conf.define :method_name,      foreground: :cyan,     style: :bold
+  conf.define :message_name,     foreground: :cyan
+  conf.define :error,            foreground: :red,      style: :negative
+end
+
+IRB::Color.init
