@@ -203,6 +203,20 @@ module TestIRB
       assert_equal 2, output.scan("=> true").count
     end
 
+    def test_require_native_extension
+      write_ruby <<~'RUBY'
+        binding.irb
+      RUBY
+
+      output = run_ruby_file do
+        type "require 'etc'"
+        type "Etc.getlogin"
+        type "exit!"
+      end
+
+      assert_include output, "=> true"
+    end
+
     def test_require_does_not_modify_load_path
       write_ruby <<~'RUBY'
         binding.irb
@@ -267,9 +281,11 @@ module TestIRB
     end
   end
 
-  class ReloadCommandTest < TestCase
+  class BoxReloadCommandTest < TestCase
     def setup
       super
+      omit "BoxReload requires Ruby::Box" if !defined?(Ruby::Box) || !Ruby::Box.enabled?
+
       @tmpdir = Dir.mktmpdir
       @valid_file = File.join(@tmpdir, "valid.rb")
       File.write(@valid_file, "VALID = true\n")
@@ -279,16 +295,19 @@ module TestIRB
       require "irb/command/reload"
       IRB.setup(__FILE__, argv: [])
       @original_reloadable = IRB.conf[:RELOADABLE_REQUIRE]
-      @original_files = IRB.conf[:__RELOADABLE_FILES__]
       IRB.conf[:RELOADABLE_REQUIRE] = true
-      IRB.conf[:__RELOADABLE_FILES__] = Set.new
+
+      @saved_files = IRB::ReloadableRequire.reloadable_files.dup
+      IRB::ReloadableRequire.reloadable_files.clear
     end
 
     def teardown
       super
-      FileUtils.rm_rf(@tmpdir)
-      IRB.conf[:RELOADABLE_REQUIRE] = @original_reloadable
-      IRB.conf[:__RELOADABLE_FILES__] = @original_files
+      FileUtils.rm_rf(@tmpdir) if @tmpdir
+      if defined?(IRB::ReloadableRequire) && @saved_files
+        IRB.conf[:RELOADABLE_REQUIRE] = @original_reloadable
+        IRB::ReloadableRequire.reloadable_files.replace(@saved_files)
+      end
     end
 
     def test_reload_file_preserves_loaded_features_on_syntax_error
@@ -296,8 +315,8 @@ module TestIRB
 
       File.write(@valid_file, "def broken(")
 
-      cmd = IRB::Command::Reload.new(nil)
-      IRB.conf[:__RELOADABLE_FILES__] << @valid_file
+      cmd = IRB::Command::BoxReload.new(nil)
+      IRB::ReloadableRequire.reloadable_files << @valid_file
       cmd.execute(nil)
 
       assert_equal true, $LOADED_FEATURES.include?(@valid_file)
@@ -309,40 +328,13 @@ module TestIRB
       missing_file = File.join(@tmpdir, "missing.rb")
       $LOADED_FEATURES << missing_file
 
-      cmd = IRB::Command::Reload.new(nil)
-      IRB.conf[:__RELOADABLE_FILES__] << missing_file
+      cmd = IRB::Command::BoxReload.new(nil)
+      IRB::ReloadableRequire.reloadable_files << missing_file
       cmd.execute(nil)
 
       assert_equal true, $LOADED_FEATURES.include?(missing_file)
     ensure
       $LOADED_FEATURES.delete(missing_file)
-    end
-  end
-
-  class ReloadableRequireMonkeyPatchTest < TestCase
-    def setup
-      super
-      omit "ReloadableRequire requires Ruby::Box" if !defined?(Ruby::Box) || !Ruby::Box.enabled?
-      require "irb/reloadable_require"
-      @saved_original_require = Ruby::Box.instance_method(:__irb_original_require__)
-    end
-
-    def teardown
-      super
-      saved = @saved_original_require
-      if saved
-        Ruby::Box.define_method(:__irb_original_require__, saved)
-      end
-    end
-
-    def test_original_require_alias_preserved_on_double_load
-      IRB::ReloadableRequire.apply_autoload_hook
-
-      # Double-loading the file should not overwrite __irb_original_require__
-      # with the already-patched require method.
-      load File.expand_path("../../lib/irb/reloadable_require.rb", __dir__)
-
-      assert_equal @saved_original_require, Ruby::Box.instance_method(:__irb_original_require__)
     end
   end
 
