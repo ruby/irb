@@ -253,7 +253,7 @@ module IRB
 
     register(:cd, Command::CD)
     register(:copy, Command::Copy)
-    register(:reload, Command::Reload)
+    register(:box_reload, Command::BoxReload)
   end
 
   ExtendCommand = Command

@@ -4,17 +4,42 @@ module IRB
   # :stopdoc:
 
   module Command
-    class Reload < Base
+    class BoxReload < Base
       category "IRB"
-      description "Reload files that were loaded via require in IRB session."
+      description "[Experimental] Reload files that were loaded via require in IRB session (requires Ruby::Box)."
+
+      help_message <<~HELP
+        Usage: box_reload
+
+        Reloads all Ruby files that were loaded via `require` or `require_relative`
+        during the current IRB session. This allows you to pick up changes made to
+        source files without restarting IRB.
+
+        Setup:
+          1. Start Ruby with RUBY_BOX=1 environment variable
+          2. Set IRB.conf[:RELOADABLE_REQUIRE] = true in your .irbrc
+
+        Example:
+          # In .irbrc:
+          IRB.conf[:RELOADABLE_REQUIRE] = true
+
+          # In IRB session:
+          require 'my_lib'  # loaded and tracked
+          # ... edit my_lib.rb ...
+          box_reload         # reloads the file
+
+        Note: This feature is experimental and requires Ruby::Box (Ruby 4.0+).
+        Native extensions (.so/.bundle) cannot be reloaded.
+      HELP
 
       def execute(_arg)
         unless reloadable_require_available?
-          warn "The reload command requires IRB.conf[:RELOADABLE_REQUIRE] = true and Ruby::Box (Ruby 4.0+) with RUBY_BOX=1 environment variable."
+          warn "box_reload requires IRB.conf[:RELOADABLE_REQUIRE] = true and Ruby::Box (Ruby 4.0+) with RUBY_BOX=1 environment variable."
           return
         end
 
-        files = IRB.conf[:__RELOADABLE_FILES__]
+        ReloadableRequire.collect_autoloaded_files
+        files = ReloadableRequire.reloadable_files
         if files.empty?
           puts "No files to reload. Use require to load files first."
           return

@@ -37,7 +37,7 @@ module TestIRB
         type "require 'nested_a'"
         type "NESTED_A_VALUE"
         type "NESTED_B_VALUE"
-        type "reload"
+        type "box_reload"
         type "exit!"
       end
 
@@ -56,7 +56,7 @@ module TestIRB
         type "require_relative 'require_relative_lib'"
         type "REQUIRE_RELATIVE_LIB_VALUE"
         type "REQUIRE_RELATIVE_DEP"
-        type "reload"
+        type "box_reload"
         type "exit!"
       end
 
@@ -75,7 +75,7 @@ module TestIRB
         type "require '#{@relative_nested_a_path}'"
         type "RELATIVE_NESTED_A"
         type "RELATIVE_NESTED_B"
-        type "reload"
+        type "box_reload"
         type "exit!"
       end
 
@@ -94,7 +94,7 @@ module TestIRB
         type "autoload :AutoloadMain, 'autoload_main'"
         type "AutoloadMain::VALUE"
         type "AUTOLOAD_DEP_VALUE"
-        type "reload"
+        type "box_reload"
         type "exit!"
       end
 
@@ -110,7 +110,7 @@ module TestIRB
       RUBY
 
       output = run_ruby_file do
-        type "reload"
+        type "box_reload"
         type "exit!"
       end
 
@@ -126,7 +126,7 @@ module TestIRB
         type "require '#{@changeable_lib_path}'"
         type "CHANGEABLE_VALUE"
         type "File.write('#{@changeable_lib_path}', \"CHANGEABLE_VALUE = 'modified'\\n\")"
-        type "reload"
+        type "box_reload"
         type "CHANGEABLE_VALUE"
         type "exit!"
       end
@@ -146,7 +146,7 @@ module TestIRB
       RUBY
 
       output = run_ruby_file do
-        type "reload"
+        type "box_reload"
         type "exit!"
       end
 
@@ -194,7 +194,7 @@ module TestIRB
       output = run_ruby_file do
         type "require 'nested_a'"
         type "$LOADED_FEATURES.include?('#{@nested_a_path}')"
-        type "reload"
+        type "box_reload"
         type "$LOADED_FEATURES.include?('#{@nested_a_path}')"
         type "exit!"
       end
@@ -363,7 +363,7 @@ module TestIRB
       RUBY
 
       output = run_ruby_file do
-        type "reload"
+        type "box_reload"
         type "exit!"
       end
 
