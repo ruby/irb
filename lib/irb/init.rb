@@ -346,6 +346,8 @@ module IRB # :nodoc:
         opt = $1 || argv.shift
         prompt_mode = opt.upcase.tr("-", "_").intern
         @CONF[:PROMPT_MODE] = prompt_mode
+      when "--nobanner"
+        @CONF[:SHOW_BANNER] = false
       when "--noprompt"
         @CONF[:PROMPT_MODE] = :NULL
       when "--script"
