@@ -4,6 +4,8 @@ if !defined?(Ruby::Box) || !Ruby::Box.enabled?
   raise "ReloadableRequire requires Ruby::Box to be enabled"
 end
 
+require 'set'
+
 module IRB
   # Provides reload-aware require functionality for IRB.
   #
@@ -15,28 +17,6 @@ module IRB
   #
   # This feature requires Ruby::Box (Ruby 4.0+).
 
-  class << self
-    def track_and_load_files(source, current_box)
-      before = source.dup
-      result = yield
-      new_files = source - before
-
-      return result if new_files.empty?
-
-      ruby_files, native_extensions = new_files.partition { |path| path.end_with?('.rb') }
-
-      native_extensions.each { |path| current_box.require(path) }
-
-      IRB.conf[:__RELOADABLE_FILES__].merge(ruby_files)
-
-      main_loaded_features = current_box.eval('$LOADED_FEATURES')
-      main_loaded_features.concat(ruby_files - main_loaded_features)
-      ruby_files.each { |path| current_box.load(path) }
-
-      result
-    end
-  end
-
   unless Ruby::Box.method_defined?(:__irb_original_require__)
     Ruby::Box.class_eval do
       alias_method :__irb_original_require__, :require
@@ -45,14 +25,13 @@ module IRB
   end
 
   Ruby::Box.class_eval do
-
     def __irb_reloadable_require__(feature)
-      unless IRB.conf[:__AUTOLOAD_FILES__].include?(feature)
+      unless IRB::ReloadableRequire.autoload_files.include?(feature)
         return __irb_original_require__(feature)
       end
 
-      IRB.conf[:__AUTOLOAD_FILES__].delete(feature)
-      IRB.track_and_load_files($LOADED_FEATURES, Ruby::Box.main) { __irb_original_require__(feature) }
+      IRB::ReloadableRequire.autoload_files.delete(feature)
+      IRB::ReloadableRequire.track_and_load_files($LOADED_FEATURES, Ruby::Box.main) { __irb_original_require__(feature) }
     end
 
     def __irb_reloadable_require_relative__(feature)
@@ -61,7 +40,12 @@ module IRB
   end
 
   module ReloadableRequire
+    @reloadable_files = Set.new
+    @autoload_files = Set.new
+
     class << self
+      attr_reader :reloadable_files, :autoload_files
+
       def extended(base)
         apply_autoload_hook
       end
@@ -72,6 +56,26 @@ module IRB
           alias_method :require_relative, :__irb_reloadable_require_relative__
         end
       end
+
+      def track_and_load_files(source, current_box)
+        before = source.dup
+        result = yield
+        new_files = source - before
+
+        return result if new_files.empty?
+
+        ruby_files, native_extensions = new_files.partition { |path| path.end_with?('.rb') }
+
+        native_extensions.each { |path| current_box.require(path) }
+
+        @reloadable_files.merge(ruby_files)
+
+        main_loaded_features = current_box.eval('$LOADED_FEATURES')
+        main_loaded_features.concat(ruby_files - main_loaded_features)
+        ruby_files.each { |path| current_box.load(path) }
+
+        result
+      end
     end
 
     private
@@ -81,7 +85,7 @@ module IRB
       box.eval("$LOAD_PATH.concat(#{caller_box.eval('$LOAD_PATH')})")
       box.eval("$LOADED_FEATURES.concat(#{caller_box.eval('$LOADED_FEATURES')})")
 
-      IRB.track_and_load_files(box.eval('$LOADED_FEATURES'), caller_box) { box.__irb_original_require__(feature) }
+      ReloadableRequire.track_and_load_files(box.eval('$LOADED_FEATURES'), caller_box) { box.__irb_original_require__(feature) }
     end
 
     def require(feature)
@@ -108,7 +112,7 @@ module IRB
     end
 
     def autoload(const, feature)
-      IRB.conf[:__AUTOLOAD_FILES__] << feature
+      ReloadableRequire.autoload_files << feature
       Ruby::Box.main.eval("Kernel.autoload(:#{const}, #{feature.dump})")
     end
   end
