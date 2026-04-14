@@ -285,6 +285,11 @@ module TestIRB
       assert_equal(true, IRB.conf[:USE_TRACER])
     end
 
+    def test_nobanner
+      IRB.setup(eval("__FILE__"), argv: %w[--nobanner])
+      assert_equal(false, IRB.conf[:SHOW_BANNER])
+    end
+
     private
 
     def with_argv(argv)
