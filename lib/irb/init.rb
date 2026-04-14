@@ -54,6 +54,7 @@ module IRB # :nodoc:
     IRB.run_config
     IRB.validate_config
     IRB.load_modules
+    IRB::Color.init
 
     unless @CONF[:PROMPT][@CONF[:PROMPT_MODE]]
       fail UndefinedPromptMode, @CONF[:PROMPT_MODE]
