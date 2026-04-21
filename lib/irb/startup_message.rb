@@ -48,7 +48,7 @@ module IRB
       end
 
       def build_info_lines
-        version_line = "#{Color.colorize('IRB', [:BOLD])} v#{VERSION} \u2014 Ruby #{RUBY_VERSION}"
+        version_line = "#{Color.colorize('IRB', [:BOLD])} v#{VERSION} - Ruby #{RUBY_VERSION}"
         tip_line = colorize_tip(TIPS.sample)
         dir_line = Color.colorize(short_pwd, [:CYAN])
 
