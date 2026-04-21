@@ -135,6 +135,8 @@ module TestIRB
         'Foo.Bar(1)' => "#{BLUE}#{BOLD}#{UNDERLINE}Foo#{CLEAR}.#{CYAN}Bar#{CLEAR}(#{BLUE}#{BOLD}1#{CLEAR})",
         'Foo&.Bar(1)' => "#{BLUE}#{BOLD}#{UNDERLINE}Foo#{CLEAR}&.#{CYAN}Bar#{CLEAR}(#{BLUE}#{BOLD}1#{CLEAR})",
         'ENV' => "#{BLUE}#{BOLD}#{UNDERLINE}ENV#{CLEAR}",
+        'f do end' => "#{CYAN}f#{CLEAR} #{GREEN}do#{CLEAR} #{GREEN}end#{CLEAR}",
+        'f true do end' => "#{CYAN}f#{CLEAR} #{CYAN}#{BOLD}true#{CLEAR} #{GREEN}do#{CLEAR} #{GREEN}end#{CLEAR}",
       }
 
       tests.each do |code, result|

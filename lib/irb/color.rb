@@ -69,6 +69,7 @@ module IRB # :nodoc:
       KEYWORD_IN:         [GREEN],
       KEYWORD_DEF:        [GREEN],
       KEYWORD_DO:         [GREEN],
+      KEYWORD_DO_BLOCK:   [GREEN],
       KEYWORD_DO_LOOP:    [GREEN],
       KEYWORD_FOR:        [GREEN],
       KEYWORD_BEGIN:      [GREEN],
