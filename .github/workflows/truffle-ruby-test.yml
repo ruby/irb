@@ -1,4 +1,4 @@
-name: build-with-truffleruby-head
+name: build-with-truffleruby
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
 jobs:
   irb:
     if: github.repository == 'ruby/irb' || github.event_name != 'schedule'
-    name: rake test truffleruby-head ${{ matrix.with_latest_reline && '(latest reline)' || '' }}
+    name: rake test truffleruby ${{ matrix.with_latest_reline && '(latest reline)' || '' }}
     strategy:
       matrix:
         with_latest_reline: [true, false]
@@ -23,7 +23,7 @@ jobs:
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: truffleruby-head
+          ruby-version: truffleruby
           bundler-cache: true
       - name: Run tests
         run: bundle exec rake test
