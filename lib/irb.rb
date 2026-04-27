@@ -745,9 +745,11 @@ class Binding
   #     Cooked potato: true
   #
   # See IRB for more information.
+  #
   def irb(show_code: true)
     # Setup IRB with the current file's path and no command line arguments
     IRB.setup(source_location[0], argv: []) unless IRB.initialized?
+
     # Create a new workspace using the current binding
     workspace = IRB::WorkSpace.new(self)
     # Print the code around the binding if show_code is true
@@ -774,5 +776,39 @@ class Binding
       binding_irb.run(IRB.conf)
       binding_irb.debug_break
     end
+  end
+
+  # Opens a non-interactive IRB session designed for AI agents and scripts
+  # (experimental). Instead of opening a REPL, it exposes an IRB session over a
+  # Unix socket using a simple request/response protocol.
+  #
+  # The behavior depends on the +IRB_SOCK_PATH+ environment variable:
+  #
+  # - *Not set* (Phase 1 — discovery): prints instructions explaining the
+  #   workflow, then exits. This lets the agent discover the breakpoint and
+  #   learn the protocol.
+  # - *Set* (Phase 2 — debug session): starts a Unix socket server at the
+  #   given path. Each connection accepts one command, evaluates it, returns
+  #   the result, and closes. The IRB session state persists across
+  #   connections. Send +exit+ to end the session and resume app execution.
+  #
+  # See IRB::RemoteServer for the full protocol and workflow.
+  def agent
+    require_relative "irb/remote_server"
+    sock_path = ENV['IRB_SOCK_PATH']
+
+    # Phase 1 (discovery): no socket path set, so print instructions
+    # teaching the agent how to connect, then exit immediately.
+    # No IRB.setup needed since we're not starting a session.
+    unless sock_path
+      IRB::RemoteServer.print_instructions(self)
+      exit(0)
+    end
+
+    # Phase 2 (debug session): socket path set, start a request/response
+    # server that the agent can send commands to.
+    IRB.setup(source_location[0], argv: []) unless IRB.initialized?
+    server = IRB::RemoteServer.new(self, sock_path: sock_path)
+    server.run
   end
 end
