@@ -5,6 +5,7 @@
 #
 
 require_relative "helper_method"
+require_relative "reloadable_require" if defined?(Ruby::Box) && Ruby::Box.enabled?
 
 IRB::TOPLEVEL_BINDING = binding
 module IRB # :nodoc:
@@ -103,6 +104,10 @@ EOF
       ancestors = class<<main;ancestors;end
       main.extend ExtendCommandBundle if !ancestors.include?(ExtendCommandBundle)
       main.extend HelpersContainer if !ancestors.include?(HelpersContainer)
+
+      if IRB.conf[:RELOADABLE_REQUIRE] && defined?(ReloadableRequire) && !ancestors.include?(ReloadableRequire)
+        main.extend ReloadableRequire
+      end
     end
 
     # Evaluate the given +statements+ within the  context of this workspace.
