@@ -692,7 +692,7 @@ Command-line option `-U` sets both to UTF-8.
 
 ## Contributing
 
-See [CONTRIBUTING.md](https://github.com/ruby/irb/blob/main/CONTRIBUTING.md) for more information.
+See [CONTRIBUTING.md](https://github.com/ruby/irb/blob/master/CONTRIBUTING.md) for more information.
 
 ## Extending IRB
 
