@@ -96,6 +96,24 @@ module TestIRB
       refute_instance_of(IRB::CommandDocument, result)
     end
 
+    def test_helper_method_completion
+      assert_include(@completor.completion_candidates('', 'co', '', bind: binding), 'conf')
+      assert_include(@completor.completion_candidates('p(', 'co', '', bind: binding), 'conf')
+      assert_not_include(@completor.completion_candidates('def f(', 'co', '', bind: binding), 'conf')
+    end
+
+    def test_helper_method_document_target
+      result = @completor.doc_namespace('tap do ', 'conf', '', bind: binding)
+      assert_instance_of(IRB::HelperMethodDocument, result)
+      assert_equal('conf', result.name)
+
+      result = @completor.doc_namespace('tap do ', 'conf', '', bind: eval('conf = 1; binding'))
+      refute_instance_of(IRB::HelperMethodDocument, result)
+
+      result = @completor.doc_namespace('tap do |conf| ', 'conf', '', bind: binding)
+      refute_instance_of(IRB::HelperMethodDocument, result)
+    end
+
     def test_type_completor_handles_encoding_errors_gracefully
       invalid_method_name = "b\xff".dup.force_encoding(Encoding::ASCII_8BIT)
 

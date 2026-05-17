@@ -31,7 +31,6 @@ module IRB # :nodoc:
 
       workspace = WorkSpace.new(_main[0])
       replace_workspace(workspace)
-      workspace.load_helper_methods_to_main
     end
   end
 end

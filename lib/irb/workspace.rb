@@ -96,17 +96,9 @@ EOF
     # <code>IRB.conf[:__MAIN__]</code>
     attr_reader :main
 
-    def load_helper_methods_to_main
-      # Do not load helper methods to frozen objects and BasicObject
-      return unless Object === @main && !@main.frozen?
-
-      ancestors = class<<main;ancestors;end
-      main.extend ExtendCommandBundle if !ancestors.include?(ExtendCommandBundle)
-      main.extend HelpersContainer if !ancestors.include?(HelpersContainer)
-    end
-
     # Evaluate the given +statements+ within the  context of this workspace.
     def evaluate(statements, file = __FILE__, line = __LINE__)
+      statements = HelperMethod.inject_helper_methods(statements, local_variables: @binding.local_variables)
       eval(statements, @binding, file, line)
     end
 
@@ -162,19 +154,5 @@ EOF
 
       "\nFrom: #{file} @ line #{pos + 1} :\n\n#{body}#{Color.clear}\n"
     end
-  end
-
-  module HelpersContainer
-    class << self
-      def install_helper_methods
-        HelperMethod.helper_methods.each do |name, helper_method_class|
-          define_method name do |*args, **opts, &block|
-            helper_method_class.instance.execute(*args, **opts, &block)
-          end unless method_defined?(name)
-        end
-      end
-    end
-
-    install_helper_methods
   end
 end
