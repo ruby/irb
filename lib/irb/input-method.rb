@@ -374,6 +374,8 @@ module IRB
         contents = case target
         when CommandDocument
           input_method.command_doc_dialog_contents(target.name, width)
+        when HelperMethodDocument
+          input_method.helper_method_doc_dialog_contents(target.name, width)
         when MethodDocument
           input_method.rdoc_dialog_contents(target.name, width)
         else
@@ -394,6 +396,16 @@ module IRB
       return unless command_class
 
       [PRESS_ALT_D_TO_READ_FULL_DOC, ""] + command_class.doc_dialog_content(command_name, width)
+    end
+
+    def helper_method_doc_dialog_contents(helper_method_name, width)
+      helper_method_class = IRB::HelperMethod.helper_methods[helper_method_name.to_sym]
+      return unless helper_method_class
+      [
+        PRESS_ALT_D_TO_READ_FULL_DOC, "",
+        Color.colorize(helper_method_name, [:BOLD, :BLUE]) + Color.colorize(" (helper method)", [:CYAN]), "",
+        helper_method_class.description
+      ]
     end
 
     def easter_egg_dialog_contents
@@ -472,6 +484,13 @@ module IRB
           content = command_class.help_message || command_class.description
           Pager.page(retain_content: true) do |io|
             io.puts content
+          end
+        end
+      when HelperMethodDocument
+        helper_method_class = IRB::HelperMethod.helper_methods[target.name.to_sym]
+        if helper_method_class
+          Pager.page(retain_content: true) do |io|
+            io.puts helper_method_class.description
           end
         end
       when MethodDocument
