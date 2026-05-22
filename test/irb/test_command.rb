@@ -595,6 +595,14 @@ module TestIRB
       assert_empty err
       assert_match(/^From: .+ @ line \d+ :\n/, out)
     end
+
+    def test_whereami_file
+      out, err = execute_lines(
+        "whereami -f\n",
+      )
+      assert_empty err
+      assert_match(/^From: .+ @ line \d+ :\n\s+1:/, out)
+    end
   end
 
   class LsTest < CommandTestCase
