@@ -258,6 +258,11 @@ module IRB # :nodoc:
           super
         end
 
+        def visit_implicit_node(_node)
+          # Label of implicit nodes are colored as LABEL in visit_symbol_node.
+          # We need to prevent value part from being colored with another type.
+        end
+
         def visit_call_node(node)
           if node.call_operator_loc.nil? && OPERATORS.include?(node.name)
             # Operators should not be colored as method call

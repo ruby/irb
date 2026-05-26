@@ -137,6 +137,7 @@ module TestIRB
         'ENV' => "#{BLUE}#{BOLD}#{UNDERLINE}ENV#{CLEAR}",
         'f do end' => "#{CYAN}f#{CLEAR} #{GREEN}do#{CLEAR} #{GREEN}end#{CLEAR}",
         'f true do end' => "#{CYAN}f#{CLEAR} #{CYAN}#{BOLD}true#{CLEAR} #{GREEN}do#{CLEAR} #{GREEN}end#{CLEAR}",
+        '{"foo": 1, bar:, BAZ:}' => "{#{MAGENTA}\"foo\":#{CLEAR} #{BLUE}#{BOLD}1#{CLEAR}, #{MAGENTA}bar:#{CLEAR}, #{MAGENTA}BAZ:#{CLEAR}}",
       }
 
       tests.each do |code, result|
