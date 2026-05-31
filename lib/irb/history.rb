@@ -64,13 +64,6 @@ module IRB
     def save_history
       return unless History.save_history?
       return unless (history_file = History.history_file)
-      unless ensure_history_file_writable(history_file)
-        warn <<~WARN
-          Can't write history to #{History.history_file.inspect} due to insufficient permissions.
-          Please verify the value of `IRB.conf[:HISTORY_FILE]`. Ensure the folder exists and that both the folder and file (if it exists) are writable.
-        WARN
-        return
-      end
 
       history = self.class::HISTORY.to_a
 
@@ -80,36 +73,43 @@ module IRB
         append_history = true
       end
 
-      File.open(history_file, (append_history ? "a" : "w"), 0o600, encoding: IRB.conf[:LC_MESSAGES]&.encoding) do |f|
-        hist = history.map { |l| l.scrub.split("\n").join("\\\n") }
+      begin
+        ensure_history_file_permissions(history_file)
 
-        unless append_history || History.infinite?
-          # Check size before slicing because array.last(huge_number) raises RangeError.
-          hist = hist.last(History.save_history) if hist.size > History.save_history
+        File.open(history_file, (append_history ? "a" : "w"), 0o600, encoding: IRB.conf[:LC_MESSAGES]&.encoding) do |f|
+          hist = history.map { |l| l.scrub.split("\n").join("\\\n") }
+
+          unless append_history || History.infinite?
+            # Check size before slicing because array.last(huge_number) raises RangeError.
+            hist = hist.last(History.save_history) if hist.size > History.save_history
+          end
+
+          f.puts(hist)
         end
-
-        f.puts(hist)
+      rescue Errno::ENOENT
+        warn <<~WARN
+          Can't write history to #{History.history_file.inspect} because the folder does not exist.
+          Please verify the value of `IRB.conf[:HISTORY_FILE]`. Ensure the folder exists.
+        WARN
+      rescue Errno::EACCES, Errno::EPERM
+        warn <<~WARN
+          Can't write history to #{History.history_file.inspect} due to insufficient permissions.
+          Please verify the value of `IRB.conf[:HISTORY_FILE]`. Ensure the folder exists and that both the folder and file (if it exists) are writable.
+        WARN
       end
     end
 
     private
 
-    # Returns boolean whether writing to +history_file+ will be possible.
     # Permissions of already existing +history_file+ are changed to
     # owner-only-readable if necessary [BUG #7694].
-    def ensure_history_file_writable(history_file)
+    def ensure_history_file_permissions(history_file)
       history_file = Pathname.new(history_file)
 
-      return false unless history_file.dirname.writable?
-      return true unless history_file.exist?
+      return unless history_file.exist?
 
-      begin
-        if history_file.stat.mode & 0o66 != 0
-          history_file.chmod 0o600
-        end
-        true
-      rescue Errno::EPERM # no permissions
-        false
+      if history_file.stat.mode & 0o66 != 0
+        history_file.chmod 0o600
       end
     end
   end

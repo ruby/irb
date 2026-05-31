@@ -169,6 +169,33 @@ module TestIRB
       assert_equal(%w"line0 line1 line2", File.read(history_file).split)
     end
 
+    def test_history_save_uses_actual_write_result_not_directory_writable_predicate
+      IRB.conf[:SAVE_HISTORY] = 1
+      io = TestInputMethodWithRelineHistory.new
+      io.class::HISTORY.clear
+      io.class::HISTORY << "line1"
+
+      history_file = IRB.rc_file("_history")
+      FileUtils.rm_f(history_file)
+
+      original_writable = Pathname.instance_method(:writable?)
+      Pathname.class_eval do
+        define_method(:writable?) { false }
+      end
+
+      assert_warn("") do
+        io.save_history
+      end
+
+      assert_equal("line1\n", File.read(history_file))
+    ensure
+      if original_writable
+        Pathname.class_eval do
+          define_method(:writable?, original_writable)
+        end
+      end
+    end
+
     def test_history_different_encodings
       IRB.conf[:SAVE_HISTORY] = 2
       IRB.conf[:LC_MESSAGES] = IRB::Locale.new("en_US.ASCII")
