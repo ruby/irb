@@ -1,8 +1,7 @@
 # frozen_string_literal: false
-require 'irb'
 require "tempfile"
 
-require_relative "helper"
+require_relative "history_test_case"
 
 return if RUBY_PLATFORM.match?(/solaris|mswin|mingw/i)
 
@@ -14,26 +13,7 @@ module TestIRB
     Readline = ::Reline
   end
 
-  class HistoryTest < TestCase
-    def setup
-      @conf_backup = IRB.conf.dup
-      @original_verbose, $VERBOSE = $VERBOSE, nil
-      @tmpdir = Dir.mktmpdir("test_irb_history_")
-      setup_envs(home: @tmpdir)
-      IRB.conf[:LC_MESSAGES] = IRB::Locale.new
-      save_encodings
-      IRB.instance_variable_set(:@existing_rc_name_generators, nil)
-    end
-
-    def teardown
-      IRB.conf.replace(@conf_backup)
-      IRB.instance_variable_set(:@existing_rc_name_generators, nil)
-      teardown_envs
-      restore_encodings
-      $VERBOSE = @original_verbose
-      FileUtils.rm_rf(@tmpdir)
-    end
-
+  class HistoryTest < HistoryTestCase
     class TestInputMethodWithRelineHistory < TestInputMethod
       # When IRB.conf[:USE_MULTILINE] is true, IRB::RelineInputMethod uses Reline::History
       HISTORY = Reline::History.new(Reline.core.config)

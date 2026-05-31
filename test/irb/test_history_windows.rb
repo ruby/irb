@@ -1,12 +1,8 @@
 # frozen_string_literal: false
-require "irb"
-require "fileutils"
-require "tmpdir"
-
-require_relative "helper"
+require_relative "history_test_case"
 
 module TestIRB
-  class HistoryWindowsTest < TestCase
+  class HistoryWindowsTest < HistoryTestCase
     class TestInputMethodWithHistory < TestInputMethod
       HISTORY = []
 
@@ -19,42 +15,27 @@ module TestIRB
       end
     end
 
-    def setup
-      @conf_backup = IRB.conf.dup
-      @original_verbose, $VERBOSE = $VERBOSE, nil
-      IRB.instance_variable_set(:@existing_rc_name_generators, nil)
-    end
-
-    def teardown
-      IRB.conf.replace(@conf_backup)
-      IRB.instance_variable_set(:@existing_rc_name_generators, nil)
-      TestInputMethodWithHistory::HISTORY.clear
-      $VERBOSE = @original_verbose
-    end
-
     def test_history_is_saved_in_readonly_attributed_directory
       omit "Windows-only" unless windows?
 
-      Dir.mktmpdir("test_irb_history_windows_") do |tmpdir|
-        history_dir = File.join(tmpdir, "history")
-        history_file = File.join(history_dir, "irb_history")
-        FileUtils.mkdir_p(history_dir)
+      history_dir = File.join(@tmpdir, "history")
+      history_file = File.join(history_dir, "irb_history")
+      FileUtils.mkdir_p(history_dir)
 
-        with_readonly_attribute(history_dir) do
-          assert_nothing_raised do
-            File.write(File.join(history_dir, "manual_write"), "ok")
-          end
-
-          _output, warning = capture_output do
-            run_irb_with_history(history_file)
-          end
-
-          assert_equal("", warning)
-          assert_equal(<<~HISTORY, File.read(history_file))
-            puts 'history_entry'
-            exit
-          HISTORY
+      with_readonly_attribute(history_dir) do
+        assert_nothing_raised do
+          File.write(File.join(history_dir, "manual_write"), "ok")
         end
+
+        _output, warning = capture_output do
+          run_irb_with_history(history_file)
+        end
+
+        assert_equal("", warning)
+        assert_equal(<<~HISTORY, File.read(history_file))
+          puts 'history_entry'
+          exit
+        HISTORY
       end
     end
 
