@@ -994,6 +994,11 @@ module TestIRB
     def test_context_mode_ruby_box
       omit if RUBY_VERSION < "4.0.0"
       @envs['RUBY_BOX'] = '1'
+      # Ruby::Box now initializes RubyGems per box upstream. Avoid loading bundler context into test execution context.
+      %w[BUNDLER_SETUP BUNDLER_VERSION BUNDLE_BIN_PATH BUNDLE_GEMFILE RUBYOPT].each do |env|
+        @envs[env] = nil
+      end
+      @envs['RUBYLIB'] = Gem.loaded_specs.fetch('reline').full_require_paths.join(File::PATH_SEPARATOR)
 
       write_rc <<~'RUBY'
         IRB.conf[:CONTEXT_MODE] = 5
