@@ -93,6 +93,43 @@ You can use IRB as a debugging console with `debug.gem` with these options:
 
 To learn more about debugging with IRB, see [Debugging with IRB](#label-Debugging+with+IRB).
 
+### Agent Mode (Experimental)
+
+`binding.agent` starts a non-interactive IRB session designed for AI agents and scripts. Instead of opening a terminal REPL, it exposes an IRB session over a Unix socket using a simple request/response protocol. It is available on platforms where Ruby supports Unix sockets.
+
+The behavior depends on the `IRB_SOCK_PATH` environment variable:
+
+- **Not set**: prints instructions explaining the workflow, then exits. This lets the agent discover the breakpoint and learn the protocol, but the process state from this run is not retained.
+- **Set**: starts a Unix socket server at the given path. Each connection accepts one complete request, evaluates it, returns IRB's output, and closes. The IRB session state persists across connections. Send `exit` to end the session and resume app execution, or `exit!` to exit the process.
+
+IRB results, errors, and command output are returned through the socket. Output written by the program itself remains on the program's standard output or error stream, so other application threads are not redirected into an agent response.
+
+Use a unique socket path in a private directory. IRB refuses active and non-socket paths and checks socket identity before cleanup, but reclaiming a stale path is not an atomic security boundary against another process that can write to the same directory.
+
+Commands that inspect or mutate the current IRB session work normally, including registered custom commands, aliases, `history`, `ls`, `show_source`, and `show_doc` with a target. Commands that start another interactive input loop are unavailable: debug commands, deprecated multi-IRB commands, `edit`, and `show_doc` without a target. Agent history lasts for the session and is not written to the user's IRB history file.
+
+```console
+# app.rb
+require "irb"
+binding.agent
+```
+
+```console
+# 1. First run: discover the breakpoint.
+$ ruby app.rb
+IRB agent breakpoint hit at app.rb:14 in `cook!`
+...
+
+# 2. Re-run in background with a socket path.
+$ IRB_SOCK_PATH=/tmp/irb-debug.sock ruby app.rb &
+
+# 3. Send commands.
+$ ruby -e 'require "socket"; s = UNIXSocket.new("/tmp/irb-debug.sock"); s.puts "ls"; s.close_write; puts s.read; s.close'
+$ ruby -e 'require "socket"; s = UNIXSocket.new("/tmp/irb-debug.sock"); s.puts "exit"; s.close_write; puts s.read; s.close'
+```
+
+See IRB::AgentSession for more details.
+
 ## Startup
 
 At startup, IRB:
@@ -681,7 +718,7 @@ This integration offers several benefits over `debug.gem`'s native console:
 However, there are some limitations to be aware of:
 
 1. `binding.irb` doesn't support `pre` and `do` arguments like [binding.break](https://github.com/ruby/debug#bindingbreak-method).
-2. As IRB [doesn't currently support remote-connection](https://github.com/ruby/irb/issues/672), it can't be used with `debug.gem`'s remote debugging feature.
+2. The regular `binding.irb` console does not support `debug.gem`'s remote debugging feature. For agent-oriented remote evaluation, use the separate `binding.agent` Unix-socket workflow.
 3. Access to the previous return value via the underscore `_` is not supported.
 
 ## Encodings

@@ -117,7 +117,13 @@ module IRB # :nodoc:
 
     class << self
       def colorable?
-        supported = $stdout.tty? && (/mswin|mingw/.match?(RUBY_PLATFORM) || (ENV.key?('TERM') && ENV['TERM'] != 'dumb'))
+        context = begin
+          IRB.CurrentContext if IRB.respond_to?(:CurrentContext)
+        rescue StandardError
+          nil
+        end
+        output = context&.output || $stdout
+        supported = output.tty? && (/mswin|mingw/.match?(RUBY_PLATFORM) || (ENV.key?('TERM') && ENV['TERM'] != 'dumb'))
 
         # because ruby/debug also uses irb's color module selectively,
         # irb won't be activated in that case.

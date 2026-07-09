@@ -24,7 +24,7 @@ module IRB
     # +nil+::     uses stdin or Reline or Readline
     # +String+::  uses a File
     # +other+::   uses this as InputMethod
-    def initialize(irb, workspace = nil, input_method = nil)
+    def initialize(irb, workspace = nil, input_method = nil, verbose: IRB.conf[:VERBOSE])
       @irb = irb
       @workspace_stack = []
       if workspace
@@ -62,7 +62,7 @@ module IRB
         @use_multiline = nil
       end
       @use_autocomplete = IRB.conf[:USE_AUTOCOMPLETE]
-      @verbose = IRB.conf[:VERBOSE]
+      @verbose = verbose
       @io = nil
 
       self.inspect_mode = IRB.conf[:INSPECT_MODE]
@@ -135,6 +135,7 @@ module IRB
       else
         @io = input_method
       end
+      @output = @io
       @extra_doc_dirs = IRB.conf[:EXTRA_DOC_DIRS]
 
       @echo = IRB.conf[:ECHO]
@@ -216,6 +217,8 @@ module IRB
     # RelineInputMethod, FileInputMethod or other specified when the
     # context is created. See ::new for more # information on +input_method+.
     attr_accessor :io
+    # The output method paired with this context.
+    attr_accessor :output
 
     # Current irb session.
     attr_accessor :irb
@@ -557,7 +560,12 @@ module IRB
         result = evaluate_expression(statement.code, line_no)
         set_last_value(result)
       when Statement::Command
-        statement.command_class.execute(self, statement.arg)
+        if reason = output.command_unavailable_reason(statement.command_class, statement.arg)
+          command_name = statement.code.split(/\s+/, 2).first
+          output.puts "The `#{command_name}` command is unavailable in this session because #{reason}."
+        else
+          statement.command_class.execute(self, statement.arg)
+        end
       when Statement::IncorrectAlias
         warn statement.message
       end
@@ -660,7 +668,7 @@ module IRB
     end
 
     def inspect_last_value(output = +'') # :nodoc:
-      @inspect_method.inspect_value(@last_value, output)
+      @inspect_method.inspect_value(@last_value, output, error_output: @output)
     end
 
     def inspector_support_stream_output?
@@ -668,7 +676,7 @@ module IRB
     end
 
     NOPRINTING_IVARS = ["@last_value"] # :nodoc:
-    NO_INSPECTING_IVARS = ["@irb", "@io"] # :nodoc:
+    NO_INSPECTING_IVARS = ["@irb", "@io", "@output"] # :nodoc:
     IDNAME_IVARS = ["@prompt_mode"] # :nodoc:
 
     alias __inspect__ inspect
@@ -704,6 +712,26 @@ module IRB
     end
 
     private
+
+    def output_method
+      @output || @io || $stdout
+    end
+
+    def print(*args)
+      output_method.print(*args)
+    end
+
+    def puts(*args)
+      output_method.puts(*args)
+    end
+
+    def warn(*messages, **kwargs)
+      if @output || @io
+        output_method.warn(*messages, **kwargs)
+      else
+        Kernel.warn(*messages, **kwargs)
+      end
+    end
 
     def term_interactive?
       return true if ENV['TEST_IRB_FORCE_INTERACTIVE']

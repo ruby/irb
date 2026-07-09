@@ -9,18 +9,18 @@ module IRB
     PAGE_COMMANDS = [ENV['RI_PAGER'], ENV['PAGER'], 'less', 'more'].compact.uniq
 
     class << self
-      def page_content(content, **options)
+      def page_content(content, output: $stdout, **options)
         if content_exceeds_screen_height?(content)
-          page(**options) do |io|
+          page(output: output, **options) do |io|
             io.puts content
           end
         else
-          $stdout.puts content
+          output.puts content
         end
       end
 
-      def page(retain_content: false)
-        if should_page? && pager = setup_pager(retain_content: retain_content)
+      def page(retain_content: false, output: $stdout)
+        if should_page?(output: output) && pager = setup_pager(retain_content: retain_content)
           begin
             pid = pager.pid
             yield pager
@@ -28,7 +28,7 @@ module IRB
             pager.close
           end
         else
-          yield $stdout
+          yield output
         end
       # When user presses Ctrl-C, IRB would raise `IRB::Abort`
       # But since Pager is implemented by running paging commands like `less` in another process with `IO.popen`,
@@ -57,28 +57,28 @@ module IRB
       rescue Errno::EPIPE
       end
 
-      def should_page?
-        IRB.conf[:USE_PAGER] && STDIN.tty? && (ENV.key?("TERM") && ENV["TERM"] != "dumb")
+      def should_page?(output: $stdout)
+        IRB.conf[:USE_PAGER] && STDIN.tty? && output.tty? && (ENV.key?("TERM") && ENV["TERM"] != "dumb")
       end
 
-      def page_with_preview(width, height, formatter_proc)
+      def page_with_preview(width, height, formatter_proc, output: $stdout)
         overflow_callback = ->(lines) do
           modified_output = formatter_proc.call(lines.join, true)
           content, = take_first_page(width, [height - 2, 0].max) {|o| o.write modified_output }
           content = content.chomp
           content = "#{content}\e[0m" if Color.colorable?
-          $stdout.puts content
-          $stdout.puts 'Preparing full inspection value...'
+          output.puts content
+          output.puts 'Preparing full inspection value...'
         end
         out = PageOverflowIO.new(width, height, overflow_callback, delay: 0.1)
         yield out
         content = formatter_proc.call(out.string, out.multipage?)
         if out.multipage?
-          page(retain_content: true) do |io|
+          page(retain_content: true, output: output) do |io|
             io.puts content
           end
         else
-          $stdout.puts content
+          output.puts content
         end
       end
 

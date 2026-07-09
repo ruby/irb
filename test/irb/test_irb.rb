@@ -994,6 +994,12 @@ module TestIRB
     def test_context_mode_ruby_box
       omit if RUBY_VERSION < "4.0.0"
       @envs['RUBY_BOX'] = '1'
+      @envs["RUBYLIB"] = Gem.loaded_specs.fetch("reline")
+        .full_require_paths.join(File::PATH_SEPARATOR)
+      ENV.each_key.grep(/\ABUNDLE/).each do |key|
+        @envs[key] = nil
+      end
+      @envs["RUBYOPT"] = nil
 
       write_rc <<~'RUBY'
         IRB.conf[:CONTEXT_MODE] = 5

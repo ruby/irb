@@ -98,19 +98,23 @@ module IRB # :nodoc:
     end
 
     # Proc to call when the input is evaluated and output in irb.
-    def inspect_value(v, output, colorize: true)
-      support_stream_output? ? @inspect.call(v, output, colorize: colorize) : output << @inspect.call(v, colorize: colorize)
+    def inspect_value(v, output, colorize: true, error_output: $stdout)
+      options = { colorize: colorize }
+      if @inspect.parameters.any? { |type, name| type == :keyrest || ([:key, :keyreq].include?(type) && name == :error_output) }
+        options[:error_output] = error_output
+      end
+
+      support_stream_output? ? @inspect.call(v, output, **options) : output << @inspect.call(v, **options)
     rescue => e
-      puts "An error occurred when inspecting the object: #{e.inspect}"
+      error_output.puts "An error occurred when inspecting the object: #{e.inspect}"
 
       begin
-        puts "Result of Kernel#inspect: #{KERNEL_INSPECT.bind_call(v)}"
-        ''
+        error_output.puts "Result of Kernel#inspect: #{KERNEL_INSPECT.bind_call(v)}"
       rescue => e
-        puts "An error occurred when running Kernel#inspect: #{e.inspect}"
-        puts e.backtrace.join("\n")
-        ''
+        error_output.puts "An error occurred when running Kernel#inspect: #{e.inspect}"
+        error_output.puts e.backtrace.join("\n")
       end
+      +''
     end
   end
 
@@ -121,11 +125,11 @@ module IRB # :nodoc:
   Inspector.def_inspector([true, :pp, :pretty_inspect], proc{require_relative "color_printer"}){|v, output, colorize: true|
     IRB::ColorPrinter.pp(v, output, colorize: colorize)
   }
-  Inspector.def_inspector([:yaml, :YAML], proc{require "yaml"}){|v|
+  Inspector.def_inspector([:yaml, :YAML], proc{require "yaml"}){|v, error_output: $stdout, **_kwargs|
     begin
       YAML.dump(v)
     rescue
-      puts "(can't dump yaml. use inspect)"
+      error_output.puts "(can't dump yaml. use inspect)"
       v.inspect
     end
   }

@@ -34,7 +34,7 @@ module IRB
         def execute(irb_context, arg)
           new(irb_context).execute(arg)
         rescue CommandArgumentError => e
-          puts e.message
+          irb_context.output.puts e.message
         end
 
         # Returns formatted lines for display in the doc dialog popup.
@@ -87,6 +87,32 @@ module IRB
 
       def execute(arg)
         #nop
+      end
+
+      private
+
+      def output
+        irb_context.output
+      end
+
+      def write(*args)
+        output.write(*args)
+      end
+
+      def print(*args)
+        output.print(*args)
+      end
+
+      def printf(*args)
+        output.printf(*args)
+      end
+
+      def puts(*args)
+        output.puts(*args)
+      end
+
+      def warn(*messages, **kwargs)
+        output.warn(*messages, **kwargs)
       end
     end
 

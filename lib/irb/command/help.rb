@@ -17,7 +17,7 @@ module IRB
               "Can't find command `#{command_name}`. Please check the command name and try again.\n\n"
             end
           end
-        Pager.page_content(content)
+        Pager.page_content(content, output: irb_context.output)
       end
 
       private
