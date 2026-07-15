@@ -95,6 +95,17 @@ module TestIRB
         assert_include(completion_candidates("String.ne", binding), "String.new")
         assert_equal("String.new", doc_namespace("String.new", binding))
       end
+
+      def test_complete_methods_are_sorted
+        u = ''
+        u.clear
+
+        candidates = completion_candidates("u.", binding)
+        assert_include(candidates, "u.__id__")
+        underscore, regular = candidates.partition { |c| c.start_with?("u._") }
+        # Alphabetical order, internal methods (leading underscore) last
+        assert_equal(regular.sort + underscore.sort, candidates)
+      end
     end
 
     class RequireComepletionTest < CompletionTest
@@ -215,6 +226,11 @@ module TestIRB
         candidates = completion_candidates("xz", binding)
         assert_equal(%w[xzy xzy2 xzy_1], candidates)
       end
+
+      def test_complete_sort_global_variables
+        candidates = completion_candidates("$std", binding)
+        assert_equal(%w[$stderr $stdin $stdout], candidates)
+      end
     end
 
     class ConstantCompletionTest < CompletionTest
@@ -253,6 +269,18 @@ module TestIRB
       assert_empty(completion_candidates(":irb_unknown_symbol_abcdefg", binding))
       # Do not complete empty symbol for performance reason
       assert_empty(completion_candidates(":", binding))
+    end
+
+    def test_complete_symbols_are_sorted
+      candidates = completion_candidates(":a", binding)
+      refute_empty(candidates)
+      assert_equal(candidates.sort, candidates)
+    end
+
+    def test_complete_absolute_constants_are_sorted
+      candidates = completion_candidates("::S", binding)
+      refute_empty(candidates)
+      assert_equal(candidates.sort, candidates)
     end
 
     def test_complete_invalid_three_colons
