@@ -215,6 +215,82 @@ module TestIRB
     end
   end if defined?(RDoc)
 
+  class RdocDialogContentsTest < InputMethodTest
+    def test_shows_error_content_when_document_retrieval_raises
+      input_method = build_input_method(failing_driver(ArgumentError.new("undefined class/module RDoc::")))
+
+      contents = nil
+      assert_nothing_raised do
+        contents = input_method.rdoc_dialog_contents("1.foo", 40)
+      end
+
+      assert_not_nil contents
+      assert(contents.any? { |line| line.include?("ArgumentError") },
+             "expected the error to be shown in the dialog contents: #{contents.inspect}")
+      hint_index = contents.index { |line| line.include?("-d") }
+      assert_not_nil hint_index, "expected the hint to run with -d in the dialog contents: #{contents.inspect}"
+      assert_equal "", contents[hint_index - 1],
+                   "expected a blank line before the -d hint: #{contents.inspect}"
+      assert(contents.none? { |line| line.include?(IRB::RelineInputMethod::PRESS_ALT_D_TO_READ_FULL_DOC) },
+             "the full document hint must not be shown on error: #{contents.inspect}")
+    end
+
+    def test_raises_the_error_when_debug_is_enabled
+      input_method = build_input_method(failing_driver(ArgumentError.new("undefined class/module RDoc::")))
+
+      original_debug = $DEBUG
+      $DEBUG = true
+      # $DEBUG makes Ruby print raised exceptions to stderr; swallow that noise.
+      capture_output do
+        assert_raise(ArgumentError) do
+          input_method.rdoc_dialog_contents("1.foo", 40)
+        end
+      end
+    ensure
+      $DEBUG = original_debug
+    end
+
+    def test_includes_full_document_hint_when_document_is_available
+      input_method = build_input_method(documented_driver)
+
+      contents = input_method.rdoc_dialog_contents("1.foo", 40)
+
+      assert_equal IRB::RelineInputMethod::PRESS_ALT_D_TO_READ_FULL_DOC, contents.first
+    end
+
+    def test_returns_nil_when_document_not_found
+      input_method = build_input_method(failing_driver(RDoc::RI::Driver::NotFoundError.new("1.foo")))
+
+      assert_nil input_method.rdoc_dialog_contents("1.foo", 40)
+    end
+
+    private
+
+    def build_input_method(driver)
+      input_method = IRB::RelineInputMethod.new(IRB::RegexpCompletor.new)
+      input_method.instance_variable_set(:@rdoc_ri_driver, driver)
+      input_method
+    end
+
+    def failing_driver(error)
+      driver = Object.new
+      driver.define_singleton_method(:expand_name) { |name| name }
+      driver.define_singleton_method(:add_method) { |_document, _name| raise error }
+      driver.define_singleton_method(:classes_and_includes_and_extends_for) { |_name| raise error }
+      driver.define_singleton_method(:class_document) { |*| raise error }
+      driver
+    end
+
+    def documented_driver
+      driver = Object.new
+      driver.define_singleton_method(:expand_name) { |name| name }
+      driver.define_singleton_method(:add_method) do |document, _name|
+        document << RDoc::Markup::Paragraph.new("some documentation")
+      end
+      driver
+    end
+  end if defined?(RDoc)
+
   class CommandDocDialogContentTest < TestCase
     def setup
       @conf_backup = IRB.conf.dup

@@ -404,12 +404,29 @@ module IRB
     end
 
     def rdoc_dialog_contents(name, width)
+      formatter = RDoc::Markup::ToAnsi.new
+      formatter.width = width
+
+      begin
+        document = retrieve_rdoc_document(name)
+      rescue RDoc::RI::Driver::NotFoundError
+        return
+      rescue => e
+        raise if $DEBUG
+        return rdoc_error_document(e).accept(formatter).split("\n")
+      end
+      return unless document
+
+      [PRESS_ALT_D_TO_READ_FULL_DOC] + document.accept(formatter).split("\n")
+    end
+
+    def retrieve_rdoc_document(name)
       driver = rdoc_ri_driver
       return unless driver
 
       name = driver.expand_name(name)
 
-      doc = if name =~ /#|\./
+      if name =~ /#|\./
         d = RDoc::Markup::Document.new
         driver.add_method(d, name)
         d
@@ -423,11 +440,15 @@ module IRB
           driver.class_document(name, found, klasses, includes, extends)
         end
       end
+    end
 
-      formatter = RDoc::Markup::ToAnsi.new
-      formatter.width = width
-      [PRESS_ALT_D_TO_READ_FULL_DOC] + doc.accept(formatter).split("\n")
-    rescue RDoc::RI::Driver::NotFoundError
+    def rdoc_error_document(error)
+      document = RDoc::Markup::Document.new
+      document << RDoc::Markup::Paragraph.new("Failed to load the document:")
+      document << RDoc::Markup::Paragraph.new("#{error.class}: #{error.message}")
+      document << RDoc::Markup::BlankLine.new
+      document << RDoc::Markup::Paragraph.new("Restart IRB with -d to see the backtrace.")
+      document
     end
 
     def dialog_doc_position(cursor_pos_to_render, autocomplete_dialog, screen_width)
