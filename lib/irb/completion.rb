@@ -302,7 +302,7 @@ module IRB
           rescue EncodingError
             # ignore
           end
-          candidates.grep(/^#{Regexp.quote(sym)}/)
+          candidates.grep(/^#{Regexp.quote(sym)}/).sort
         end
       when /^::([A-Z][^:\.\(\)]*)$/
         # Absolute Constant or class methods
@@ -313,7 +313,7 @@ module IRB
         if doc_namespace
           candidates.find { |i| i == receiver }
         else
-          candidates.grep(/^#{Regexp.quote(receiver)}/).collect{|e| "::" + e}
+          candidates.grep(/^#{Regexp.quote(receiver)}/).sort.collect{|e| "::" + e}
         end
 
       when /^([A-Z].*)::([^:.]*)$/
@@ -331,7 +331,7 @@ module IRB
             candidates = []
           end
 
-          select_message(receiver, message, candidates.sort, "::")
+          select_message(receiver, message, candidates, "::")
         end
 
       when /^(:[^:.]+)(\.|::)([^.]*)$/
@@ -400,7 +400,7 @@ module IRB
         if doc_namespace
           all_gvars.find{ |i| i == gvar }
         else
-          all_gvars.grep(Regexp.new(Regexp.quote(gvar)))
+          all_gvars.grep(Regexp.new(Regexp.quote(gvar))).sort
         end
 
       when /^([^.:"].*)(\.|::)([^.]*)$/
@@ -452,7 +452,7 @@ module IRB
         if doc_namespace
           "String.#{candidates.find{ |i| i == message }}"
         else
-          select_message(receiver, message, candidates.sort)
+          select_message(receiver, message, candidates)
         end
       when /^\s*$/
         # empty input
@@ -491,7 +491,11 @@ module IRB
     Operators = %w[% & * ** + - / < << <= <=> == === =~ > >= >> [] []= ^ ! != !~]
 
     def select_message(receiver, message, candidates, sep = ".")
-      candidates.grep(/^#{Regexp.quote(message)}/).collect do |e|
+      sorted_candidates = candidates.grep(/^#{Regexp.quote(message)}/).sort_by do |e|
+        # Alphabetical order, but internal methods (leading underscore) last
+        [e.start_with?('_') ? 1 : 0, e]
+      end
+      sorted_candidates.collect do |e|
         case e
         when /^[a-zA-Z_]/
           receiver + sep + e
