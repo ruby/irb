@@ -19,6 +19,9 @@ module IRB
   class CommandDocument < DocumentTarget # :nodoc:
   end
 
+  class HelperMethodDocument < DocumentTarget # :nodoc:
+  end
+
   # Represents a method/class documentation target. May hold multiple names
   # when the receiver is ambiguous (e.g. `{}.any?` could be Hash#any? or Proc#any?).
   # The dialog popup uses only the first name; the full-screen display renders all.
@@ -105,6 +108,12 @@ module IRB
       end
     end
 
+    def helper_method_document_target(preposing, matched, local_variables:)
+      if IRB::HelperMethod.completions(preposing, matched, local_variables: local_variables).include?(matched)
+        HelperMethodDocument.new(matched)
+      end
+    end
+
     def retrieve_files_to_require_relative_from_current_dir
       @files_from_current_dir ||= Dir.glob("**/*.{rb,#{RbConfig::CONFIG['DLEXT']}}", base: '.').map { |path|
         path.sub(/\.(rb|#{RbConfig::CONFIG['DLEXT']})\z/, '')
@@ -143,11 +152,14 @@ module IRB
         # If the string cannot be converted, we just ignore it
         nil
       end
-      commands | encoded_candidates
+      helper_methods = IRB::HelperMethod.completions(preposing, target, local_variables: bind.local_variables)
+      commands | helper_methods | encoded_candidates
     end
 
     def doc_namespace(preposing, matched, _postposing, bind:)
-      command_document_target(preposing, matched) || begin
+      command_document_target(preposing, matched) ||
+      helper_method_document_target(preposing, matched, local_variables: bind.local_variables) ||
+      begin
         result = ReplTypeCompletor.analyze(preposing + matched, binding: bind, filename: @context.irb_path)
         result&.doc_namespace('')
       end
@@ -229,11 +241,15 @@ module IRB
         # If the string cannot be converted, we just ignore it
         nil
       end
-      commands | completion_data
+
+      helper_methods = IRB::HelperMethod.completions(preposing, target, local_variables: bind.local_variables)
+      commands | helper_methods | completion_data
     end
 
     def doc_namespace(preposing, matched, _postposing, bind:)
-      command_document_target(preposing, matched) || retrieve_completion_data(matched, bind: bind, doc_namespace: true)
+      command_document_target(preposing, matched) ||
+      helper_method_document_target(preposing, matched, local_variables: bind.local_variables) ||
+      retrieve_completion_data(matched, bind: bind, doc_namespace: true)
     end
 
     def retrieve_completion_data(input, bind:, doc_namespace:)

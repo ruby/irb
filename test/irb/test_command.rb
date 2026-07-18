@@ -495,15 +495,6 @@ module TestIRB
       assert_match(/=> #{self.class}\n$/, out)
     end
 
-    def test_pushws_extends_the_new_workspace_with_command_bundle
-      out, err = execute_lines(
-        "pushws Object.new",
-        "self.singleton_class.ancestors"
-      )
-      assert_empty err
-      assert_include(out, "IRB::ExtendCommandBundle")
-    end
-
     def test_pushws_prints_workspace_stack_when_no_arg_is_given
       out, err = execute_lines(
         "pushws",

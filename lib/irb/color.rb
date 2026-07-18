@@ -18,6 +18,11 @@ module IRB # :nodoc:
     CYAN      = 36
     WHITE     = 37
 
+    PRIORITY_ERROR = 0
+    PRIORITY_HELPER_METHOD = 1
+    PRIORITY_PRIOR_TOKEN = 2
+    PRIORITY_NORMAL_TOKEN = 3
+
     # Following pry's colors where possible
     TOKEN_SEQS = {
       KEYWORD_NIL:        [CYAN, BOLD],
@@ -106,6 +111,8 @@ module IRB # :nodoc:
       method_name:        [CYAN, BOLD],
       message_name:       [CYAN],
       symbol:             [YELLOW],
+      # helper method
+      helper_method:      [BOLD],
       # special colorization
       error:              [RED, REVERSE],
     }.transform_values do |styles|
@@ -162,7 +169,7 @@ module IRB # :nodoc:
       # If `complete` is false (code is incomplete), this does not warn compile_error.
       # This option is needed to avoid warning a user when the compile_error is happening
       # because the input is not wrong but just incomplete.
-      def colorize_code(code, complete: true, ignore_error: false, colorable: colorable?, local_variables: [])
+      def colorize_code(code, complete: true, ignore_error: false, colorable: colorable?, local_variables: [], helper_methods: false)
         return code unless colorable
 
         result = Prism.parse_lex(code, scopes: [local_variables])
@@ -180,9 +187,13 @@ module IRB # :nodoc:
         visitor = ColorizeVisitor.new
         prism_node.accept(visitor)
 
-        error_tokens = errors.map { |e| [e.location.start_line, e.location.start_column, 0, e.location.end_line, e.location.end_column, :error, e.location.slice] }
+        helper_method_locations = helper_methods ? IRB::HelperMethod.extract_helper_method_locations(prism_node) : []
+        helper_method_tokens = helper_method_locations.map { |loc| [loc.start_line, loc.start_column, PRIORITY_HELPER_METHOD, loc.end_line, loc.end_column, :helper_method, loc.slice] }
+
+        error_tokens = errors.map { |e| [e.location.start_line, e.location.start_column, PRIORITY_ERROR, e.location.end_line, e.location.end_column, :error, e.location.slice] }
         error_tokens.reject! { |t| t.last.match?(/\A\s*\z/) }
-        tokens = prism_tokens.map { |t,| [t.location.start_line, t.location.start_column, 2, t.location.end_line, t.location.end_column, t.type, t.value] }
+
+        tokens = prism_tokens.map { |t,| [t.location.start_line, t.location.start_column, PRIORITY_NORMAL_TOKEN, t.location.end_line, t.location.end_column, t.type, t.value] }
         tokens.pop if tokens.last&.[](5) == :EOF
 
         colored = +''
@@ -201,7 +212,7 @@ module IRB # :nodoc:
           end
         }
 
-        (visitor.tokens + tokens + error_tokens).sort.each do |start_line, start_column, _priority, end_line, end_column, type, value|
+        (visitor.tokens + tokens + error_tokens + helper_method_tokens).sort.each do |start_line, start_column, _priority, end_line, end_column, type, value|
           next if start_line - 1 < line_index || (start_line - 1 == line_index && start_column < col)
 
           flush.call(start_line - 1, start_column)
@@ -235,7 +246,7 @@ module IRB # :nodoc:
 
         def dispatch(location, type)
           if location
-            @tokens << [location.start_line, location.start_column, 1, location.end_line, location.end_column, type, location.slice]
+            @tokens << [location.start_line, location.start_column, PRIORITY_PRIOR_TOKEN, location.end_line, location.end_column, type, location.slice]
           end
         end
 
