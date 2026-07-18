@@ -53,7 +53,7 @@ module IRB
           grep = evaluate(grep_regexp_code)
         end
 
-        o = Output.new(grep: grep)
+        o = Output.new(grep: grep, output: irb_context.output)
 
         klass = Kernel.instance_method(:class).bind(obj).call
         obj_is_class_or_module = Module === obj
@@ -106,14 +106,15 @@ module IRB
       class Output
         MARGIN = "  "
 
-        def initialize(grep: nil)
+        def initialize(grep: nil, output: $stdout)
           @grep = grep
+          @output = output
           @line_width = screen_width - MARGIN.length # right padding
           @io = StringIO.new
         end
 
         def print_result
-          Pager.page_content(@io.string)
+          Pager.page_content(@io.string, output: @output)
         end
 
         def dump(name, strs)

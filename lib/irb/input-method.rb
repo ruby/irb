@@ -49,6 +49,55 @@ module IRB
       false
     end
 
+    # The output target paired with this input method.
+    def output
+      $stdout
+    end
+
+    def write(*args)
+      output.write(*args)
+    end
+
+    def print(*args)
+      output.print(*args)
+    end
+
+    def printf(*args)
+      output.printf(*args)
+    end
+
+    def puts(*args)
+      output.puts(*args)
+    end
+
+    def warn(*messages, **kwargs)
+      Kernel.warn(*messages, **kwargs)
+    end
+
+    def flush
+      output.flush
+    end
+
+    def tty?
+      output.tty?
+    end
+
+    def history
+      if self.class.const_defined?(:HISTORY)
+        self.class.const_get(:HISTORY)
+      else
+        []
+      end
+    end
+
+    def command_unavailable_reason(command_class, arg)
+      nil
+    end
+
+    def remote?
+      false
+    end
+
     # For debug message
     def inspect
       'Abstract InputMethod'

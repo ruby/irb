@@ -22,6 +22,15 @@ module TestIRB
       # Reset Reline configuration overridden by RelineInputMethod.
       Reline.instance_variable_set(:@core, nil)
     end
+
+    def test_history_uses_inherited_provider
+      history = ["1 + 1"]
+      parent = Class.new(IRB::InputMethod)
+      parent.const_set(:HISTORY, history)
+      child = Class.new(parent)
+
+      assert_same history, child.new.history
+    end
   end
 
   class RelineInputMethodTest < InputMethodTest

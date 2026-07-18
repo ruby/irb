@@ -27,16 +27,43 @@ module IRB
         name = unwrap_string_literal(arg)
         require 'rdoc/ri/driver'
 
-        unless ShowDoc.const_defined?(:Ri)
+        driver = if output.remote?
+          unless ShowDoc.const_defined?(:RemoteDriver, false)
+            remote_driver = Class.new(RDoc::RI::Driver) do
+              def initialize(options, output)
+                @output = output
+                super(options)
+              end
+
+              def page
+                yield @output
+              ensure
+                @paging = false
+              end
+
+              def formatter(_io)
+                require 'rdoc/markup/to_rdoc'
+                RDoc::Markup::ToRdoc.new
+              end
+            end
+            ShowDoc.const_set(:RemoteDriver, remote_driver)
+          end
+
           opts = RDoc::RI::Driver.process_args([])
-          ShowDoc.const_set(:Ri, RDoc::RI::Driver.new(opts))
+          ShowDoc::RemoteDriver.new(opts, output)
+        else
+          unless ShowDoc.const_defined?(:Ri, false)
+            opts = RDoc::RI::Driver.process_args([])
+            ShowDoc.const_set(:Ri, RDoc::RI::Driver.new(opts))
+          end
+          ShowDoc::Ri
         end
 
         if name.nil?
-          Ri.interactive
+          driver.interactive
         else
           begin
-            Ri.display_name(name)
+            driver.display_name(name)
           rescue RDoc::RI::Error
             puts $!.message
           end

@@ -18,7 +18,7 @@ module IRB
           grep = Regexp.new(match[:grep])
         end
 
-        formatted_inputs = irb_context.io.class::HISTORY.each_with_index.reverse_each.filter_map do |input, index|
+        formatted_inputs = irb_context.output.history.each_with_index.reverse_each.filter_map do |input, index|
           next if grep && !input.match?(grep)
 
           header = "#{index}: "
@@ -36,7 +36,7 @@ module IRB
           [first_line, *other_lines].join("\n") + "\n"
         end
 
-        Pager.page_content(formatted_inputs.join)
+        Pager.page_content(formatted_inputs.join, output: irb_context.output)
       end
     end
   end

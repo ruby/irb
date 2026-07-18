@@ -9,7 +9,7 @@ module IRB
       def execute(_arg)
         # This command just displays the configuration.
         # Modifying the configuration is achieved by sending a message to IRB.conf.
-        Pager.page_content(IRB.CurrentContext.inspect)
+        Pager.page_content(IRB.CurrentContext.inspect, output: irb_context.output)
       end
     end
   end

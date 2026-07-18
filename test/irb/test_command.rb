@@ -201,6 +201,44 @@ module TestIRB
   end
 
   class MeasureTest < CommandTestCase
+    def test_stackprof_report_supports_legacy_output_argument
+      report = Class.new do
+        attr_reader :arguments
+
+        def print_text(sort_by_total = false, limit = nil, f = $stdout)
+          @arguments = [sort_by_total, limit, f]
+          f.puts "legacy report"
+        end
+      end.new
+      output = StringIO.new
+
+      IRB.__send__(:print_stackprof_report, report, output)
+
+      assert_equal [false, nil, output], report.arguments
+      assert_equal "legacy report\n", output.string
+    end
+
+    def test_stackprof_report_uses_context_output
+      require "stackprof"
+
+      IRB.init_config(nil)
+      output = StringIO.new
+      context = Struct.new(:output).new(output)
+      IRB.conf[:MEASURE] = true
+
+      host_output, = capture_output do
+        result = IRB.conf[:MEASURE_PROC][:STACKPROF].call(context, "1 + 1", 1, { mode: :wall, interval: 100 }) { 2 }
+        assert_equal 2, result
+      end
+
+      assert_empty host_output
+      assert_not_empty output.string
+    rescue LoadError
+      omit "stackprof is not installed"
+    ensure
+      IRB.conf[:MEASURE] = false
+    end
+
     def test_measure
       conf = {
         PROMPT: {

@@ -101,10 +101,10 @@ module IRB
     attr_reader :from_binding
 
     # Creates a new irb session
-    def initialize(workspace = nil, input_method = nil, from_binding: false)
+    def initialize(workspace = nil, input_method = nil, from_binding: false, verbose: IRB.conf[:VERBOSE])
       @from_binding = from_binding
       @prompt_part_cache = nil
-      @context = Context.new(self, workspace, input_method)
+      @context = Context.new(self, workspace, input_method, verbose: verbose)
       @context.workspace.load_helper_methods_to_main
       @signal_status = :IN_IRB
       @scanner = RubyLex.new
@@ -429,7 +429,7 @@ module IRB
 
       order =
         if RUBY_VERSION < '3.0.0'
-          STDOUT.tty? ? :bottom : :top
+          output.tty? ? :bottom : :top
         else # '3.0.0' <= RUBY_VERSION
           :top
         end
@@ -563,19 +563,19 @@ module IRB
           content = "#{content}\e[0m" if Color.colorable?
         end
         puts format(@context.return_format, content.chomp)
-      elsif Pager.should_page? && @context.inspector_support_stream_output?
+      elsif Pager.should_page?(output: output) && @context.inspector_support_stream_output?
         formatter_proc = ->(content, multipage) do
           content = content.chomp
           content = "\n#{content}" if @context.newline_before_multiline_output? && (multipage || content.include?("\n"))
           format(@context.return_format, content)
         end
-        Pager.page_with_preview(winwidth, winheight, formatter_proc) do |out|
+        Pager.page_with_preview(winwidth, winheight, formatter_proc, output: output) do |out|
           @context.inspect_last_value(out)
         end
       else
         content = @context.inspect_last_value.chomp
         content = "\n#{content}" if @context.newline_before_multiline_output? && content.include?("\n")
-        Pager.page_content(format(@context.return_format, content), retain_content: true)
+        Pager.page_content(format(@context.return_format, content), retain_content: true, output: output)
       end
     end
 
@@ -597,6 +597,30 @@ module IRB
     end
 
     private
+
+    def output
+      @context.output
+    end
+
+    def write(*args)
+      output.write(*args)
+    end
+
+    def print(*args)
+      output.print(*args)
+    end
+
+    def printf(*args)
+      output.printf(*args)
+    end
+
+    def puts(*args)
+      output.puts(*args)
+    end
+
+    def warn(*messages, **kwargs)
+      output.warn(*messages, **kwargs)
+    end
 
     def with_prompt_part_cached
       @prompt_part_cache = {}
@@ -745,9 +769,11 @@ class Binding
   #     Cooked potato: true
   #
   # See IRB for more information.
+  #
   def irb(show_code: true)
     # Setup IRB with the current file's path and no command line arguments
     IRB.setup(source_location[0], argv: []) unless IRB.initialized?
+
     # Create a new workspace using the current binding
     workspace = IRB::WorkSpace.new(self)
     # Print the code around the binding if show_code is true
@@ -774,5 +800,94 @@ class Binding
       binding_irb.run(IRB.conf)
       binding_irb.debug_break
     end
+  end
+
+  # Opens a non-interactive IRB session designed for AI agents and scripts
+  # (experimental). Instead of opening a REPL, it exposes an IRB session over a
+  # Unix socket using a simple request/response protocol.
+  #
+  # The behavior depends on the +IRB_SOCK_PATH+ environment variable:
+  #
+  # - *Not set* (Phase 1 - discovery): prints instructions explaining the
+  #   workflow, then exits. This lets the agent discover the breakpoint and
+  #   learn the protocol.
+  # - *Set* (Phase 2 - debug session): starts a Unix socket server at the
+  #   given path. Each connection accepts one request, evaluates it, returns
+  #   IRB's output, and closes. The IRB session state persists across
+  #   connections. Output written by the host program stays with the host.
+  #   Send +exit+ to end the session and resume app execution.
+  #
+  # See IRB::AgentSession for the full protocol and workflow.
+  def agent
+    sock_path = ENV["IRB_SOCK_PATH"]
+
+    # Phase 1 (discovery): no socket path set, so print instructions
+    # teaching the agent how to connect, then exit immediately.
+    # No IRB.setup needed since we're not starting a session.
+    if sock_path.nil? || sock_path.empty?
+      print_agent_instructions
+      Kernel.exit(0)
+    end
+
+    # Phase 2 (debug session): socket path set, start a request/response
+    # server that the agent can send commands to.
+    require_relative "irb/agent"
+    IRB.setup(source_location[0], argv: []) unless IRB.initialized?
+    session = IRB::AgentSession.new(self, sock_path: sock_path)
+    session.run
+  end
+
+  private
+
+  def print_agent_instructions
+    file, line = source_location
+    method_name = begin
+      eval("__method__")
+    rescue NameError
+      nil
+    end
+    location = method_name ? "#{file}:#{line} in `#{method_name}`" : "#{file}:#{line}"
+
+    $stdout.puts <<~MSG
+      ==========================================================
+      IRB agent breakpoint hit at #{location}
+
+      No IRB_SOCK_PATH set - exiting without starting a debug session.
+      This run's process state will not be retained.
+
+      Add breakpoints with: require "irb"; binding.agent
+
+      To debug this breakpoint:
+
+        1. Run the app in the BACKGROUND with a socket path:
+
+             IRB_SOCK_PATH=/tmp/irb-UNIQUE_ID.sock <your command> &
+
+           The process will block waiting for a connection.
+
+        2. Wait for the socket file to appear:
+
+             ls /tmp/irb-UNIQUE_ID.sock
+
+        3. Send commands to the socket with FOREGROUND commands:
+
+             ruby -e 'require "socket"; s = UNIXSocket.new("/tmp/irb-UNIQUE_ID.sock"); s.puts "help"; s.close_write; puts s.read; s.close'
+
+           Each invocation sends one command and prints the result.
+           The IRB session persists between invocations.
+           Output written by the program remains on the program's stdout/stderr.
+
+           Commands that start another interactive program are unavailable:
+             debug commands, multi-IRB commands, edit, and show_doc without a target.
+
+           Examples:
+             ... s.puts "ls"; s.close_write              # list methods and variables
+             ... s.puts "show_source foo"; s.close_write  # see source of a method
+             ... s.puts "@name"; s.close_write            # inspect a variable
+             ... s.puts "exit"; s.close_write             # end session, resume app
+
+      ==========================================================
+    MSG
+    $stdout.flush
   end
 end

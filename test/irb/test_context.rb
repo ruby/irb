@@ -120,6 +120,32 @@ module TestIRB
       assert_equal "=> 1\n", out
     end
 
+    def test_yaml_fallback_keeps_diagnostic_separate_from_result
+      input = TestInputMethod.new([
+        "bad_yaml = Object.new; def bad_yaml.encode_with(_); raise 'no yaml'; end; bad_yaml\n",
+      ])
+      irb = IRB::Irb.new(IRB::WorkSpace.new(Object.new), input)
+      irb.context.inspect_mode = :yaml
+
+      out, err = capture_output do
+        irb.eval_input
+      end
+
+      assert_empty err
+      assert_match(/\A\(can't dump yaml\. use inspect\)\n#<Object:.*>\n\z/, out)
+    end
+
+    def test_inspector_allows_positional_output_named_error_output
+      inspector = IRB::Inspector.new(proc { |value, error_output, colorize: true| error_output << "#{value}:#{colorize}" })
+      output = +''
+      diagnostics = StringIO.new
+
+      inspector.inspect_value("value", output, error_output: diagnostics)
+
+      assert_equal "value:true", output
+      assert_empty diagnostics.string
+    end
+
     {
       successful: [
         [false, "class Foo < Struct.new(:bar); end; Foo.new(123)\n", /#<struct bar=123>/],

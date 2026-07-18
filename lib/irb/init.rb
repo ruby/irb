@@ -150,7 +150,7 @@ module IRB # :nodoc:
       time = Time.now
       result = block.()
       now = Time.now
-      puts 'processing time: %fs' % (now - time) if IRB.conf[:MEASURE]
+      context.output.puts 'processing time: %fs' % (now - time) if IRB.conf[:MEASURE]
       result
     }
     # arg can be either a symbol for the mode (:cpu, :wall, ..) or a hash for
@@ -163,7 +163,7 @@ module IRB # :nodoc:
         require 'stackprof'
         success = true
       rescue LoadError
-        puts 'Please run "gem install stackprof" before measuring by StackProf.'
+        context.output.puts 'Please run "gem install stackprof" before measuring by StackProf.'
       end
       if success
         result = nil
@@ -173,11 +173,12 @@ module IRB # :nodoc:
         end
         case stackprof_result
         when File
-          puts "StackProf report saved to #{stackprof_result.path}"
+          context.output.puts "StackProf report saved to #{stackprof_result.path}"
         when Hash
-          StackProf::Report.new(stackprof_result).print_text
+          report = StackProf::Report.new(stackprof_result)
+          print_stackprof_report(report, context.output)
         else
-          puts "Stackprof ran with #{arg.inspect}"
+          context.output.puts "Stackprof ran with #{arg.inspect}"
         end
         result
       else
@@ -480,6 +481,21 @@ module IRB # :nodoc:
 
   class << IRB
     private
+
+    def print_stackprof_report(report, output)
+      parameters = report.method(:print_text).parameters
+      output_parameter_index = parameters.index { |_, name| name == :f }
+      return report.print_text unless output_parameter_index
+
+      parameter_type, = parameters[output_parameter_index]
+      if [:key, :keyreq].include?(parameter_type)
+        report.print_text(f: output)
+      else
+        arguments = Array.new(output_parameter_index)
+        arguments[0] = false unless arguments.empty?
+        report.print_text(*arguments, output)
+      end
+    end
 
     def prepare_irbrc_name_generators
       return if @existing_rc_name_generators

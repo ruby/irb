@@ -63,7 +63,7 @@ module IRB
 
           CONTENT
         end
-        Pager.page_content(content)
+        Pager.page_content(content, output: irb_context.output)
       end
 
       def bold(str)
