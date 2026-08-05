@@ -99,6 +99,7 @@ module IRB # :nodoc:
       REGEXP_BEGIN:       [RED, BOLD],
       REGEXP_END:         [RED, BOLD],
       STRING_BEGIN:       [RED, BOLD],
+      XSTRING_BEGIN:      [RED, BOLD],
       STRING_CONTENT:     [RED],
       STRING_END:         [RED, BOLD],
       __END__:            [GREEN],
