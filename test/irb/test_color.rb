@@ -101,6 +101,7 @@ module TestIRB
         "foo %i[bar]" => "#{CYAN}foo#{CLEAR} #{YELLOW}%i[#{CLEAR}#{YELLOW}bar#{CLEAR}#{YELLOW}]#{CLEAR}",
         "foo :@bar, baz, :@@qux, :$quux" => "#{CYAN}foo#{CLEAR} #{YELLOW}:#{CLEAR}#{YELLOW}@bar#{CLEAR}, #{CYAN}baz#{CLEAR}, #{YELLOW}:#{CLEAR}#{YELLOW}@@qux#{CLEAR}, #{YELLOW}:#{CLEAR}#{YELLOW}$quux#{CLEAR}",
         "`echo`" => "#{RED}#{BOLD}`#{CLEAR}#{RED}echo#{CLEAR}#{RED}#{BOLD}`#{CLEAR}",
+        "foo.`(bar)" => "#{CYAN}foo#{CLEAR}.#{CYAN}`#{CLEAR}(#{CYAN}bar#{CLEAR})",
         "\t" => Reline::Unicode.escape_for_print("\t") == '  ' ? '  ' : "\t", # not ^I
         "foo(*%W(bar))" => "#{CYAN}foo#{CLEAR}(*#{RED}#{BOLD}%W(#{CLEAR}#{RED}bar#{CLEAR}#{RED}#{BOLD})#{CLEAR})",
         "$stdout" => "#{GREEN}#{BOLD}$stdout#{CLEAR}",
