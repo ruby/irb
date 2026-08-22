@@ -53,7 +53,7 @@ module IRB
         irb = Irb.new
 
         # Only display the banner in the irb executable
-        if @CONF[:SHOW_BANNER] && ap_path&.end_with?("exe/irb")
+        if @CONF[:SHOW_BANNER] && ap_path&.end_with?("exe/irb") && STDIN.tty?
           StartupMessage.display
         end
       end
