@@ -475,8 +475,8 @@ module IRB
       @prompt_c = pconf[:PROMPT_C]
       @return_format = pconf[:RETURN]
       @return_format = "%s\n" if @return_format == nil
-      if ai = pconf.include?(:AUTO_INDENT)
-        @auto_indent_mode = ai
+      if pconf.include?(:AUTO_INDENT)
+        @auto_indent_mode = pconf[:AUTO_INDENT]
       else
         @auto_indent_mode = IRB.conf[:AUTO_INDENT]
       end
