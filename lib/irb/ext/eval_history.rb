@@ -50,7 +50,7 @@ module IRB # :nodoc:
           @eval_history_values = EvalHistory.new(no)
           IRB.conf[:__TMP__EHV__] = @eval_history_values
           workspace.evaluate("__ = IRB.conf[:__TMP__EHV__]")
-          IRB.conf.delete(:__TMP_EHV__)
+          IRB.conf.delete(:__TMP__EHV__)
         end
       else
         @eval_history_values = nil
