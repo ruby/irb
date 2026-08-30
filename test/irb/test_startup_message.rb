@@ -67,5 +67,59 @@ module TestIRB
 
       assert_not_match(/v#{Regexp.escape(IRB::VERSION)}/, output)
     end
+
+    def test_banner_appears_when_stdin_is_a_tty
+      output = run_irb_with_tty
+
+      assert_match(/v#{Regexp.escape(IRB::VERSION)}/, output)
+    end
+
+    def test_banner_does_not_appear_when_stdin_is_not_a_tty
+      output = run_irb_without_tty
+
+      assert_not_match(/v#{Regexp.escape(IRB::VERSION)}/, output)
+    end
+
+    private
+
+    def irb_command
+      [EnvUtil.rubybin, "-I", LIB, File.expand_path("../../exe/irb", __dir__), "-f"]
+    end
+
+    def irb_envs(tmp_dir)
+      { "TERM" => "dumb", "HOME" => tmp_dir, "XDG_CONFIG_HOME" => tmp_dir, "IRBRC" => nil }
+    end
+
+    def run_irb_with_tty
+      lines = []
+
+      Dir.mktmpdir do |tmp_dir|
+        PTY.spawn(irb_envs(tmp_dir), *irb_command) do |read, write, pid|
+          write.puts "exit"
+
+          Timeout.timeout(TIMEOUT_SEC) do
+            while line = safe_gets(read)
+              lines << line
+            end
+          end
+        ensure
+          read.close
+          write.close
+          kill_safely(pid)
+        end
+      end
+
+      lines.join
+    end
+
+    def run_irb_without_tty
+      Dir.mktmpdir do |tmp_dir|
+        IO.popen(irb_envs(tmp_dir), irb_command, "r+", err: [:child, :out]) do |io|
+          io.puts "exit"
+          io.close_write
+          io.read
+        end
+      end
+    end
   end
 end
