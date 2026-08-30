@@ -49,5 +49,16 @@ module TestIRB
       # Because eval_history injects `__` into the history AND decide to ignore it, we only get <limit> - 1 results
       assert_match("2 \"bar\"\n" + "3 \"baz\"\n" + "4 \"xyz\"\n", out)
     end
+
+    def test_eval_history_can_shrink_before_reaching_configured_limit
+      out, err = execute_lines(
+        "IRB.CurrentContext.eval_history = 2",
+        "__",
+        conf: { EVAL_HISTORY: 5 }
+      )
+
+      assert_empty(err)
+      assert_match("=> 2\n" + "=> 1 2\n", out)
+    end
   end
 end
