@@ -97,8 +97,8 @@ module IRB # :nodoc:
     end
 
     def size(size) # :nodoc:
-      if size != 0 && size < @size
-        @contents = @contents[@size - size .. @size]
+      if size.positive? && @contents.size > size
+        @contents = @contents.last(size)
       end
       @size = size
     end
