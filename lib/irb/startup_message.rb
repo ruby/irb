@@ -14,7 +14,6 @@ module IRB
       '"cd object" to navigate into an object',
       '"show_source method" to view source code',
       '"copy expr" to copy the output to clipboard',
-      '"debug" to start integration with the "debug" gem',
       '"history -g pattern" to search history',
     ].freeze
 
