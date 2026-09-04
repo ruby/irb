@@ -197,6 +197,8 @@ module IRB # :nodoc:
     }
 
     @CONF[:COPY_COMMAND] = ENV.fetch("IRB_COPY_COMMAND", nil)
+
+    @CONF[:RELOADABLE_REQUIRE] = false
   end
 
   def IRB.set_measure_callback(type = nil, arg = nil, &block)
