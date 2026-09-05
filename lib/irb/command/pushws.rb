@@ -16,11 +16,11 @@ module IRB
       MAX_WORKSPACE_INSPECT_LENGTH = 20
 
       def execute(_arg)
-        inspection_resuls = irb_context.instance_variable_get(:@workspace_stack).map do |ws|
+        inspection_results = irb_context.instance_variable_get(:@workspace_stack).map do |ws|
           truncated_inspect(ws.main)
         end
 
-        puts "[" + inspection_resuls.join(", ") + "]"
+        puts "[" + inspection_results.join(", ") + "]"
       end
 
       private
