@@ -25,10 +25,11 @@ module IRB
       private
 
       def truncated_inspect(obj)
+        threshold = 20
         obj_inspection = obj.inspect
 
-        if obj_inspection.size > 20
-          obj_inspection = obj_inspection[0, 19] + "...>"
+        if obj_inspection.size > threshold
+          obj_inspection = obj_inspection[0, threshold - 1] + "...>"
         end
 
         obj_inspection
