@@ -13,6 +13,7 @@ module IRB
     class Workspaces < Base
       category "Workspace"
       description "Show workspaces."
+      MAX_WORKSPACE_INSPECT_LENGTH = 20
 
       def execute(_arg)
         inspection_resuls = irb_context.instance_variable_get(:@workspace_stack).map do |ws|
@@ -27,7 +28,7 @@ module IRB
       def truncated_inspect(obj)
         obj_inspection = obj.inspect
 
-        if obj_inspection.size > 20
+        if obj_inspection.size > MAX_WORKSPACE_INSPECT_LENGTH
           obj_inspection = obj_inspection[0, 19] + "...>"
         end
 
