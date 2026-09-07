@@ -535,6 +535,29 @@ module TestIRB
       assert_empty err
       assert_match(/\[#<TestIRB::Workspac...>, #<TestIRB::Workspac...>\]\n/, out)
     end
+
+    def test_workspaces_various_truncation
+      out, err = execute_lines(
+        'pushws { key: 123456789123456789 }',
+        'pushws "a" * 30',
+        'pushws [1] * 30',
+        'pushws /aaaaaaaaaaaaaaaaaaaaaaaaa/',
+        'pushws 1r/123456789123456789123456789',
+        'pushws 123456789123456789123456789',
+        'pushws Struct.new(:inspect).new("a" * 30)'
+      )
+      expected_truncations = [
+        '#<TestIRB::Workspac...>',
+        { key: 123456789123456789 }.inspect[0, 19] + '...}',
+        '"aaaaaaaaaaaaaaaaaa..."',
+        '[1, 1, 1, 1, 1, 1, ...]',
+        '/aaaaaaaaaaaaaaaaaa.../',
+        '(1/1234567891234567...)',
+        '1234567891234567891...',
+        'aaaaaaaaaaaaaaaaaaa...'
+      ]
+      assert_include(out, "[#{expected_truncations.join(", ")}]")
+    end
   end
 
   class PopwsTest < WorkspaceCommandTestCase

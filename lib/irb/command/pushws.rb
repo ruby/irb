@@ -29,7 +29,12 @@ module IRB
         obj_inspection = obj.inspect
 
         if obj_inspection.size > threshold
-          obj_inspection = obj_inspection[0, threshold - 1] + "...>"
+          closing = obj_inspection[-1]
+          # Support closing characters for objects like:
+          # #<Object...>, [array...], {hash...}, (123/456...), "string...", /regexp.../
+          # Other objects will be truncated without a closing character.
+          closing = nil unless '>]})"/'.include?(closing)
+          obj_inspection = "#{obj_inspection[...threshold - 1]}...#{closing}"
         end
 
         obj_inspection
