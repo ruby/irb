@@ -290,6 +290,17 @@ module TestIRB
       assert_equal(false, IRB.conf[:SHOW_BANNER])
     end
 
+    def test_measure_when_exception_occurs
+      out, err = execute_lines(
+        "measure\n",
+        "raise 'boom'\n"
+      )
+
+      assert_empty err
+      assert_match(/processing time: \d+\.\d+s/, out)
+      assert_match(/boom \(RuntimeError\)/, out)
+    end
+
     private
 
     def with_argv(argv)

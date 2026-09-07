@@ -148,9 +148,12 @@ module IRB # :nodoc:
     @CONF[:MEASURE_PROC] = {}
     @CONF[:MEASURE_PROC][:TIME] = proc { |context, code, line_no, &block|
       time = Time.now
-      result = block.()
-      now = Time.now
-      puts 'processing time: %fs' % (now - time) if IRB.conf[:MEASURE]
+      begin
+        result = block.()
+      ensure
+        now = Time.now
+        puts 'processing time: %fs' % (now - time) if IRB.conf[:MEASURE]
+      end
       result
     }
     # arg can be either a symbol for the mode (:cpu, :wall, ..) or a hash for
