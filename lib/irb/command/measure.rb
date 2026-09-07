@@ -35,12 +35,18 @@ module IRB
           end
         when :on
           added = IRB.set_measure_callback(arg)
-          puts "#{added[0]} is added." if added
+          display_added_message(added[0]) if added
         else
           added = IRB.set_measure_callback(type, arg)
-          puts "#{added[0]} is added." if added
+          display_added_message(added[0]) if added
         end
         nil
+      end
+
+      private
+
+      def display_added_message(added)
+        puts "#{added} is added."
       end
     end
   end
