@@ -458,6 +458,21 @@ module TestIRB
       assert_empty err
       assert_match(/Please specify the file name./, out)
     end
+
+    def test_irb_require_file_matches_exact_name
+      File.write("#{@tmpdir}/foo.rb", "'foo_loaded'\n")
+      File.write("#{@tmpdir}/foo2.rb", "'foo2_loaded'\n")
+
+      out, err = execute_lines(
+        "$LOAD_PATH.unshift '#{@tmpdir}'\n",
+        "irb_require 'foo'\n",
+        "irb_require 'foo2'\n",
+      )
+
+      assert_empty(err)
+      assert_match(/foo_loaded/, out)
+      assert_match(/foo2_loaded/, out)
+    end
   end
 
   class WorkspaceCommandTestCase < CommandTestCase

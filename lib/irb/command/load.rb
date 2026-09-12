@@ -45,7 +45,7 @@ module IRB
       def execute_internal(file_name = nil)
         raise_cmd_argument_error unless file_name
 
-        rex = Regexp.new("#{Regexp.quote(file_name)}(\.o|\.rb)?")
+        rex = Regexp.new("\\A#{Regexp.escape(file_name)}(?:\\.o|\\.rb)?\\z")
         return false if $".find{|f| f =~ rex}
 
         case file_name
