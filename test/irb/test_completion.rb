@@ -43,6 +43,29 @@ module TestIRB
       end
     end
 
+    class HelperMethodCompletionTest < CompletionTest
+      def test_helper_method_completion
+        completor = IRB::RegexpCompletor.new
+        # Assuming `conf` is a helper method, it should be included in the completion candidates
+        assert_include(completor.completion_candidates('', 'co', '', bind: binding), 'conf')
+        assert_include(completor.completion_candidates('p(', 'co', '', bind: binding), 'conf')
+        assert_not_include(completor.completion_candidates('def f(', 'co', '', bind: binding), 'conf')
+      end
+
+      def test_helper_method_document_target
+        completor = IRB::RegexpCompletor.new
+        result = completor.doc_namespace('tap do ', 'conf', '', bind: binding)
+        assert_instance_of(IRB::HelperMethodDocument, result)
+        assert_equal('conf', result.name)
+
+        result = completor.doc_namespace('tap do ', 'conf', '', bind: eval('conf = 1; binding'))
+        refute_instance_of(IRB::HelperMethodDocument, result)
+
+        result = completor.doc_namespace('tap do |conf| ', 'conf', '', bind: binding)
+        refute_instance_of(IRB::HelperMethodDocument, result)
+      end
+    end
+
     class MethodCompletionTest < CompletionTest
       def test_complete_string
         assert_include(completion_candidates("'foo'.up", binding), "'foo'.upcase")

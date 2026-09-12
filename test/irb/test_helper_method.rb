@@ -26,6 +26,65 @@ module TestIRB
         assert_empty err
         assert_include out, "=> \"irb\""
       end
+
+      def test_conf_variations
+        out, err = execute_lines('p "1:#{conf.ap_name}"; p "2:#{self.then { conf().ap_name }}"; p(x:conf.ap_name+"3")')
+
+        assert_empty err
+        assert_include out, '"1:irb"'
+        assert_include out, '"2:irb"'
+        assert_include out, '"irb3"'
+      end
+
+      def test_conf_code_injection
+        assert_equal '::IRB::HelperMethod::Container.conf.ap_name', IRB::HelperMethod.inject_helper_methods('conf.ap_name', local_variables: [])
+        assert_equal 'conf.ap_name', IRB::HelperMethod.inject_helper_methods('conf.ap_name', local_variables: [:conf])
+        assert_equal 'a /conf#{::IRB::HelperMethod::Container.conf}/', IRB::HelperMethod.inject_helper_methods('a /conf#{conf}/', local_variables: [])
+        assert_equal 'a /::IRB::HelperMethod::Container.conf#{conf}/', IRB::HelperMethod.inject_helper_methods('a /conf#{conf}/', local_variables: [:a])
+        assert_equal(
+          '::IRB::HelperMethod::Container.conf.ap_name; conf = 1; conf.ap_name; class A; ::IRB::HelperMethod::Container.conf.ap_name; end',
+          IRB::HelperMethod.inject_helper_methods('conf.ap_name; conf = 1; conf.ap_name; class A; conf.ap_name; end')
+        )
+      end
+
+      def test_conf_completion
+        assert_include IRB::HelperMethod.completions('loop do |_conf| ', 'co', local_variables: []), 'conf'
+        assert_include IRB::HelperMethod.completions('def f(x=', 'co', local_variables: []), 'conf'
+        assert_not_include IRB::HelperMethod.completions('def f(', 'co', local_variables: []), 'conf'
+        assert_include IRB::HelperMethod.completions("a /1#/i;'\n", 'co', local_variables: [:a]), 'conf'
+        assert_not_include IRB::HelperMethod.completions("a /1#/i;'\n", 'co', local_variables: []), 'conf'
+      end
+    end
+
+    class ColorizationTest < HelperMethodTestCase
+      def test_colorize_helper_method
+        # Without helper_methods: used in inspect result
+        assert_equal(
+          "\e[36mconf\e[0m[]; \e[36mconf\e[0m(); +\e[36mconf\e[0m",
+          IRB::Color.colorize_code('conf[]; conf(); +conf', colorable: true)
+        )
+
+        # With helper_methods: used in syntax highlighting
+        assert_equal(
+          "\e[1mconf\e[0m[]; \e[1mconf\e[0m(); +\e[1mconf\e[0m",
+          IRB::Color.colorize_code('conf[]; conf(); +conf', colorable: true, helper_methods: true)
+        )
+
+        # If receiver exists, it's not a helper method
+        assert_not_include(IRB::Color.colorize_code('tap{self.conf}', colorable: true, helper_methods: true), "\e[1mconf\e[0m")
+        # ImplicitNode is not supported
+        assert_not_include(IRB::Color.colorize_code('p(conf:)', colorable: true, helper_methods: true), "\e[1mconf\e[0m")
+      end
+
+      def test_colorize_legacy_command_bundle_helper_method
+        IRB::ExtendCommandBundle.define_method(:my_helper) {}
+        assert_equal(
+          "\e[1mmy_helper\e[0m[]; \e[1mmy_helper\e[0m(); +\e[1mmy_helper\e[0m",
+          IRB::Color.colorize_code('my_helper[]; my_helper(); +my_helper', colorable: true, helper_methods: true)
+        )
+      ensure
+        IRB::ExtendCommandBundle.remove_method(:my_helper)
+      end
     end
   end
 
