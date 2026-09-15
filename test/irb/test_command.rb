@@ -475,12 +475,13 @@ module TestIRB
     end
 
     def test_irb_require_skips_file_already_loaded_by_require
-      File.write("#{@tmpdir}/irb_require_probe.rb", "$irb_require_probe_count = ($irb_require_probe_count || 0) + 1\n")
+      File.write("#{@tmpdir}/irb_require_probe.rb", "$irb_require_probe_count += 1\n")
       File.write("#{@tmpdir}/probe.rb", "'probe_loaded'\n")
       File.write("#{@tmpdir}/irb_require.rb", "'prefix_loaded'\n")
 
       out, err = execute_lines(
         "$LOAD_PATH.unshift '#{@tmpdir}'\n",
+        "$irb_require_probe_count = 0\n",
         "require 'irb_require_probe'\n",
         "irb_require 'irb_require_probe'\n",
         "$irb_require_probe_count\n",
