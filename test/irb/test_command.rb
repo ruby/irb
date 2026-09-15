@@ -473,6 +473,27 @@ module TestIRB
       assert_match(/foo_loaded/, out)
       assert_match(/foo2_loaded/, out)
     end
+
+    def test_irb_require_skips_file_already_loaded_by_require
+      File.write("#{@tmpdir}/irb_require_probe.rb", "$irb_require_probe_count += 1\n")
+      File.write("#{@tmpdir}/probe.rb", "'probe_loaded'\n")
+      File.write("#{@tmpdir}/irb_require.rb", "'prefix_loaded'\n")
+
+      out, err = execute_lines(
+        "$LOAD_PATH.unshift '#{@tmpdir}'\n",
+        "$irb_require_probe_count = 0\n",
+        "require 'irb_require_probe'\n",
+        "irb_require 'irb_require_probe'\n",
+        "$irb_require_probe_count\n",
+        "irb_require 'probe'\n",
+        "irb_require 'irb_require'\n",
+      )
+
+      assert_empty(err)
+      assert_match(/=> 1\n/, out)
+      assert_match(/probe_loaded/, out)
+      assert_match(/prefix_loaded/, out)
+    end
   end
 
   class WorkspaceCommandTestCase < CommandTestCase
