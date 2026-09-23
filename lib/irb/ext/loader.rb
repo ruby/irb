@@ -13,9 +13,6 @@ module IRB # :nodoc:
   # See ExtendCommandBundle for more information.
   module IrbLoader
 
-    alias ruby_load load
-    alias ruby_require require
-
     # Loads the given file similarly to Kernel#load
     def irb_load(fn, priv = nil)
       path = search_file_from_ruby_path(fn)
