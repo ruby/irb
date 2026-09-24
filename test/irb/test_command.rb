@@ -494,6 +494,22 @@ module TestIRB
       assert_match(/probe_loaded/, out)
       assert_match(/prefix_loaded/, out)
     end
+
+    def test_irb_require_falls_back_to_kernel_require_when_not_in_load_path
+      code = <<~RUBY
+        p 'fallback_loaded'
+        'fallback_path_should_not_print_return_value'.itself
+      RUBY
+      File.write("#{@tmpdir}/irb_require_fallback.rb", code)
+
+      out, err = execute_lines(
+        "irb_require './irb_require_fallback'\n",
+      )
+
+      assert_empty(err)
+      assert_include(out, 'fallback_loaded')
+      assert_not_include(out, 'fallback_path_should_not_print_return_value')
+    end
   end
 
   class WorkspaceCommandTestCase < CommandTestCase
@@ -592,6 +608,7 @@ module TestIRB
         '1234567891234567891...',
         'aaaaaaaaaaaaaaaaaaa...'
       ]
+      assert_empty(err)
       assert_include(out, "[#{expected_truncations.join(", ")}]")
     end
   end

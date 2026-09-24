@@ -58,15 +58,15 @@ module IRB
           rescue LoadError
           end
         when /\.(so|o|sl)$/
-          return ruby_require(file_name)
+          return require(file_name)
         end
 
         begin
           irb_load(f = file_name + ".rb")
           $".push f
-          return true
+          true
         rescue LoadError
-          return ruby_require(file_name)
+          require(file_name)
         end
       end
     end
