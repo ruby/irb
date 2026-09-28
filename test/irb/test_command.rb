@@ -495,6 +495,21 @@ module TestIRB
       assert_match(/prefix_loaded/, out)
     end
 
+    def test_irb_require_loads_file_with_rb_extension_once
+      File.write("#{@tmpdir}/irb_require_rb_ext.rb", "$irb_require_rb_ext_count += 1\n")
+
+      out, err = execute_lines(
+        "$LOAD_PATH.unshift '#{@tmpdir}'\n",
+        "$irb_require_rb_ext_count = 0\n",
+        "irb_require 'irb_require_rb_ext.rb'\n",
+        "irb_require 'irb_require_rb_ext'\n",
+        "$irb_require_rb_ext_count\n",
+      )
+
+      assert_empty(err)
+      assert_match(/=> 1\n\z/, out)
+    end
+
     def test_irb_require_falls_back_to_kernel_require_when_not_in_load_path
       code = <<~RUBY
         p 'fallback_loaded'
