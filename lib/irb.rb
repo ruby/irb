@@ -98,14 +98,15 @@ module IRB
     # The lexer used by this irb session
     attr_accessor :scanner
 
-    attr_reader :from_binding
+    # Whether this session was started by Binding#irb
+    def from_binding
+      @context.from_binding?
+    end
 
     # Creates a new irb session
     def initialize(workspace = nil, input_method = nil, from_binding: false)
-      @from_binding = from_binding
       @prompt_part_cache = nil
-      @context = Context.new(self, workspace, input_method)
-      @context.workspace.load_helper_methods_to_main
+      @context = Context.new(self, workspace, input_method, from_binding: from_binding)
       @signal_status = :IN_IRB
       @scanner = RubyLex.new
       @line_no = 1
@@ -124,9 +125,7 @@ module IRB
     end
 
     def debug_readline(binding)
-      workspace = IRB::WorkSpace.new(binding)
-      context.replace_workspace(workspace)
-      context.workspace.load_helper_methods_to_main
+      context.replace_workspace(IRB::WorkSpace.new(binding))
       @line_no += 1
 
       # When users run:
@@ -220,7 +219,7 @@ module IRB
               return statement.code
             end
 
-            @context.evaluate(statement, line_no)
+            evaluate_statement(statement, line_no)
 
             if @context.echo? && !statement.suppresses_echo?
               if statement.is_assignment?
@@ -239,6 +238,22 @@ module IRB
           end
         end
       end
+    end
+
+    def evaluate_statement(statement, line_no) # :nodoc:
+      case statement
+      when Statement::EmptyInput
+        return
+      when Statement::Expression
+        result = @context.evaluate_expression(statement.code, line_no)
+        @context.set_last_value(result)
+      when Statement::Command
+        statement.command_class.execute(@context, statement.arg, irb: self)
+      when Statement::IncorrectAlias
+        warn statement.message
+      end
+
+      nil
     end
 
     def read_input(prompt)
@@ -489,12 +504,8 @@ module IRB
     # Context#workspace.
     #
     # Used by the irb command `irb_load`, see IRB@IRB+Sessions for more information.
-    def suspend_workspace(workspace)
-      current_workspace = @context.workspace
-      @context.replace_workspace(workspace)
-      yield
-    ensure
-      @context.replace_workspace current_workspace
+    def suspend_workspace(workspace, &block)
+      @context.workspaces.with(workspace, &block)
     end
 
     # Evaluates the given block using the given `input_method` as the Context#io.
@@ -503,11 +514,11 @@ module IRB
     # more information.
     def suspend_input_method(input_method)
       back_io = @context.io
-      @context.instance_eval{@io = input_method}
+      @context.io = input_method
       begin
         yield back_io
       ensure
-        @context.instance_eval{@io = back_io}
+        @context.io = back_io
       end
     end
 

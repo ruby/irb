@@ -9,22 +9,18 @@ require_relative "helper_method"
 IRB::TOPLEVEL_BINDING = binding
 module IRB # :nodoc:
   class WorkSpace
-    # Creates a new workspace.
-    #
-    # set self to main if specified, otherwise
-    # inherit main from TOPLEVEL_BINDING.
-    def initialize(*main)
-      if Binding === main[0]
-        @binding = main.shift
-      elsif IRB.conf[:SINGLE_IRB]
-        @binding = TOPLEVEL_BINDING
-      else
+    class << self
+      # The binding new workspaces are created from when none is given, as
+      # configured by <code>IRB.conf[:CONTEXT_MODE]</code>.
+      def base_binding
+        return TOPLEVEL_BINDING if IRB.conf[:SINGLE_IRB]
+
         case IRB.conf[:CONTEXT_MODE]
         when 0	# binding in proc on TOPLEVEL_BINDING
-          @binding = eval("proc{binding}.call",
-                          TOPLEVEL_BINDING,
-                          __FILE__,
-                          __LINE__)
+          eval("proc{binding}.call",
+               TOPLEVEL_BINDING,
+               __FILE__,
+               __LINE__)
         when 1	# binding in loaded file
           require "tempfile"
           f = Tempfile.open("irb-binding")
@@ -33,7 +29,7 @@ module IRB # :nodoc:
 EOF
           f.close
           load f.path
-          @binding = $binding
+          $binding
 
         when 2	# binding in loaded file(thread use)
           unless defined? BINDING_QUEUE
@@ -44,17 +40,17 @@ EOF
             end
             Thread.pass
           end
-          @binding = BINDING_QUEUE.pop
+          BINDING_QUEUE.pop
 
         when 3	# binding in function on TOPLEVEL_BINDING
-          @binding = eval("self.class.remove_method(:irb_binding) if defined?(irb_binding); private; def irb_binding; binding; end; irb_binding",
-                          TOPLEVEL_BINDING,
-                          __FILE__,
-                          __LINE__ - 3)
+          eval("self.class.remove_method(:irb_binding) if defined?(irb_binding); private; def irb_binding; binding; end; irb_binding",
+               TOPLEVEL_BINDING,
+               __FILE__,
+               __LINE__ - 3)
         when 4  # binding is a copy of TOPLEVEL_BINDING (default)
           # Note that this will typically be IRB::TOPLEVEL_BINDING
           # This is to avoid RubyGems' local variables (see issue #17623)
-          @binding = TOPLEVEL_BINDING.dup
+          TOPLEVEL_BINDING.dup
 
         when 5  # binding in Ruby::Box
           unless defined?(Ruby::Box)
@@ -63,9 +59,17 @@ EOF
           end
 
           puts 'Context-mode 5 (binding in Ruby::Box) is experimental. It may be removed or changed without notice.'
-          @binding = Ruby::Box.new.eval('Kernel.binding')
+          Ruby::Box.new.eval('Kernel.binding')
         end
       end
+    end
+
+    # Creates a new workspace.
+    #
+    # set self to main if specified, otherwise
+    # inherit main from TOPLEVEL_BINDING.
+    def initialize(*main)
+      @binding = Binding === main[0] ? main.shift : self.class.base_binding
 
       if main.empty?
         @main = eval("self", @binding)

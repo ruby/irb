@@ -31,8 +31,12 @@ module IRB
           @help_message
         end
 
-        def execute(irb_context, arg)
-          new(irb_context).execute(arg)
+        def execute(irb_context, arg, irb: nil)
+          # The Irb is set after construction so subclasses that override
+          # #initialize keep working.
+          command = new(irb_context)
+          command.irb = irb
+          command.execute(arg)
         rescue CommandArgumentError => e
           puts e.message
         end
@@ -84,6 +88,13 @@ module IRB
       end
 
       attr_reader :irb_context
+      attr_writer :irb # :nodoc:
+
+      # The Irb running this command. Falls back to Context#irb for commands
+      # executed outside of Irb's loop.
+      def irb
+        @irb || irb_context.irb
+      end
 
       def execute(arg)
         #nop

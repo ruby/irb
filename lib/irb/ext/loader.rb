@@ -39,7 +39,6 @@ module IRB # :nodoc:
     #
     # See Irb#suspend_input_method for more information.
     def source_file(path)
-      irb = irb_context.irb
       irb.suspend_name(path, File.basename(path)) do
         FileInputMethod.open(path) do |io|
           irb.suspend_input_method(io) do
@@ -64,7 +63,6 @@ module IRB # :nodoc:
     #
     # See Irb#suspend_input_method for more information.
     def load_file(path, priv = nil)
-      irb = irb_context.irb
       irb.suspend_name(path, File.basename(path)) do
 
         if priv
@@ -90,34 +88,6 @@ module IRB # :nodoc:
             end
           end
         end
-      end
-    end
-
-    def old # :nodoc:
-      back_io = @io
-      back_path = irb_path
-      back_name = @irb_name
-      back_scanner = @irb.scanner
-      begin
-        @io = FileInputMethod.new(path)
-        @irb_name = File.basename(path)
-        self.irb_path = path
-        @irb.signal_status(:IN_LOAD) do
-          if back_io.kind_of?(FileInputMethod)
-            @irb.eval_input
-          else
-            begin
-              @irb.eval_input
-            rescue LoadAbort
-              print "load abort!!\n"
-            end
-          end
-        end
-      ensure
-        @io = back_io
-        @irb_name = back_name
-        self.irb_path = back_path
-        @irb.scanner = back_scanner
       end
     end
   end

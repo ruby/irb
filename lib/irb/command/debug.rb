@@ -41,7 +41,7 @@ module IRB
             return
           end
 
-          unless IRB::Debug.setup(irb_context.irb)
+          unless IRB::Debug.setup(irb)
             puts <<~MSG
               You need to install the debug gem before using this command.
               If you use `bundle exec`, please add `gem "debug"` into your Gemfile.

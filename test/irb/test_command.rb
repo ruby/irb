@@ -653,6 +653,17 @@ module TestIRB
       assert_empty err
       assert_include(out, "Current workspace: #{self}")
     end
+
+    def test_chws_without_argument_returns_to_the_home_workspace_after_pushws
+      out, err = execute_lines(
+        "pushws #{self.class}::Foo.new\n",
+        "chws\n",
+        "self.class\n"
+      )
+      assert_empty err
+      assert_include(out, "Current workspace: #{self}")
+      assert_match(/=> #{self.class}\n$/, out)
+    end
   end
 
   class WhereamiTest < CommandTestCase
