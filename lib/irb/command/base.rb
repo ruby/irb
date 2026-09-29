@@ -31,8 +31,8 @@ module IRB
           @help_message
         end
 
-        def execute(irb_context, arg, irb: nil)
-          new(irb_context, irb: irb).execute(arg)
+        def execute(irb_context, arg)
+          new(irb_context).execute(arg)
         rescue CommandArgumentError => e
           puts e.message
         end
@@ -79,18 +79,11 @@ module IRB
         end
       end
 
-      def initialize(irb_context, irb: nil)
+      def initialize(irb_context)
         @irb_context = irb_context
-        @irb = irb
       end
 
       attr_reader :irb_context
-
-      # The Irb running this command. Falls back to Context#irb for commands
-      # executed outside of Irb's loop.
-      def irb
-        @irb || irb_context.irb
-      end
 
       def execute(arg)
         #nop

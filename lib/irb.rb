@@ -248,7 +248,7 @@ module IRB
         result = @context.evaluate_expression(statement.code, line_no)
         @context.set_last_value(result)
       when Statement::Command
-        statement.command_class.execute(@context, statement.arg, irb: self)
+        statement.command_class.execute(@context, statement.arg)
       when Statement::IncorrectAlias
         warn statement.message
       end

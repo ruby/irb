@@ -251,10 +251,7 @@ module IRB
     # context is created. See ::new for more # information on +input_method+.
     attr_accessor :io
 
-    # The Irb that owns this context.
-    #
-    # Prefer not to depend on this: commands get the Irb running them through
-    # Command::Base#irb.
+    # Current irb session.
     attr_accessor :irb
     # A copy of the default <code>IRB.conf[:AP_NAME]</code>
     attr_accessor :ap_name
