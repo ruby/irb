@@ -53,8 +53,17 @@ module TestIRB
       assert_nil(@provider.dialog_contents("Foo.bar", 40))
     end
 
-    def test_not_found_message_for_unknown_class
-      assert_include(@provider.not_found_message("Foo#bar"), "Nothing known about Foo")
+    def test_not_found_message_for_unknown_name
+      assert_equal("Nothing known about Foo#bar", @provider.not_found_message("Foo#bar"))
+      assert_equal("Nothing known about Foo", @provider.not_found_message("Foo"))
+    end
+
+    def test_not_found_message_without_ri_data
+      provider = IRB::RDocDocumentProvider.new
+      provider.instance_variable_set(:@driver, RDoc::RI::Driver.new(use_system: false, use_site: false, use_home: false, use_gems: false))
+
+      assert_equal("Nothing known about String#gsub", provider.not_found_message("String#gsub"))
+      assert_equal("Nothing known about String", provider.not_found_message("String"))
     end
 
     def test_document

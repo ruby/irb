@@ -928,7 +928,7 @@ module TestIRB
         end
 
         assert_empty(err)
-        assert_include(out, "Nothing known about Foo")
+        assert_include(out, "Nothing known about Foo#bar")
       end
     end
   end

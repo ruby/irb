@@ -72,12 +72,9 @@ module IRB
     def not_found_message(name)
       matches = name.match?(/::|#|\./) ? driver.list_methods_matching(name) : []
       matches = driver.classes.keys.grep(/\A#{Regexp.escape(name)}/) if matches.empty?
-      return "#{name} not found, maybe you meant:\n\n#{matches.sort.join("\n")}" unless matches.empty?
+      return "Nothing known about #{name}" if matches.empty?
 
-      driver.expand_name(name) # raises NotFoundError with "Did you mean?" for an unknown class
-      "Nothing known about #{name}"
-    rescue RDoc::RI::Driver::NotFoundError => e
-      e.message
+      "#{name} not found, maybe you meant:\n\n#{matches.sort.join("\n")}"
     end
 
     private
