@@ -120,3 +120,33 @@ Helper methods
   conf           Returns the current context.
   my_helper      This is a test helper
 ```
+
+## Documentation providers
+
+The `show_doc` command and the documentation dialog of the autocompletion (shown next to the completion candidates, and expanded with `Alt+d`) look up RI data by default. `IRB.doc_providers` is the ordered list of the backends they consult, so a library can serve documentation from another source, such as a project-local documentation store or a manual in another language. Providers earlier in the list take precedence; the built-in `IRB::RDocDocumentProvider` is the last resort by default.
+
+A provider is any object that implements `document`; `dialog_contents` is optional.
+
+### Example
+
+```rb
+class MyDocProvider
+  # name is written the way RI accepts it: "Array", "Array#each", "Array.new",
+  # or "String.gsub" (the completion uses a dot even for instance methods).
+  # Return the documentation as a String (ANSI escape sequences are allowed;
+  # it is shown through IRB's pager), or nil to let the next provider answer.
+  def document(name)
+    MyManual.lookup(name)&.to_ansi
+  end
+
+  # Optional. Return the preview shown in the documentation dialog as an
+  # Array of lines that fit in `width` columns, or nil.
+  def dialog_contents(name, width)
+    MyManual.lookup(name)&.summary_lines(width)
+  end
+end
+
+IRB.doc_providers.unshift(MyDocProvider.new)
+```
+
+`show_doc` without an argument always starts RI's interactive session; it does not consult the providers.
