@@ -874,6 +874,63 @@ module TestIRB
       # this is the only way to reset the redefined method without coupling the test with its implementation
       EnvUtil.suppress_warning { load "irb/command/help.rb" }
     end
+
+    class StubDocProvider
+      def initialize(documents)
+        @documents = documents
+      end
+
+      def document(name)
+        @documents[name]
+      end
+    end
+
+    def test_show_doc_with_doc_provider
+      provider = StubDocProvider.new("Foo#bar" => "documentation of Foo#bar")
+
+      out, err = with_doc_providers(provider, IRB::RDocDocumentProvider.new) do
+        execute_lines("show_doc Foo#bar")
+      end
+
+      assert_empty(err)
+      assert_include(out, "documentation of Foo#bar")
+    end
+
+    def test_show_doc_with_doc_provider_without_rdoc
+      provider = StubDocProvider.new("Foo#bar" => "documentation of Foo#bar")
+
+      out, err = without_rdoc do
+        with_doc_providers(provider, IRB::RDocDocumentProvider.new) do
+          execute_lines("show_doc Foo#bar")
+        end
+      end
+
+      assert_empty(err)
+      assert_include(out, "documentation of Foo#bar")
+    end
+
+    if HAS_RDOC
+      def test_show_doc_falls_back_to_the_next_provider
+        provider = StubDocProvider.new({})
+
+        out, err = with_doc_providers(provider, IRB::RDocDocumentProvider.new) do
+          execute_lines("show_doc String#gsub")
+        end
+
+        assert_empty(err)
+        possible_rdoc_output = [/Nothing known about String#gsub/, /gsub\(pattern\)/]
+        assert(possible_rdoc_output.any? { |output| output.match?(out) }, "Expect the `show_doc` command to match one of the possible outputs. Got:\n#{out}")
+      end
+
+      def test_show_doc_reports_unknown_name
+        out, err = with_doc_providers(StubDocProvider.new({})) do
+          execute_lines("show_doc Foo#bar")
+        end
+
+        assert_empty(err)
+        assert_include(out, "Nothing known about Foo")
+      end
+    end
   end
 
   class EditTest < CommandTestCase
