@@ -219,7 +219,7 @@ module IRB
               return statement.code
             end
 
-            evaluate_statement(statement, line_no)
+            @context.evaluate(statement, line_no)
 
             if @context.echo? && !statement.suppresses_echo?
               if statement.is_assignment?
@@ -238,22 +238,6 @@ module IRB
           end
         end
       end
-    end
-
-    def evaluate_statement(statement, line_no) # :nodoc:
-      case statement
-      when Statement::EmptyInput
-        return
-      when Statement::Expression
-        result = @context.evaluate_expression(statement.code, line_no)
-        @context.set_last_value(result)
-      when Statement::Command
-        statement.command_class.execute(@context, statement.arg)
-      when Statement::IncorrectAlias
-        warn statement.message
-      end
-
-      nil
     end
 
     def read_input(prompt)

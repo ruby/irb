@@ -581,13 +581,30 @@ module IRB
       @inspect_mode
     end
 
+    def evaluate(statement, line_no) # :nodoc:
+      @line_no = line_no
+
+      case statement
+      when Statement::EmptyInput
+        return
+      when Statement::Expression
+        result = evaluate_expression(statement.code, line_no)
+        set_last_value(result)
+      when Statement::Command
+        statement.command_class.execute(self, statement.arg)
+      when Statement::IncorrectAlias
+        warn statement.message
+      end
+
+      nil
+    end
+
     # Whether this context was started by Binding#irb.
     def from_binding?
       @from_binding
     end
 
     def evaluate_expression(code, line_no) # :nodoc:
-      @line_no = line_no
       result = nil
       if IRB.conf[:MEASURE] && IRB.conf[:MEASURE_CALLBACKS].empty?
         IRB.set_measure_callback
