@@ -5,6 +5,7 @@
 #
 
 require_relative "workspace"
+require_relative "workspace_stack"
 require_relative "inspector"
 require_relative "input-method"
 require_relative "output-method"
@@ -24,14 +25,10 @@ module IRB
     # +nil+::     uses stdin or Reline or Readline
     # +String+::  uses a File
     # +other+::   uses this as InputMethod
-    def initialize(irb, workspace = nil, input_method = nil)
+    def initialize(irb, workspace = nil, input_method = nil, from_binding: false)
       @irb = irb
-      @workspace_stack = []
-      if workspace
-        @workspace_stack << workspace
-      else
-        @workspace_stack << WorkSpace.new
-      end
+      @from_binding = from_binding
+      @workspaces = WorkspaceStack.new(workspace || WorkSpace.new)
       @thread = Thread.current
 
       # copy of default configuration
@@ -190,24 +187,61 @@ module IRB
       IRB.conf[:HISTORY_FILE] = hist
     end
 
+    # The stack of workspaces in this context, see WorkspaceStack.
+    attr_reader :workspaces
+
     # Workspace in the current context.
     def workspace
-      @workspace_stack.last
+      @workspaces.current
+    end
+
+    # The workspace this context started with.
+    def home_workspace
+      @workspaces.home
     end
 
     # Replace the current workspace with the given +workspace+.
     def replace_workspace(workspace)
-      @workspace_stack.pop
-      @workspace_stack.push(workspace)
+      @workspaces.replace(workspace)
+    end
+
+    # Changes the current workspace to given object or binding.
+    #
+    # If the optional argument is omitted, the workspace will be
+    # #home_workspace.
+    #
+    # See IRB::WorkSpace.new for more information.
+    def change_workspace(*_main)
+      if _main.empty?
+        replace_workspace(home_workspace)
+        return main
+      end
+
+      replace_workspace(WorkSpace.new(_main[0]))
+    end
+
+    # Creates a new workspace with the given object, and pushes it onto the
+    # workspace stack. Without an argument, swaps the two topmost workspaces.
+    #
+    # See IRB::WorkSpace.new for more information.
+    def push_workspace(*_main)
+      if _main.empty?
+        @workspaces.swap
+      else
+        @workspaces.push(WorkSpace.new(workspace.binding, _main[0]))
+      end
+    end
+
+    # Removes the current workspace from the stack and returns it, or +nil+ if
+    # only the home workspace is left.
+    def pop_workspace
+      @workspaces.pop
     end
 
     # The top-level workspace, see WorkSpace#main
     def main
       workspace.main
     end
-
-    # The toplevel workspace, see #home_workspace
-    attr_reader :workspace_home
     # The current thread in this context.
     attr_reader :thread
     # The current input method.
@@ -565,8 +599,9 @@ module IRB
       nil
     end
 
+    # Whether this context was started by Binding#irb.
     def from_binding?
-      @irb.from_binding
+      @from_binding
     end
 
     def evaluate_expression(code, line_no) # :nodoc:

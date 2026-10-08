@@ -8,10 +8,6 @@ module IRB
       category "Misc"
       description "`measure` enables the mode to measure processing time. `measure :off` disables it."
 
-      def initialize(*args)
-        super(*args)
-      end
-
       def execute(arg)
         if arg&.match?(/^do$|^do[^\w]|^\{/)
           warn 'Configure IRB.conf[:MEASURE_PROC] to add custom measure methods.'
