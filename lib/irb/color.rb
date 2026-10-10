@@ -166,6 +166,7 @@ module IRB # :nodoc:
       def colorize_code(code, complete: true, ignore_error: false, colorable: colorable?, local_variables: [])
         return code unless colorable
 
+        code = code.gsub("\r\n", "\n")
         result = Prism.parse_lex(code, scopes: [local_variables])
 
         # IRB::ColorPrinter skips colorizing syntax invalid fragments
