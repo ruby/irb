@@ -495,6 +495,21 @@ module TestIRB
       assert_match(/prefix_loaded/, out)
     end
 
+    def test_irb_require_loads_file_with_same_name_as_loaded_file_in_other_directory
+      Dir.mkdir("#{@tmpdir}/sub")
+      File.write("#{@tmpdir}/sub/irb_require_same.rb", "'sub_loaded'\n")
+      File.write("#{@tmpdir}/irb_require_same.rb", "'top_loaded'\n")
+
+      out, err = execute_lines(
+        "$LOAD_PATH.unshift '#{@tmpdir}'\n",
+        "require 'sub/irb_require_same'\n",
+        "irb_require 'irb_require_same'\n",
+      )
+
+      assert_empty(err)
+      assert_match(/top_loaded/, out)
+    end
+
     def test_irb_require_falls_back_to_kernel_require_when_not_in_load_path
       code = <<~RUBY
         p 'fallback_loaded'
