@@ -497,7 +497,7 @@ module TestIRB
 
     def test_irb_require_loads_file_with_same_name_as_loaded_file_in_other_directory
       Dir.mkdir("#{@tmpdir}/sub")
-      File.write("#{@tmpdir}/sub/irb_require_same.rb", "'sub_loaded'\n")
+      File.write("#{@tmpdir}/sub/irb_require_same.rb", "$irb_require_same_sub = true\n")
       File.write("#{@tmpdir}/irb_require_same.rb", "'top_loaded'\n")
 
       out, err = execute_lines(

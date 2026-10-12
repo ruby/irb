@@ -7,3 +7,5 @@
 /tmp/
 Gemfile.lock
 _site/
+config.bat
+node_modules
