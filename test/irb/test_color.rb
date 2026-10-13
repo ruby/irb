@@ -75,6 +75,8 @@ module TestIRB
         "'a\nb'" => "#{RED}#{BOLD}'#{CLEAR}#{RED}a#{CLEAR}\n#{RED}b#{CLEAR}#{RED}#{BOLD}'#{CLEAR}",
         "'a\r\nb'" => "#{RED}#{BOLD}'#{CLEAR}#{RED}a#{CLEAR}\n#{RED}b#{CLEAR}#{RED}#{BOLD}'#{CLEAR}",
         "'a\rb'" => "#{RED}#{BOLD}'#{CLEAR}#{RED}a^Mb#{CLEAR}#{RED}#{BOLD}'#{CLEAR}",
+        "%\r\r\na\r" => "#{RED}#{BOLD}%^M#{CLEAR}#{RED}#{CLEAR}\n#{RED}a#{CLEAR}#{RED}#{BOLD}^M#{CLEAR}",
+        "%\ra\r\r\n" => "#{RED}#{BOLD}%^M#{CLEAR}#{RED}a#{CLEAR}#{RED}#{BOLD}^M#{CLEAR}\n",
         "%[str]" => "#{RED}#{BOLD}%[#{CLEAR}#{RED}str#{CLEAR}#{RED}#{BOLD}]#{CLEAR}",
         "%Q[str]" => "#{RED}#{BOLD}%Q[#{CLEAR}#{RED}str#{CLEAR}#{RED}#{BOLD}]#{CLEAR}",
         "%q[str]" => "#{RED}#{BOLD}%q[#{CLEAR}#{RED}str#{CLEAR}#{RED}#{BOLD}]#{CLEAR}",
@@ -171,6 +173,10 @@ module TestIRB
       assert_equal_with_term(result_without_lvars, code)
       assert_equal_with_term(result_with_lvar, code, local_variables: [:a])
       assert_equal_with_term(result_with_lvars, code, local_variables: [:a, :b])
+    end
+
+    def test_colorize_code_with_crlf_and_ignored_errors
+      assert_equal_with_term("'\n^M^[", "'\r\n\r\e", ignore_error: true)
     end
 
     def test_colorize_code_complete_true
