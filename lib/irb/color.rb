@@ -214,6 +214,10 @@ module IRB # :nodoc:
           else
             color = TOKEN_SEQS[type]
           end
+          # Prism may split a comment's CRLF between the comment and newline tokens.
+          if type == :COMMENT && lines[end_line - 1]&.byteslice(end_column, 1) == "\n"
+            value = value.delete_suffix("\r")
+          end
           if color
             escape_for_print(value).split(/(\n)/).each do |s|
               colored << (s == "\n" ? s : "#{color}#{s}#{CLEAR_SEQ}")
