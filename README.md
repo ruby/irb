@@ -15,7 +15,7 @@ The `irb` command from your shell will start the interpreter.
 >
 > IRB is a default gem of Ruby so you shouldn't need to install it separately.
 >
-> But if you're using Ruby 2.6 or later and want to upgrade/install a specific version of IRB, please follow these steps.
+> But if you're using Ruby 3.0 or later and want to upgrade/install a specific version of IRB, please follow these steps.
 
 To install it with `bundler`, add this line to your application's Gemfile:
 
@@ -105,7 +105,7 @@ See the [Configuration page](https://ruby.github.io/irb/Configurations_md.html) 
 
 ## Extending IRB
 
-IRB `v1.13.0` and later versions allows users/libraries to extend its functionality through official APIs.
+IRB `v1.13.0` and later versions allow users/libraries to extend its functionality through official APIs.
 
 For more information, please visit the [IRB Extension Guide](https://ruby.github.io/irb/EXTEND_IRB_md.html).
 
