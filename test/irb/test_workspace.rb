@@ -38,6 +38,18 @@ module TestIRB
       IRB.conf.delete(:USE_COLORIZE)
     end
 
+    def test_workspace_keeps_existing_underscore
+      _ = :mine
+      IRB::WorkSpace.new(binding)
+      assert_equal(:mine, _)
+    end
+
+    def test_workspace_defines_underscore_as_nil_when_absent
+      workspace = IRB::WorkSpace.new(binding)
+      assert_equal(true, workspace.binding.local_variable_defined?(:_))
+      assert_nil(workspace.binding.local_variable_get(:_))
+    end
+
     def test_code_around_binding_with_existing_unreadable_file
       pend 'chmod cannot make file unreadable on windows' if windows?
       pend 'skipped in root privilege' if Process.uid == 0
