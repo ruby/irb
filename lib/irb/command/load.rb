@@ -45,8 +45,7 @@ module IRB
       def execute_internal(file_name = nil)
         raise_cmd_argument_error unless file_name
 
-        rex = Regexp.new("(?:\\A|/)#{Regexp.escape(file_name)}(?:\\.o|\\.rb)?\\z")
-        return false if $".find{|f| f =~ rex}
+        return false if already_loaded?(file_name)
 
         case file_name
         when /\.rb$/
@@ -68,6 +67,19 @@ module IRB
         rescue LoadError
           require(file_name)
         end
+      end
+
+      private
+
+      # $" holds the names irb_require pushed and the absolute paths that
+      # Kernel#require loaded from a $LOAD_PATH directory.
+      def already_loaded?(file_name)
+        names = [file_name, "#{file_name}.rb", "#{file_name}.o"]
+        paths = $LOAD_PATH.flat_map do |dir|
+          dir = dir.to_s
+          names.map { |name| File.expand_path(File.join(dir, name)) }
+        end
+        $".any? { |f| names.include?(f) || paths.include?(f) }
       end
     end
 
