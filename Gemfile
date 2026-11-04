@@ -33,5 +33,5 @@ else
 end
 
 if RUBY_VERSION >= "3.0.0" && !is_truffleruby
-  gem "repl_type_completor"
+  gem "repl_type_completor", github: "ruby/repl_type_completor"
 end
