@@ -87,7 +87,7 @@ EOF
         end
       end
 
-      @binding.local_variable_set(:_, nil)
+      @binding.local_variable_set(:_, nil) unless @binding.local_variable_defined?(:_)
     end
 
     # The Binding of this workspace

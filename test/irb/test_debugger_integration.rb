@@ -426,6 +426,22 @@ module TestIRB
       assert_include(output, '"FooBar"')
     end
 
+    def test_irb_console_mode_keeps_program_defined_underscore
+      @envs.merge!("RUBY_DEBUG_IRB_CONSOLE" => "true")
+      write_ruby <<~'ruby'
+        _ = :mine
+        binding.irb
+      ruby
+
+      output = run_ruby_file do
+        type "debug"
+        type "_"
+        type "continue"
+      end
+      assert_match(/^:mine\r?$/, output)
+      assert_no_match(/^nil\r?$/, output)
+    end
+
     def test_help_command_is_delegated_to_the_debugger
       write_ruby <<~'ruby'
         binding.irb
