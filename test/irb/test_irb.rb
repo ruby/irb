@@ -994,6 +994,8 @@ module TestIRB
     def test_context_mode_ruby_box
       omit if RUBY_VERSION < "4.0.0"
       @envs['RUBY_BOX'] = '1'
+      # Disabled because this causes VM crash when inspecting Binding during completion in Ruby::Box 4.0.
+      @envs['IRB_USE_AUTOCOMPLETE'] = 'false'
       # bundler/setup loaded via RUBYOPT fails inside Ruby::Box (Ruby::Box
       # initializes RubyGems per box, and Gem::Specification is not defined when
       # Bundler evaluates irb.gemspec), so remove the bundler context from the
