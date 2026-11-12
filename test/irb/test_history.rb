@@ -163,6 +163,23 @@ module TestIRB
       INPUT
     end
 
+    def test_history_saves_non_ascii_input_under_an_ascii_locale
+      IRB.conf[:SAVE_HISTORY] = 2
+      IRB.conf[:LC_MESSAGES] = IRB::Locale.new("en_US.ASCII")
+      ENV["HOME"] = @tmpdir
+
+      io = TestInputMethodWithRelineHistory.new
+      io.class::HISTORY.clear
+      io.class::HISTORY << "puts 'h\u00e9llo'"
+
+      assert_nothing_raised do
+        io.save_history
+      end
+
+      assert_equal("puts 'h\u00e9llo'\n",
+                   File.read(IRB.rc_file("_history"), encoding: Encoding::UTF_8))
+    end
+
     def test_history_does_not_raise_when_history_file_directory_does_not_exist
       backup_history_file = IRB.conf[:HISTORY_FILE]
       IRB.conf[:SAVE_HISTORY] = 1
