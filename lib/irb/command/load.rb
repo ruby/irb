@@ -51,10 +51,9 @@ module IRB
         case file_name
         when /\.rb$/
           begin
-            if irb_load(file_name)
-              $".push file_name
-              return true
-            end
+            irb_load(file_name)
+            $".push file_name
+            return true
           rescue LoadError
           end
         when /\.(so|o|sl)$/
