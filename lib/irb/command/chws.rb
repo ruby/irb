@@ -3,7 +3,6 @@
 #   change-ws.rb -
 #   	by Keiju ISHITSUKA(keiju@ruby-lang.org)
 #
-require_relative "../ext/change-ws"
 
 module IRB
   # :stopdoc:

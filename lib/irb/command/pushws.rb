@@ -4,8 +4,6 @@
 #   	by Keiju ISHITSUKA(keiju@ruby-lang.org)
 #
 
-require_relative "../ext/workspaces"
-
 module IRB
   # :stopdoc:
 
@@ -15,7 +13,7 @@ module IRB
       description "Show workspaces."
 
       def execute(_arg)
-        inspection_results = irb_context.instance_variable_get(:@workspace_stack).map do |ws|
+        inspection_results = irb_context.workspaces.map do |ws|
           truncated_inspect(ws.main)
         end
 

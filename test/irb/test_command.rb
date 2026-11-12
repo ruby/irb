@@ -450,6 +450,15 @@ module TestIRB
         ], out)
     end
 
+    def test_irb_load_in_private_module_has_helper_methods
+      File.write("#{@tmpdir}/a.rb", "conf.class\n")
+      out, err = execute_lines(
+        "irb_load '#{@tmpdir}/a.rb', true\n",
+      )
+      assert_empty err
+      assert_match(/=> IRB::Context\n/, out)
+    end
+
     def test_irb_load_without_argument
       out, err = execute_lines(
         "irb_load\n",
@@ -652,6 +661,17 @@ module TestIRB
       )
       assert_empty err
       assert_include(out, "Current workspace: #{self}")
+    end
+
+    def test_chws_without_argument_returns_to_the_home_workspace_after_pushws
+      out, err = execute_lines(
+        "pushws #{self.class}::Foo.new\n",
+        "chws\n",
+        "self.class\n"
+      )
+      assert_empty err
+      assert_include(out, "Current workspace: #{self}")
+      assert_match(/=> #{self.class}\n$/, out)
     end
   end
 
