@@ -322,7 +322,7 @@ module IRB
     def configure_io
       if @context.io.respond_to?(:check_termination)
         @context.io.check_termination do |code|
-          if Reline::IOGate.in_pasting?
+          if Reline.core.io_gate.in_pasting?
             rest = @scanner.check_termination_in_prev_line(code, local_variables: @context.local_variables)
             if rest
               Reline.delete_text
