@@ -169,7 +169,7 @@ module IRB # :nodoc:
         result = Prism.parse_lex(code, scopes: [local_variables])
 
         # IRB::ColorPrinter skips colorizing syntax invalid fragments
-        return Reline::Unicode.escape_for_print(code) if ignore_error && !result.success?
+        return escape_for_print(code) if ignore_error && !result.success?
 
         prism_node, prism_tokens = result.value
         errors = result.errors
@@ -193,12 +193,12 @@ module IRB # :nodoc:
         flush = -> next_line_index, next_col {
           return if next_line_index == line_index && next_col == col
           (line_index...[next_line_index, lines.size].min).each do |ln|
-            colored << Reline::Unicode.escape_for_print(lines[line_index].byteslice(col..))
+            colored << escape_for_print(lines[line_index].byteslice(col..))
             line_index = ln + 1
             col = 0
           end
           unless col == next_col
-            colored << Reline::Unicode.escape_for_print(lines[next_line_index].byteslice(col..next_col - 1))
+            colored << escape_for_print(lines[next_line_index].byteslice(col..next_col - 1))
           end
         }
 
@@ -214,12 +214,16 @@ module IRB # :nodoc:
           else
             color = TOKEN_SEQS[type]
           end
+          # Prism may split a comment's CRLF between the comment and newline tokens.
+          if type == :COMMENT && lines[end_line - 1]&.byteslice(end_column, 1) == "\n"
+            value = value.delete_suffix("\r")
+          end
           if color
-            value.split(/(\n)/).each do |s|
-              colored << (s == "\n" ? s : "#{color}#{Reline::Unicode.escape_for_print(s)}#{CLEAR_SEQ}")
+            escape_for_print(value).split(/(\n)/).each do |s|
+              colored << (s == "\n" ? s : "#{color}#{s}#{CLEAR_SEQ}")
             end
           else
-            colored << value
+            colored << escape_for_print(value)
           end
           line_index = end_line - 1
           col = end_column
@@ -321,6 +325,10 @@ module IRB # :nodoc:
       end
 
       private
+
+      def escape_for_print(text)
+        Reline::Unicode.escape_for_print(text.gsub("\r\n", "\n"))
+      end
 
       FILTERED_ERROR_TYPES = [
         :class_name, :module_name, # `class`, `class owner_module`
