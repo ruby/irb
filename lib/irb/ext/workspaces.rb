@@ -21,7 +21,6 @@ module IRB # :nodoc:
       else
         new_workspace = WorkSpace.new(workspace.binding, _main[0])
         @workspace_stack.push new_workspace
-        new_workspace.load_helper_methods_to_main
       end
     end
 

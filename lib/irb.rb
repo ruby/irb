@@ -105,7 +105,6 @@ module IRB
       @from_binding = from_binding
       @prompt_part_cache = nil
       @context = Context.new(self, workspace, input_method)
-      @context.workspace.load_helper_methods_to_main
       @signal_status = :IN_IRB
       @scanner = RubyLex.new
       @line_no = 1
@@ -126,7 +125,6 @@ module IRB
     def debug_readline(binding)
       workspace = IRB::WorkSpace.new(binding)
       context.replace_workspace(workspace)
-      context.workspace.load_helper_methods_to_main
       @line_no += 1
 
       # When users run:
