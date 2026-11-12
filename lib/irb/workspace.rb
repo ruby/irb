@@ -134,7 +134,7 @@ EOF
       bt
     end
 
-    def code_around_binding
+    def code_around_binding(show_full_file: false)
       file, pos = @binding.source_location
 
       if defined?(::SCRIPT_LINES__[file]) && lines = ::SCRIPT_LINES__[file]
@@ -150,8 +150,13 @@ EOF
       lines = Color.colorize_code(code).lines
       pos -= 1
 
-      start_pos = [pos - 5, 0].max
-      end_pos   = [pos + 5, lines.size - 1].min
+      if show_full_file
+        start_pos = 0
+        end_pos   = lines.size - 1
+      else
+        start_pos = [pos - 5, 0].max
+        end_pos   = [pos + 5, lines.size - 1].min
+      end
 
       line_number_fmt = Color.colorize("%#{end_pos.to_s.length}d", [:BLUE, :BOLD])
       fmt = " %2s #{line_number_fmt}: %s"
