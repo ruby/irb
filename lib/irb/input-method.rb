@@ -5,6 +5,7 @@
 #
 
 require_relative 'completion'
+require_relative 'doc_provider'
 require_relative "history"
 require 'io/console'
 require 'reline'
@@ -289,12 +290,8 @@ module IRB
       Reline.dig_perfect_match_proc = ->(matched) { display_document(matched) }
       Reline.autocompletion = IRB.conf[:USE_AUTOCOMPLETE]
 
-      if IRB.conf[:USE_AUTOCOMPLETE]
-        begin
-          require 'rdoc'
-          Reline.add_dialog_proc(:show_doc, show_doc_dialog_proc, Reline::DEFAULT_DIALOG_CONTEXT)
-        rescue LoadError
-        end
+      if IRB.conf[:USE_AUTOCOMPLETE] && doc_dialog_available?
+        Reline.add_dialog_proc(:show_doc, show_doc_dialog_proc, Reline::DEFAULT_DIALOG_CONTEXT)
       end
     end
 
@@ -328,17 +325,12 @@ module IRB
       end
     end
 
-    def rdoc_ri_driver
-      return @rdoc_ri_driver if defined?(@rdoc_ri_driver)
+    # Whether some provider in IRB.doc_providers can serve the documentation dialog.
+    def doc_dialog_available?
+      IRB.doc_providers.any? do |provider|
+        next false unless provider.respond_to?(:dialog_contents)
 
-      begin
-        require 'rdoc'
-      rescue LoadError
-        @rdoc_ri_driver = nil
-      else
-        options = {}
-        options[:extra_doc_dirs] = IRB.conf[:EXTRA_DOC_DIRS] unless IRB.conf[:EXTRA_DOC_DIRS].empty?
-        @rdoc_ri_driver = RDoc::RI::Driver.new(options)
+        provider.is_a?(RDocDocumentProvider) ? provider.available? : true
       end
     end
 
@@ -375,7 +367,7 @@ module IRB
         when CommandDocument
           input_method.command_doc_dialog_contents(target.name, width)
         when MethodDocument
-          input_method.rdoc_dialog_contents(target.name, width)
+          input_method.doc_dialog_contents(target.name, width)
         else
           if show_easter_egg
             input_method.easter_egg_dialog_contents
@@ -403,52 +395,38 @@ module IRB
       lines
     end
 
-    def rdoc_dialog_contents(name, width)
-      formatter = RDoc::Markup::ToAnsi.new
-      formatter.width = width
+    # Asks IRB.doc_providers, in order, for the dialog preview of +name+.
+    def doc_dialog_contents(name, width)
+      IRB.doc_providers.each do |provider|
+        next unless provider.respond_to?(:dialog_contents)
 
-      begin
-        document = retrieve_rdoc_document(name)
-      rescue RDoc::RI::Driver::NotFoundError
-        return
-      rescue => e
-        raise if $DEBUG
-        return rdoc_error_document(e).accept(formatter).split("\n")
-      end
-      return unless document
-
-      [PRESS_ALT_D_TO_READ_FULL_DOC] + document.accept(formatter).split("\n")
-    end
-
-    def retrieve_rdoc_document(name)
-      driver = rdoc_ri_driver
-      return unless driver
-
-      name = driver.expand_name(name)
-
-      if name =~ /#|\./
-        d = RDoc::Markup::Document.new
-        driver.add_method(d, name)
-        d
-      else
-        found, klasses, includes, extends = driver.classes_and_includes_and_extends_for(name)
-        if found.empty?
-          d = RDoc::Markup::Document.new
-          driver.add_method(d, name)
-          d
-        else
-          driver.class_document(name, found, klasses, includes, extends)
+        begin
+          contents = provider.dialog_contents(name, width)
+        rescue => e
+          raise if $DEBUG
+          return doc_error_dialog_contents(e)
         end
+        return [PRESS_ALT_D_TO_READ_FULL_DOC] + contents if contents
       end
+      nil
     end
 
-    def rdoc_error_document(error)
-      document = RDoc::Markup::Document.new
-      document << RDoc::Markup::Paragraph.new("Failed to load the document:")
-      document << RDoc::Markup::Paragraph.new("#{error.class}: #{error.message}")
-      document << RDoc::Markup::BlankLine.new
-      document << RDoc::Markup::Paragraph.new("Restart IRB with -d to see the backtrace.")
-      document
+    def doc_error_dialog_contents(error)
+      [
+        "Failed to load the document:",
+        "#{error.class}: #{error.message}",
+        "",
+        "Restart IRB with -d to see the backtrace.",
+      ]
+    end
+
+    # Asks IRB.doc_providers, in order, for the documentation of +name+.
+    def retrieve_document(name)
+      IRB.doc_providers.each do |provider|
+        document = provider.document(name)
+        return document if document
+      end
+      nil
     end
 
     def dialog_doc_position(cursor_pos_to_render, autocomplete_dialog, screen_width)
@@ -496,28 +474,17 @@ module IRB
           end
         end
       when MethodDocument
-        driver = rdoc_ri_driver
-        return unless driver
-
         if matched =~ /\A(?:::)?RubyVM/ && !ENV['RUBY_YES_I_AM_NOT_A_NORMAL_USER']
           IRB.__send__(:easter_egg)
           return
         end
 
-        if target.names.length > 1
-          out = RDoc::Markup::Document.new
-          target.names.each do |m|
-            begin
-              driver.add_method(out, m)
-            rescue RDoc::RI::Driver::NotFoundError
-            end
-          end
-          driver.display(out)
-        else
-          begin
-            driver.display_names([target.name])
-          rescue RDoc::RI::Driver::NotFoundError
-          end
+        # An ambiguous receiver has several candidate names; show all of them.
+        documents = target.names.filter_map { |name| retrieve_document(name) }
+        return if documents.empty?
+
+        Pager.page(retain_content: true) do |io|
+          io.puts documents.join("\n")
         end
       end
     end

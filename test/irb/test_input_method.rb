@@ -105,16 +105,10 @@ module TestIRB
   end
 
   class DisplayDocumentTest < InputMethodTest
-    def setup
-      super
-      @driver = RDoc::RI::Driver.new(use_stdout: true)
-    end
-
-    def display_document(target, bind, driver = nil)
+    def display_document(target, bind)
       use_pager = IRB.conf[:USE_PAGER]
       IRB.conf[:USE_PAGER] = false
       input_method = IRB::RelineInputMethod.new(IRB::RegexpCompletor.new)
-      input_method.instance_variable_set(:@rdoc_ri_driver, driver) if driver
       input_method.instance_variable_set(:@completion_params, ['', target, '', bind])
       input_method.display_document(target)
     ensure
@@ -125,7 +119,7 @@ module TestIRB
       omit unless has_rdoc_content?
 
       out, err = capture_output do
-        display_document("String", binding, @driver)
+        display_document("String", binding)
       end
 
       assert_empty(err)
@@ -136,7 +130,7 @@ module TestIRB
     def test_perfectly_matched_multiple_namespaces_triggers_document_display
       result = nil
       out, err = capture_output do
-        result = display_document("{}.nil?", binding, @driver)
+        result = display_document("{}.nil?", binding)
       end
 
       assert_empty(err)
@@ -148,17 +142,16 @@ module TestIRB
         assert_include(out, "P\bPr\bro\boc\bc.\b.n\bni\bil\bl?\b?") # Proc.nil?
         assert_include(out, "H\bHa\bas\bsh\bh.\b.n\bni\bil\bl?\b?") # Hash.nil?
       else
-        # this is a hacky way to verify the rdoc rendering code path because CI doesn't have rdoc content
-        # if there are multiple namespaces to be rendered, PerfectMatchedProc renders the result with a document
-        # which always returns the bytes rendered, even if it's 0
-        assert_equal(0, result)
+        # nothing is displayed when no documentation is available
+        assert_empty(out)
+        assert_nil(result)
       end
     end
 
     def test_not_matched_namespace_triggers_nothing
       result = nil
       out, err = capture_output do
-        result = display_document("Stri", binding, @driver)
+        result = display_document("Stri", binding)
       end
 
       assert_empty(err)
@@ -183,7 +176,7 @@ module TestIRB
     def test_perfect_matching_handles_nil_namespace
       out, err = capture_output do
         # symbol literal has `nil` doc namespace so it's a good test subject
-        assert_nil(display_document(":aiueo", binding, @driver))
+        assert_nil(display_document(":aiueo", binding))
       end
 
       assert_empty(err)
@@ -208,6 +201,48 @@ module TestIRB
       assert_include(out, IRB::Command::History.description)
     end
 
+    def test_documents_of_all_candidate_names_are_displayed
+      provider = StubDocProvider.new("Hash.any?" => "doc of Hash#any?", "Proc.any?" => "doc of Proc#any?")
+
+      out, err = capture_output do
+        with_doc_providers(provider) do
+          display_document("{}.any?", binding)
+        end
+      end
+
+      assert_empty(err)
+      assert_include(out, "doc of Hash#any?")
+      assert_include(out, "doc of Proc#any?")
+    end
+
+    def test_providers_are_consulted_in_order
+      first = StubDocProvider.new({})
+      second = StubDocProvider.new("String" => "doc of String")
+
+      out, err = capture_output do
+        with_doc_providers(first, second) do
+          display_document("String", binding)
+        end
+      end
+
+      assert_empty(err)
+      assert_equal(["String"], first.requested_names)
+      assert_include(out, "doc of String")
+    end
+
+    def test_nothing_is_displayed_when_no_provider_knows_the_name
+      result = nil
+      out, err = capture_output do
+        with_doc_providers(StubDocProvider.new({})) do
+          result = display_document("String", binding)
+        end
+      end
+
+      assert_empty(err)
+      assert_empty(out)
+      assert_nil(result)
+    end
+
     private
 
     def has_rdoc_content?
@@ -215,13 +250,135 @@ module TestIRB
     end
   end if defined?(RDoc)
 
+  class StubDocProvider
+    attr_reader :requested_names
+
+    def initialize(documents)
+      @documents = documents
+      @requested_names = []
+    end
+
+    def document(name)
+      @requested_names << name
+      @documents[name]
+    end
+
+    def dialog_contents(name, width)
+      @requested_names << name
+      document = @documents[name]
+      ["#{name} (width: #{width})", document] if document
+    end
+  end
+
+  class DocumentOnlyProvider
+    def initialize(documents)
+      @documents = documents
+    end
+
+    def document(name)
+      @documents[name]
+    end
+  end
+
+  class DocDialogContentsTest < InputMethodTest
+    def test_providers_are_consulted_in_order
+      first = StubDocProvider.new({})
+      second = StubDocProvider.new("String.gsub" => "doc of String#gsub")
+
+      contents = with_doc_providers(first, second) do
+        build_input_method.doc_dialog_contents("String.gsub", 40)
+      end
+
+      assert_equal(["String.gsub"], first.requested_names)
+      assert_equal([IRB::RelineInputMethod::PRESS_ALT_D_TO_READ_FULL_DOC, "String.gsub (width: 40)", "doc of String#gsub"], contents)
+    end
+
+    def test_providers_without_dialog_contents_are_skipped
+      provider = DocumentOnlyProvider.new("String.gsub" => "doc of String#gsub")
+
+      contents = with_doc_providers(provider) do
+        build_input_method.doc_dialog_contents("String.gsub", 40)
+      end
+
+      assert_nil(contents)
+    end
+
+    def test_returns_nil_when_no_provider_knows_the_name
+      contents = with_doc_providers(StubDocProvider.new({})) do
+        build_input_method.doc_dialog_contents("String.gsub", 40)
+      end
+
+      assert_nil(contents)
+    end
+
+    def test_shows_error_content_when_provider_raises
+      provider = Object.new
+      provider.define_singleton_method(:document) { |_name| nil }
+      provider.define_singleton_method(:dialog_contents) { |_name, _width| raise ArgumentError, "broken provider" }
+
+      contents = nil
+      assert_nothing_raised do
+        contents = with_doc_providers(provider) do
+          build_input_method.doc_dialog_contents("String.gsub", 40)
+        end
+      end
+
+      assert_include(contents, "ArgumentError: broken provider")
+      assert_include(contents, "Restart IRB with -d to see the backtrace.")
+      assert_not_include(contents, IRB::RelineInputMethod::PRESS_ALT_D_TO_READ_FULL_DOC)
+    end
+
+    def test_dialog_is_registered_when_a_provider_supports_it_without_rdoc
+      original_show_doc_proc = Reline.dialog_proc(:show_doc)&.dialog_proc
+      empty_proc = Proc.new {}
+      Reline.add_dialog_proc(:show_doc, empty_proc)
+      IRB.conf[:USE_AUTOCOMPLETE] = true
+
+      without_rdoc do
+        with_doc_providers(StubDocProvider.new({}), IRB::RDocDocumentProvider.new) do
+          IRB::RelineInputMethod.new(IRB::RegexpCompletor.new)
+        end
+      end
+
+      assert_not_equal empty_proc, Reline.dialog_proc(:show_doc).dialog_proc
+    ensure
+      Reline.add_dialog_proc(:show_doc, original_show_doc_proc, Reline::DEFAULT_DIALOG_CONTEXT)
+    end
+
+    def test_dialog_is_not_registered_when_no_provider_supports_it
+      original_show_doc_proc = Reline.dialog_proc(:show_doc)&.dialog_proc
+      empty_proc = Proc.new {}
+      Reline.add_dialog_proc(:show_doc, empty_proc)
+      IRB.conf[:USE_AUTOCOMPLETE] = true
+
+      with_doc_providers(DocumentOnlyProvider.new({})) do
+        IRB::RelineInputMethod.new(IRB::RegexpCompletor.new)
+      end
+
+      assert_equal empty_proc, Reline.dialog_proc(:show_doc).dialog_proc
+    ensure
+      Reline.add_dialog_proc(:show_doc, original_show_doc_proc, Reline::DEFAULT_DIALOG_CONTEXT)
+    end
+
+    private
+
+    def build_input_method
+      IRB::RelineInputMethod.new(IRB::RegexpCompletor.new)
+    end
+  end
+
   class RdocDialogContentsTest < InputMethodTest
+    def teardown
+      IRB.doc_providers.replace(@original_providers) if @original_providers
+      super
+    end
+
     def test_shows_error_content_when_document_retrieval_raises
       input_method = build_input_method(failing_driver(ArgumentError.new("undefined class/module RDoc::")))
 
       contents = nil
       assert_nothing_raised do
-        contents = input_method.rdoc_dialog_contents("1.foo", 40)
+        contents = input_method.doc_dialog_contents("1.foo", 40)
       end
 
       assert_not_nil contents
@@ -243,7 +400,7 @@ module TestIRB
       # $DEBUG makes Ruby print raised exceptions to stderr; swallow that noise.
       capture_output do
         assert_raise(ArgumentError) do
-          input_method.rdoc_dialog_contents("1.foo", 40)
+          input_method.doc_dialog_contents("1.foo", 40)
         end
       end
     ensure
@@ -253,7 +410,7 @@ module TestIRB
     def test_includes_full_document_hint_when_document_is_available
       input_method = build_input_method(documented_driver)
 
-      contents = input_method.rdoc_dialog_contents("1.foo", 40)
+      contents = input_method.doc_dialog_contents("1.foo", 40)
 
       assert_equal IRB::RelineInputMethod::PRESS_ALT_D_TO_READ_FULL_DOC, contents.first
     end
@@ -261,15 +418,17 @@ module TestIRB
     def test_returns_nil_when_document_not_found
       input_method = build_input_method(failing_driver(RDoc::RI::Driver::NotFoundError.new("1.foo")))
 
-      assert_nil input_method.rdoc_dialog_contents("1.foo", 40)
+      assert_nil input_method.doc_dialog_contents("1.foo", 40)
     end
 
     private
 
     def build_input_method(driver)
-      input_method = IRB::RelineInputMethod.new(IRB::RegexpCompletor.new)
-      input_method.instance_variable_set(:@rdoc_ri_driver, driver)
-      input_method
+      provider = IRB::RDocDocumentProvider.new
+      provider.instance_variable_set(:@driver, driver)
+      @original_providers = IRB.doc_providers.dup
+      IRB.doc_providers.replace([provider])
+      IRB::RelineInputMethod.new(IRB::RegexpCompletor.new)
     end
 
     def failing_driver(error)
