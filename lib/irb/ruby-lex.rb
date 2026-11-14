@@ -133,12 +133,20 @@ module IRB
       ignored_newline_found && pos >= 0 && !%i[DOT_DOT DOT_DOT_DOT NEWLINE SEMICOLON].include?(tokens[pos].type)
     end
 
+    # Errors about invalid bytes in a closed literal, like `:"\xAE"`.
+    # Prism reports them as continuable, but more input can not fix them.
+    INVALID_LITERAL_ERRORS = %i[invalid_symbol invalid_multibyte_escape invalid_multibyte_character].freeze
+
     def check_code_syntax(code, local_variables:)
       result = Prism.lex(code, scopes: [local_variables])
       if result.success?
         :valid
       elsif result.respond_to?(:continuable?)
-        result.continuable? ? :recoverable_error : :unrecoverable_error
+        if result.continuable? && !result.errors.all? { |error| INVALID_LITERAL_ERRORS.include?(error.type) }
+          :recoverable_error
+        else
+          :unrecoverable_error
+        end
       else # For Prism <= 1.9.0. Drop this branch when IRB requires Prism >= 1.10.0.
         check_syntax_error_heuristics(result)
       end
