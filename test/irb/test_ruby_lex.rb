@@ -198,6 +198,25 @@ module TestIRB
       end
     end
 
+    def test_syntax_check_invalid_bytes_in_closed_literal
+      lex = RubyLex.new
+      [
+        ':"\\xAE"',
+        '/\\xAE/',
+        "\"\xAE\"",
+        '{"\\xAE": 1}'
+      ].each do |code|
+        assert_include([:valid, :unrecoverable_error, :other_error], lex.check_code_syntax("#{code}\n", local_variables: []), code)
+      end
+
+      [
+        ':"\\xAE',
+        "\"\xE3"
+      ].each do |code|
+        assert_include([:recoverable_error, :other_error], lex.check_code_syntax("#{code}\n", local_variables: []), code)
+      end
+    end
+
     private
 
     def assert_indent_level(lines, expected, local_variables: [])
