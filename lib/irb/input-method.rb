@@ -333,12 +333,13 @@ module IRB
 
       begin
         require 'rdoc'
-      rescue LoadError
-        @rdoc_ri_driver = nil
-      else
         options = {}
         options[:extra_doc_dirs] = IRB.conf[:EXTRA_DOC_DIRS] unless IRB.conf[:EXTRA_DOC_DIRS].empty?
+        # RDoc::RI::Driver.new requires more of rdoc (rdoc 8.1 requires rbs);
+        # a library that is not there means no document, not an error
         @rdoc_ri_driver = RDoc::RI::Driver.new(options)
+      rescue LoadError
+        @rdoc_ri_driver = nil
       end
     end
 
