@@ -43,6 +43,25 @@ module TestIRB
       INPUT
     end
 
+    def test_history_save_0
+      omit "Skip Editline" if /EditLine/n.match(Readline::VERSION)
+      IRB.conf[:SAVE_HISTORY] = 0
+      assert_history(<<~EXPECTED_HISTORY, <<~INITIAL_HISTORY, <<~INPUT)
+        1
+        2
+        3
+        4
+      EXPECTED_HISTORY
+        1
+        2
+        3
+        4
+      INITIAL_HISTORY
+        5
+        exit
+      INPUT
+    end
+
     def test_history_save_1
       omit "Skip Editline" if /EditLine/n.match(Readline::VERSION)
       IRB.conf[:SAVE_HISTORY] = 1
