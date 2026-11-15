@@ -290,6 +290,23 @@ module TestIRB
       assert_equal(false, IRB.conf[:SHOW_BANNER])
     end
 
+    def test_prompt_option
+      orig_prompt_mode = IRB.conf[:PROMPT_MODE]
+      IRB.setup(eval("__FILE__"), argv: %w[--prompt simple])
+      assert_equal(:SIMPLE, IRB.conf[:PROMPT_MODE])
+
+      IRB.setup(eval("__FILE__"), argv: %w[--prompt-mode=inf-ruby])
+      assert_equal(:INF_RUBY, IRB.conf[:PROMPT_MODE])
+
+      %w[--prompt --prompt-mode].each do |opt|
+        assert_raise(IRB::UndefinedPromptMode) do
+          IRB.setup(eval("__FILE__"), argv: [opt])
+        end
+      end
+    ensure
+      IRB.conf[:PROMPT_MODE] = orig_prompt_mode
+    end
+
     def test_measure_when_exception_occurs
       out, err = execute_lines(
         "measure\n",

@@ -347,6 +347,7 @@ module IRB # :nodoc:
         @CONF[:COMPLETOR] = :type
       when /^--prompt-mode(?:=(.+))?/, /^--prompt(?:=(.+))?/
         opt = $1 || argv.shift
+        fail UndefinedPromptMode, opt unless opt
         prompt_mode = opt.upcase.tr("-", "_").intern
         @CONF[:PROMPT_MODE] = prompt_mode
       when "--nobanner"
