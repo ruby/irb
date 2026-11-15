@@ -64,6 +64,11 @@ module TestIRB
         "def self.foo; bar; end" => "#{GREEN}def#{CLEAR} #{CYAN}#{BOLD}self#{CLEAR}.#{CYAN}#{BOLD}foo#{CLEAR}; #{CYAN}bar#{CLEAR}; #{GREEN}end#{CLEAR}",
         'erb = ERB.new("a#{nil}b", trim_mode: "-")' => "erb = #{BLUE}#{BOLD}#{UNDERLINE}ERB#{CLEAR}.#{CYAN}new#{CLEAR}(#{RED}#{BOLD}\"#{CLEAR}#{RED}a#{CLEAR}#{RED}\#{#{CLEAR}#{CYAN}#{BOLD}nil#{CLEAR}#{RED}}#{CLEAR}#{RED}b#{CLEAR}#{RED}#{BOLD}\"#{CLEAR}, #{MAGENTA}trim_mode:#{CLEAR} #{RED}#{BOLD}\"#{CLEAR}#{RED}-#{CLEAR}#{RED}#{BOLD}\"#{CLEAR})",
         "# comment" => "#{BLUE}#{BOLD}# comment#{CLEAR}",
+        "# comment\r\n" => "#{BLUE}#{BOLD}# comment#{CLEAR}\n",
+        "# comment\r" => "#{BLUE}#{BOLD}# comment^M#{CLEAR}",
+        "# 日本語\r\n1" => "#{BLUE}#{BOLD}# 日本語#{CLEAR}\n#{BLUE}#{BOLD}1#{CLEAR}",
+        "# first\r\n# second\r\n" => "#{BLUE}#{BOLD}# first#{CLEAR}\n#{BLUE}#{BOLD}# second#{CLEAR}\n",
+        "def foo\r\nend\r\n" => "#{GREEN}def#{CLEAR} #{CYAN}#{BOLD}foo#{CLEAR}\n#{GREEN}end#{CLEAR}\n",
         "def f;yield(hello);end" => "#{GREEN}def#{CLEAR} #{CYAN}#{BOLD}f#{CLEAR};#{GREEN}yield#{CLEAR}(#{CYAN}hello#{CLEAR});#{GREEN}end#{CLEAR}",
         "alias foo bar" => "#{GREEN}alias#{CLEAR} #{CYAN}#{BOLD}foo#{CLEAR} #{CYAN}#{BOLD}bar#{CLEAR}",
         "alias :foo :bar" => "#{GREEN}alias#{CLEAR} #{YELLOW}:#{CLEAR}#{YELLOW}foo#{CLEAR} #{YELLOW}:#{CLEAR}#{YELLOW}bar#{CLEAR}",
@@ -71,6 +76,10 @@ module TestIRB
         '"foo#{a} #{b}"' => "#{RED}#{BOLD}\"#{CLEAR}#{RED}foo#{CLEAR}#{RED}\#{#{CLEAR}#{CYAN}a#{CLEAR}#{RED}}#{CLEAR}#{RED} #{CLEAR}#{RED}\#{#{CLEAR}#{CYAN}b#{CLEAR}#{RED}}#{CLEAR}#{RED}#{BOLD}\"#{CLEAR}",
         '/r#{e}g/' => "#{RED}#{BOLD}/#{CLEAR}#{RED}r#{CLEAR}#{RED}\#{#{CLEAR}#{CYAN}e#{CLEAR}#{RED}}#{CLEAR}#{RED}g#{CLEAR}#{RED}#{BOLD}/#{CLEAR}",
         "'a\nb'" => "#{RED}#{BOLD}'#{CLEAR}#{RED}a#{CLEAR}\n#{RED}b#{CLEAR}#{RED}#{BOLD}'#{CLEAR}",
+        "'a\r\nb'" => "#{RED}#{BOLD}'#{CLEAR}#{RED}a#{CLEAR}\n#{RED}b#{CLEAR}#{RED}#{BOLD}'#{CLEAR}",
+        "'a\rb'" => "#{RED}#{BOLD}'#{CLEAR}#{RED}a^Mb#{CLEAR}#{RED}#{BOLD}'#{CLEAR}",
+        "%\r\r\na\r" => "#{RED}#{BOLD}%^M#{CLEAR}#{RED}#{CLEAR}\n#{RED}a#{CLEAR}#{RED}#{BOLD}^M#{CLEAR}",
+        "%\ra\r\r\n" => "#{RED}#{BOLD}%^M#{CLEAR}#{RED}a#{CLEAR}#{RED}#{BOLD}^M#{CLEAR}\n",
         "%[str]" => "#{RED}#{BOLD}%[#{CLEAR}#{RED}str#{CLEAR}#{RED}#{BOLD}]#{CLEAR}",
         "%Q[str]" => "#{RED}#{BOLD}%Q[#{CLEAR}#{RED}str#{CLEAR}#{RED}#{BOLD}]#{CLEAR}",
         "%q[str]" => "#{RED}#{BOLD}%q[#{CLEAR}#{RED}str#{CLEAR}#{RED}#{BOLD}]#{CLEAR}",
@@ -167,6 +176,10 @@ module TestIRB
       assert_equal_with_term(result_without_lvars, code)
       assert_equal_with_term(result_with_lvar, code, local_variables: [:a])
       assert_equal_with_term(result_with_lvars, code, local_variables: [:a, :b])
+    end
+
+    def test_colorize_code_with_crlf_and_ignored_errors
+      assert_equal_with_term("'\n^M^[", "'\r\n\r\e", ignore_error: true)
     end
 
     def test_colorize_code_complete_true
