@@ -76,7 +76,11 @@ module IRB
       begin
         ensure_history_file_permissions(history_file)
 
-        File.open(history_file, (append_history ? "a" : "w"), 0o600, encoding: IRB.conf[:LC_MESSAGES]&.encoding) do |f|
+        # Write the entries in the encoding they already carry. Forcing the
+        # locale's encoding raises Encoding::UndefinedConversionError on a
+        # non-ASCII entry under an ASCII locale, and the rescues below do not
+        # catch it, so IRB aborts on exit and the whole session is lost.
+        File.open(history_file, (append_history ? "a" : "w"), 0o600) do |f|
           hist = history.map { |l| l.scrub.split("\n").join("\\\n") }
 
           unless append_history || History.infinite?
