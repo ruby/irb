@@ -4,7 +4,8 @@ Usage:  irb.rb [options] [programfile] [arguments]
   -r load-module    Require load-module (same as 'ruby -r').
   -I path           Specify $LOAD_PATH directory (same as 'ruby -I').
   -U                Set external and internal encodings to UTF-8.
-  -E ex[:in]        Set default external (ex) and internal (in) encodings
+  -E ex[:in], --encoding ex[:in]
+                    Set default external (ex) and internal (in) encodings
                     (same as 'ruby -E').
   -w                Enable warnings (same as 'ruby -w' or 'ruby -W1').
   -W[level=2]       Set warning level: 0=silence, 1=medium, 2=verbose
