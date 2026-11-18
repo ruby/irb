@@ -231,9 +231,12 @@ module IRB
                 output_value
               end
             end
+          rescue Interrupt => exc
+            handle_exception(exc)
+            @context.workspace.local_variable_set(:_, exc)
           rescue SystemExit, SignalException
             raise
-          rescue Interrupt, Exception => exc
+          rescue Exception => exc
             handle_exception(exc)
             @context.workspace.local_variable_set(:_, exc)
           end
