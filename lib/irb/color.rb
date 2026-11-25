@@ -176,7 +176,8 @@ module IRB # :nodoc:
         end
 
         result = Prism.parse_lex(code, encoding: orig_encoding, scopes: [local_variables])
-        source_encoding = result.source.encoding
+        prism_node, prism_tokens = result.value
+        source_encoding = prism_tokens.first&.first&.value&.encoding || result.source.encoding
         return escape_for_print(code) unless source_encoding.ascii_compatible?
 
         code = code.b.force_encoding(source_encoding) if code.encoding != source_encoding
@@ -186,19 +187,26 @@ module IRB # :nodoc:
           return encode_result(escape_for_print(code), orig_encoding)
         end
 
-        prism_node, prism_tokens = result.value
         errors = result.errors
 
         unless complete
           errors = filter_incomplete_code_errors(errors, prism_tokens)
         end
 
-        visitor = ColorizeVisitor.new
+        visitor = ColorizeVisitor.new(source_encoding)
         prism_node.accept(visitor)
 
-        error_tokens = errors.map { |e| [e.location.start_line, e.location.start_column, 0, e.location.end_line, e.location.end_column, :error, e.location.slice] }
+        error_tokens = errors.map do |e|
+          slice = e.location.slice
+          slice = slice.b.force_encoding(source_encoding) if slice.encoding != source_encoding
+          [e.location.start_line, e.location.start_column, 0, e.location.end_line, e.location.end_column, :error, slice]
+        end
         error_tokens.reject! { |t| t.last.valid_encoding? && t.last.match?(/\A\s*\z/) }
-        tokens = prism_tokens.map { |t,| [t.location.start_line, t.location.start_column, 2, t.location.end_line, t.location.end_column, t.type, t.location.slice] }
+        tokens = prism_tokens.map do |t,|
+          slice = t.value
+          slice = slice.b.force_encoding(source_encoding) if slice.encoding != source_encoding
+          [t.location.start_line, t.location.start_column, 2, t.location.end_line, t.location.end_column, t.type, slice]
+        end
         tokens.pop if tokens.last&.[](5) == :EOF
 
         colored = String.new(encoding: source_encoding)
@@ -249,13 +257,14 @@ module IRB # :nodoc:
 
       class ColorizeVisitor < Prism::Visitor
         attr_reader :tokens
-        def initialize
+        def initialize(encoding)
           @tokens = []
+          @encoding = encoding
         end
 
         def dispatch(location, type)
           if location
-            @tokens << [location.start_line, location.start_column, 1, location.end_line, location.end_column, type, location.slice]
+            @tokens << [location.start_line, location.start_column, 1, location.end_line, location.end_column, type, slice_location(location)]
           end
         end
 
@@ -287,7 +296,7 @@ module IRB # :nodoc:
           if node.call_operator_loc.nil? && OPERATORS.include?(node.name)
             # Operators should not be colored as method call
           elsif (node.call_operator_loc.nil? || node.call_operator_loc.slice == "::") &&
-              (name = node.message_loc&.slice) && name.valid_encoding? && /\A\p{Upper}/.match?(name)
+              (name = node.message_loc && slice_location(node.message_loc)) && name.valid_encoding? && /\A\p{Upper}/.match?(name)
             # Constant-like methods should not be colored as method call
           else
             dispatch node.message_loc, :message_name
@@ -331,6 +340,11 @@ module IRB # :nodoc:
         end
 
         private
+
+        def slice_location(location)
+          slice = location.slice
+          slice.encoding == @encoding ? slice : slice.b.force_encoding(@encoding)
+        end
 
         def dispatch_alias_method_name(node)
           if node.type == :symbol_node && node.opening_loc.nil?
