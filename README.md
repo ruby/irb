@@ -11,7 +11,7 @@ The `irb` command from your shell will start the interpreter.
 
 > [!Warning]
 >
-> When IRB starts, it loads these files from the current directory if they exist: `.irbrc`, `irbrc`, `_irbrc` and `$irbrc`. Tools built on IRB, such as the Rails console, do the same. These files can run any Ruby code. This is intended behavior, not a security vulnerability. Before you run `irb` or one of these tools in a project, make sure that you trust the project's code.
+> When IRB starts, it loads these files from the current directory if they exist: `.irbrc`, `irbrc`, `_irbrc` and `$irbrc`. Tools built on IRB, such as the Rails console, do the same. These files can run any Ruby code. Before you run `irb` or one of these tools in a project, make sure that you trust the project's code.
 
 ## Installation
 
