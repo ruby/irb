@@ -159,6 +159,7 @@ EOF
       body = (start_pos..end_pos).map do |current_pos|
         sprintf(fmt, pos == current_pos ? '=>' : '', current_pos + 1, lines[current_pos])
       end.join("")
+      body = body.encode(file.encoding, invalid: :replace, undef: :replace) unless Encoding.compatible?(file, body)
 
       "\nFrom: #{file} @ line #{pos + 1} :\n\n#{body}#{Color.clear}\n"
     end

@@ -1,5 +1,7 @@
 # frozen_string_literal: false
 require 'tempfile'
+require 'tmpdir'
+require 'stringio'
 require 'irb'
 require 'irb/workspace'
 require 'irb/color'
@@ -80,6 +82,39 @@ module TestIRB
       assert_equal(nil, workspace.code_around_binding)
     end
 
+    def test_code_around_binding_with_non_utf8_encoding
+      IRB.conf[:USE_COLORIZE] = true
+      Dir.mktmpdir("irb_workspace") do |dir|
+        sjis_end_path = File.join(dir, "sjis_end.rb")
+        sjis_end_code = "# coding: sjis\ns = '\u3042'\nIRB::WorkSpace.new(binding)\n__END__\n\u3044\n".encode(Encoding::Windows_31J)
+        File.binwrite(sjis_end_path, sjis_end_code)
+        workspace = eval(sjis_end_code, binding, sjis_end_path)
+        result = with_term { workspace.code_around_binding }
+        assert_predicate(result, :valid_encoding?)
+        assert_include(result, "=> \e[34m\e[1m3\e[0m:")
+
+        invalid_end_path = File.join(dir, "invalid_end.rb")
+        invalid_end_code = "IRB::WorkSpace.new(binding)\n__END__\n\u3042\n".encode(Encoding::Windows_31J)
+        File.binwrite(invalid_end_path, invalid_end_code)
+        workspace = eval(File.binread(invalid_end_path).force_encoding(Encoding::UTF_8), binding, invalid_end_path)
+        result = with_term { workspace.code_around_binding }
+        assert_predicate(result, :valid_encoding?)
+        assert_include(result, "=> \e[34m\e[1m1\e[0m:")
+
+        with_script_lines do |script_lines|
+          script_path = "#{dir}/\u30c6\u30b9\u30c8.rb".encode(Encoding::UTF_8)
+          script_code = "# coding: sjis\ns = '\u3042'\nIRB::WorkSpace.new(binding)\n".encode(Encoding::Windows_31J)
+          script_lines[script_path] = script_code.lines
+          workspace = eval(script_code, binding, script_path)
+          result = with_term { workspace.code_around_binding }
+          assert_predicate(result, :valid_encoding?)
+          assert_include(result, "From: #{script_path} @ line 3 :")
+        end
+      end
+    ensure
+      IRB.conf.delete(:USE_COLORIZE)
+    end
+
     def test_toplevel_binding_local_variables
       bug17623 = '[ruby-core:102468]'
       bundle_exec = ENV.key?('BUNDLE_GEMFILE') ? ['-rbundler/setup'] : []
@@ -114,6 +149,21 @@ module TestIRB
         remove_const :SCRIPT_LINES__
         const_set(:SCRIPT_LINES__, script_lines) if script_lines
       end
+    end
+
+    def with_term
+      stdout = $stdout
+      io = StringIO.new
+      def io.tty?; true; end
+      $stdout = io
+
+      env = ENV.to_h.dup
+      ENV['TERM'] = 'xterm-256color'
+
+      yield
+    ensure
+      $stdout = stdout
+      ENV.replace(env) if env
     end
 
     def without_term
