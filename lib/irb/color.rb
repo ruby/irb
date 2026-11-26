@@ -177,7 +177,13 @@ module IRB # :nodoc:
 
         result = Prism.parse_lex(code, encoding: orig_encoding, scopes: [local_variables])
         prism_node, prism_tokens = result.value
-        source_encoding = prism_tokens.first&.first&.value&.encoding || result.source.encoding
+        source_encoding = result.source.encoding
+        if source_encoding == orig_encoding &&
+            (token_encoding = prism_tokens.first&.first&.value&.encoding) &&
+            token_encoding != orig_encoding &&
+            result.magic_comments.any? { |mc| mc.key.match?(/\A(?:en)?coding\z/i) }
+          source_encoding = token_encoding
+        end
         return escape_for_print(code) unless source_encoding.ascii_compatible?
 
         code = code.b.force_encoding(source_encoding) if code.encoding != source_encoding
