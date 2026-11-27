@@ -652,7 +652,7 @@ module IRB
           arg = IRB::Color.colorize_code(arg, complete: complete, local_variables: lvars) if arg
           "#{IRB::Color.colorize(name, [:BOLD])}\e[m#{sep}#{arg}"
         else
-          IRB::Color.colorize_code(input, complete: complete, local_variables: lvars)
+          IRB::Color.colorize_code(input, complete: complete, local_variables: lvars, helper_methods: true)
         end
       else
         Reline::Unicode.escape_for_print(input)
