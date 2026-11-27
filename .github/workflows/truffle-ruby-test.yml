@@ -19,7 +19,7 @@ jobs:
       WITH_LATEST_RELINE: ${{matrix.with_latest_reline}}
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Set up Ruby
         uses: ruby/setup-ruby@145243922b4465b78e04dd66294782c7de45901f # v1.345.0
         with:
