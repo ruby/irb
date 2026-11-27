@@ -84,6 +84,14 @@ module TestIRB
       EnvUtil.suppress_warning { Encoding.default_external = original }
     end
 
+    def with_doc_providers(*providers)
+      original = IRB.doc_providers.dup
+      IRB.doc_providers.replace(providers)
+      yield
+    ensure
+      IRB.doc_providers.replace(original)
+    end
+
     def without_rdoc(&block)
       ::Kernel.send(:alias_method, :irb_original_require, :require)
 
