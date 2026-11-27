@@ -147,7 +147,9 @@ EOF
         end
       end
 
-      lines = Color.colorize_code(code).lines
+      colorized = Color.colorize_code(code)
+      colorized = colorized.encode(file.encoding, invalid: :replace, undef: :replace) unless Encoding.compatible?(file, colorized)
+      lines = colorized.lines
       pos -= 1
 
       start_pos = [pos - 5, 0].max
@@ -155,10 +157,12 @@ EOF
 
       line_number_fmt = Color.colorize("%#{end_pos.to_s.length}d", [:BLUE, :BOLD])
       fmt = " %2s #{line_number_fmt}: %s"
+      fmt = fmt.encode(colorized.encoding) if colorized.encoding != fmt.encoding && colorized.encoding.ascii_compatible?
 
       body = (start_pos..end_pos).map do |current_pos|
         sprintf(fmt, pos == current_pos ? '=>' : '', current_pos + 1, lines[current_pos])
       end.join("")
+      body = body.encode(file.encoding, invalid: :replace, undef: :replace) unless Encoding.compatible?(file, body)
 
       "\nFrom: #{file} @ line #{pos + 1} :\n\n#{body}#{Color.clear}\n"
     end

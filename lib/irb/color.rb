@@ -166,27 +166,56 @@ module IRB # :nodoc:
       def colorize_code(code, complete: true, ignore_error: false, colorable: colorable?, local_variables: [])
         return code unless colorable
 
-        result = Prism.parse_lex(code, scopes: [local_variables])
+        orig_encoding = code.encoding
+        unless orig_encoding.ascii_compatible?
+          begin
+            return escape_for_print(code.encode(Encoding::UTF_8, invalid: :replace, undef: :replace))
+          rescue Encoding::ConverterNotFoundError
+            return code
+          end
+        end
+
+        result = Prism.parse_lex(code, encoding: orig_encoding, scopes: [local_variables])
+        prism_node, prism_tokens = result.value
+        source_encoding = result.source.encoding
+        if source_encoding == orig_encoding &&
+            (token_encoding = prism_tokens.first&.first&.value&.encoding) &&
+            token_encoding != orig_encoding &&
+            result.magic_comments.any? { |mc| mc.key.match?(/\A(?:en)?coding\z/i) }
+          source_encoding = token_encoding
+        end
+        return escape_for_print(code) unless source_encoding.ascii_compatible?
+
+        code = code.b.force_encoding(source_encoding) if code.encoding != source_encoding
 
         # IRB::ColorPrinter skips colorizing syntax invalid fragments
-        return escape_for_print(code) if ignore_error && !result.success?
+        if ignore_error && !result.success?
+          return encode_result(escape_for_print(code), orig_encoding)
+        end
 
-        prism_node, prism_tokens = result.value
         errors = result.errors
 
         unless complete
           errors = filter_incomplete_code_errors(errors, prism_tokens)
         end
 
-        visitor = ColorizeVisitor.new
+        visitor = ColorizeVisitor.new(source_encoding)
         prism_node.accept(visitor)
 
-        error_tokens = errors.map { |e| [e.location.start_line, e.location.start_column, 0, e.location.end_line, e.location.end_column, :error, e.location.slice] }
-        error_tokens.reject! { |t| t.last.match?(/\A\s*\z/) }
-        tokens = prism_tokens.map { |t,| [t.location.start_line, t.location.start_column, 2, t.location.end_line, t.location.end_column, t.type, t.value] }
+        error_tokens = errors.map do |e|
+          slice = e.location.slice
+          slice = slice.b.force_encoding(source_encoding) if slice.encoding != source_encoding
+          [e.location.start_line, e.location.start_column, 0, e.location.end_line, e.location.end_column, :error, slice]
+        end
+        error_tokens.reject! { |t| t.last.valid_encoding? && t.last.match?(/\A\s*\z/) }
+        tokens = prism_tokens.map do |t,|
+          slice = t.value
+          slice = slice.b.force_encoding(source_encoding) if slice.encoding != source_encoding
+          [t.location.start_line, t.location.start_column, 2, t.location.end_line, t.location.end_column, t.type, slice]
+        end
         tokens.pop if tokens.last&.[](5) == :EOF
 
-        colored = +''
+        colored = String.new(encoding: source_encoding)
         line_index = 0
         col = 0
         lines = code.lines
@@ -229,23 +258,24 @@ module IRB # :nodoc:
           col = end_column
         end
         flush.call lines.size, 0
-        colored
+        encode_result(colored, orig_encoding)
       end
 
       class ColorizeVisitor < Prism::Visitor
         attr_reader :tokens
-        def initialize
+        def initialize(encoding)
           @tokens = []
+          @encoding = encoding
         end
 
         def dispatch(location, type)
           if location
-            @tokens << [location.start_line, location.start_column, 1, location.end_line, location.end_column, type, location.slice]
+            @tokens << [location.start_line, location.start_column, 1, location.end_line, location.end_column, type, slice_location(location)]
           end
         end
 
         def visit_array_node(node)
-          if node.opening&.match?(/\A%[iI]/)
+          if node.opening&.start_with?('%i', '%I')
             dispatch node.opening_loc, :symbol
             dispatch node.closing_loc, :symbol
           end
@@ -272,7 +302,7 @@ module IRB # :nodoc:
           if node.call_operator_loc.nil? && OPERATORS.include?(node.name)
             # Operators should not be colored as method call
           elsif (node.call_operator_loc.nil? || node.call_operator_loc.slice == "::") &&
-              /\A\p{Upper}/.match?(node.name)
+              (name = node.message_loc && slice_location(node.message_loc)) && name.valid_encoding? && /\A\p{Upper}/.match?(name)
             # Constant-like methods should not be colored as method call
           else
             dispatch node.message_loc, :message_name
@@ -305,7 +335,7 @@ module IRB # :nodoc:
         end
 
         def visit_symbol_node(node)
-          if (node.opening_loc.nil? && node.closing == ':') || node.closing&.match?(/\A['"]:\z/)
+          if (node.opening_loc.nil? && node.closing == ':') || node.closing == "':" || node.closing == '":'
             # Colorize { symbol: 1 } and { 'symbol': 1 } as label
             dispatch node.location, :LABEL
           else
@@ -317,6 +347,11 @@ module IRB # :nodoc:
 
         private
 
+        def slice_location(location)
+          slice = location.slice
+          slice.encoding == @encoding ? slice : slice.b.force_encoding(@encoding)
+        end
+
         def dispatch_alias_method_name(node)
           if node.type == :symbol_node && node.opening_loc.nil?
             dispatch node.value_loc, :method_name
@@ -327,7 +362,22 @@ module IRB # :nodoc:
       private
 
       def escape_for_print(text)
+        text = text.scrub unless text.valid_encoding?
         Reline::Unicode.escape_for_print(text.gsub("\r\n", "\n"))
+      end
+
+      def encode_result(text, encoding)
+        return text if text.encoding == encoding
+        return text.b if encoding == Encoding::ASCII_8BIT
+
+        text.encode(encoding, invalid: :replace, undef: :replace)
+      rescue Encoding::ConverterNotFoundError
+        begin
+          text.encode(Encoding::UTF_8, invalid: :replace, undef: :replace)
+            .encode(encoding, invalid: :replace, undef: :replace)
+        rescue Encoding::ConverterNotFoundError
+          text
+        end
       end
 
       FILTERED_ERROR_TYPES = [

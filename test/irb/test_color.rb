@@ -256,6 +256,58 @@ module TestIRB
       end
     end
 
+    def test_colorize_code_non_utf8_and_invalid_encoding
+      # UTF-8 tagged strings read from Shift_JIS / mixed-encoding files (#976)
+      utf8_with_sjis_end = "binding.irb\n__END__\n\u3042".encode(Encoding::Windows_31J).b.force_encoding(Encoding::UTF_8)
+      assert_equal_with_term(
+        "#{CYAN}binding#{CLEAR}.#{CYAN}irb#{CLEAR}\n#{GREEN}__END__#{CLEAR}\n\uFFFD\uFFFD",
+        utf8_with_sjis_end
+      )
+
+      sjis_magic_str = "# coding: sjis\ns = '\u3042'\nbinding.irb".encode(Encoding::Windows_31J).b.force_encoding(Encoding::UTF_8)
+      assert_equal_with_term(
+        "#{BLUE}#{BOLD}# coding: sjis#{CLEAR}\ns = #{RED}#{BOLD}'#{CLEAR}#{RED}\u3042#{CLEAR}#{RED}#{BOLD}'#{CLEAR}\n#{CYAN}binding#{CLEAR}.#{CYAN}irb#{CLEAR}",
+        sjis_magic_str
+      )
+
+      sjis_magic_end = "# coding: sjis\nbinding.irb\n__END__\n\u3042".encode(Encoding::Windows_31J).b.force_encoding(Encoding::UTF_8)
+      assert_equal_with_term(
+        "#{BLUE}#{BOLD}# coding: sjis#{CLEAR}\n#{CYAN}binding#{CLEAR}.#{CYAN}irb#{CLEAR}\n#{GREEN}__END__#{CLEAR}\n\u3042",
+        sjis_magic_end
+      )
+
+      sjis_magic_utf8_end = "# coding: sjis\nbinding.irb\n__END__\n\u3042"
+      colored_mixed = with_term { IRB::Color.colorize_code(sjis_magic_utf8_end) }
+      assert_equal(Encoding::UTF_8, colored_mixed.encoding)
+      assert_predicate(colored_mixed, :valid_encoding?)
+
+      # Non-UTF-8 input without magic comment preserves input encoding
+      sjis_code = "s = '\u3042'\n__END__\n\u3044".encode(Encoding::Windows_31J)
+      sjis_expected = "#{RED}#{BOLD}'#{CLEAR}#{RED}\u3042#{CLEAR}#{RED}#{BOLD}'#{CLEAR}\n#{GREEN}__END__#{CLEAR}\n\u3044".encode(Encoding::Windows_31J)
+      assert_equal_with_term("s = ".encode(Encoding::Windows_31J) + sjis_expected, sjis_code)
+
+      # Binary input and invalid UTF-8 syntax errors
+      binary_code = "s = \"\xFF\xFE\"\n__END__\n\x82\xA0".b
+      colored_binary = with_term { IRB::Color.colorize_code(binary_code) }
+      assert_equal(Encoding::ASCII_8BIT, colored_binary.encoding)
+      assert_predicate(colored_binary, :valid_encoding?)
+
+      invalid_utf8_error = "def \x82\xA0(".b.force_encoding(Encoding::UTF_8)
+      colored_error = with_term { IRB::Color.colorize_code(invalid_utf8_error) }
+      assert_equal(Encoding::UTF_8, colored_error.encoding)
+      assert_predicate(colored_error, :valid_encoding?)
+
+      ignored_error = with_term { IRB::Color.colorize_code(invalid_utf8_error, ignore_error: true) }
+      assert_equal("def \uFFFD\uFFFD(", ignored_error)
+
+      # Non-ASCII-compatible encodings do not raise
+      utf16_code = "x = 1".encode(Encoding::UTF_16LE)
+      assert_equal("x = 1", with_term { IRB::Color.colorize_code(utf16_code) })
+
+      utf7_code = "x = 1".b.force_encoding(Encoding::UTF_7)
+      assert_equal(utf7_code, with_term { IRB::Color.colorize_code(utf7_code) })
+    end
+
     private
 
     def with_term(tty: true)
