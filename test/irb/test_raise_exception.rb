@@ -14,6 +14,16 @@ module TestIRB
 IRB
     end
 
+    def test_raise_interrupt_does_not_exit_irb
+      bundle_exec = ENV.key?('BUNDLE_GEMFILE') ? ['-rbundler/setup'] : []
+      libdir = File.expand_path("../../lib", __dir__)
+      reline_libdir = Gem.loaded_specs["reline"].full_gem_path + "/lib"
+      assert_in_out_err(bundle_exec + %W[-I#{libdir} -I#{reline_libdir} -rirb -W0 -e IRB.start(__FILE__) -- -f --], <<-IRB, /Interrupt.*still_alive/m, [])
+      raise Interrupt
+      puts :still_alive
+IRB
+    end
+
     def test_raise_exception_with_message_exception
       bundle_exec = ENV.key?('BUNDLE_GEMFILE') ? ['-rbundler/setup'] : []
       libdir = File.expand_path("../../lib", __dir__)
